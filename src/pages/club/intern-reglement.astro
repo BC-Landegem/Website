@@ -1,61 +1,40 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import PageHeader from '../../components/PageHeader.astro';
+import RailKop from '../../components/RailKop.astro';
+
+const regels = [
+  'Opwarmen doe je <strong class="text-inkt-950">niet</strong> met nieuwe shuttles, er worden opwarmshuttles voorzien bij het begin van elk speelmoment. Alle shuttles, zowel voor trainingen als competitie, zijn aangekocht door de club en kunnen gratis gebruikt worden — maak er dus geen misbruik van.',
+  'Op elke speelavond wordt er gestart met dubbelwedstrijden. Van zodra er meerdere terreinen vrijkomen kunnen er enkels gespeeld worden.',
+  'Na een match ga je terug naar de kant en geef je de kans aan vier andere mensen om te spelen.',
+  'Veren shuttles zijn vooral bedoeld voor <strong class="text-inkt-950">competitiespelers en gevorderden</strong>. Plastieken veren zijn veel goedkoper, verslijten minder snel en zijn goed genoeg voor beginnende spelers.',
+  'Tijdens een match krijg je kapotte veren. Laat deze niet slingeren, maar gooi ze in de plastieken bakken die ter plaatse voorzien worden. Ze kunnen misschien nog gebruikt worden om te trainen.',
+  'Leeggoed wordt niet in de sportzaal achtergelaten, maar in de afvalcontainers gedropt.',
+  'Ander afval: recht in de vuilnisbak, de zaal laten we proper achter. Houd ook de kleedkamer proper: andere mensen moeten zich ook nog douchen.',
+  'Een lid van de club mag andere spelers meebrengen, deze zijn welkom op elke speelavond in de week. Zij worden pas definitief lid als het volledige lidgeld betaald is.',
+  'Een niet-aangesloten speler kan drie keer komen spelen vooraleer hij of zij lidgeld moet betalen. Dit bedrag hangt af van de duur van het resterende seizoen.',
+  'Het lidgeld wordt betaald per kalenderjaar.',
+  'De club is niet verantwoordelijk voor diefstal in de kleedkamers en de sportzaal.',
+  'De club is eveneens niet verantwoordelijk voor schade aangebracht door derden aan de sportinfrastructuur en materiaal ter plaatse.',
+];
 ---
 
 <Layout
   title="Intern reglement"
   description="Het intern reglement van BC Landegem: afspraken die het voor iedereen plezant en betaalbaar houden."
 >
-  <PageHeader
-    title="Intern reglement"
-    intro="BC Landegem blijft groeien in ledenaantal. Om het voor iedereen even plezant én betaalbaar te houden zijn volgende regels van kracht."
-  />
-  <div class="mx-auto max-w-6xl px-4 py-12">
-    <article class="prose prose-neutral max-w-4xl">
-    <ol>
-      <li>
-        Opwarmen doe je <strong>niet</strong> met nieuwe shuttles, er worden opwarmshuttles voorzien
-        bij het begin van elk speelmoment. Alle shuttles, zowel voor trainingen als competitie, zijn
-        aangekocht door de club en kunnen gratis gebruikt worden — maak er dus geen misbruik van.
-      </li>
-      <li>
-        Op elke speelavond wordt er gestart met dubbelwedstrijden. Van zodra er meerdere terreinen
-        vrijkomen kunnen er enkels gespeeld worden.
-      </li>
-      <li>
-        Na een match ga je terug naar de kant en geef je de kans aan vier andere mensen om te spelen.
-      </li>
-      <li>
-        Veren shuttles zijn vooral bedoeld voor <strong>competitiespelers en gevorderden</strong>.
-        Plastieken veren zijn veel goedkoper, verslijten minder snel en zijn goed genoeg voor
-        beginnende spelers.
-      </li>
-      <li>
-        Tijdens een match krijg je kapotte veren. Laat deze niet slingeren, maar gooi ze in de
-        plastieken bakken die ter plaatse voorzien worden. Ze kunnen misschien nog gebruikt worden om
-        te trainen.
-      </li>
-      <li>Leeggoed wordt niet in de sportzaal achtergelaten, maar in de afvalcontainers gedropt.</li>
-      <li>
-        Ander afval: recht in de vuilnisbak, de zaal laten we proper achter. Houd ook de kleedkamer
-        proper: andere mensen moeten zich ook nog douchen.
-      </li>
-      <li>
-        Een lid van de club mag andere spelers meebrengen, deze zijn welkom op elke speelavond in de
-        week. Zij worden pas definitief lid als het volledige lidgeld betaald is.
-      </li>
-      <li>
-        Een niet-aangesloten speler kan drie keer komen spelen vooraleer hij of zij lidgeld moet
-        betalen. Dit bedrag hangt af van de duur van het resterende seizoen.
-      </li>
-      <li>Het lidgeld wordt betaald per kalenderjaar.</li>
-      <li>De club is niet verantwoordelijk voor diefstal in de kleedkamers en de sportzaal.</li>
-      <li>
-        De club is eveneens niet verantwoordelijk voor schade aangebracht door derden aan de
-        sportinfrastructuur en materiaal ter plaatse.
-      </li>
+  <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
+    <RailKop
+      title="Intern reglement"
+      intro="BC Landegem blijft groeien in ledenaantal. Om het voor iedereen even plezant én betaalbaar te houden zijn volgende regels van kracht."
+    />
+
+    <ol class="mt-12 max-w-3xl">
+      {regels.map((regel, i) => (
+        <li class="grid grid-cols-[2.5rem_1fr] items-baseline border-b border-inkt-950/10 py-4 first:border-t">
+          <span class="stem-cijfer text-lg text-club-700">{i + 1}</span>
+          <p class="leading-relaxed text-inkt-700" set:html={regel} />
+        </li>
+      ))}
     </ol>
-  </article>
   </div>
 </Layout>

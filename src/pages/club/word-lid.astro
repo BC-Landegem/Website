@@ -1,6 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import PageHeader from '../../components/PageHeader.astro';
+import RailKop from '../../components/RailKop.astro';
 import { url } from '../../lib/url';
 import trainingen from '../../data/trainingen.json';
 ---
@@ -9,59 +9,72 @@ import trainingen from '../../data/trainingen.json';
   title="Word lid!"
   description="Word lid van BC Landegem: badminton voor jong en oud, competitie en recreatie. Proefbeurten zijn altijd welkom."
 >
-  <PageHeader
-    title="Word lid!"
-    intro="BC Landegem is een club voor jong en oud, voor competitiespelers en recreanten. Bij ons staat speelplezier centraal!"
-  />
-  <div class="mx-auto max-w-6xl px-4 py-12">
-    <article class="prose prose-neutral max-w-4xl">
-      <p>
-        De jeugd kan training volgen op <strong>woensdagavond en zaterdagvoormiddag</strong>. Op
-        zaterdag wordt in verschillende groepen gewerkt: de eerste groep is voor de beginnende
-        spelertjes, de volgende groepen bieden al wat gevorderde lessen. Op
-        <strong>maandagavond en zondagavond</strong> is er vrij spel voor de jeugd. Meer info over de
-        trainingen kan je bekomen via <a href="mailto:info@bclandegem.be">info@bclandegem.be</a>.
-      </p>
-      <p>
-        Recreanten zijn welkom op <strong>zondagavond, maandagavond en woensdagavond</strong>. Kom
-        gerust eens langs voor een proefbeurt om te testen! Wil je graag de techniek leren? Wij geven
-        ook lessen voor beginnende recreanten. Voor meer info kan je terecht op
-        <a href="mailto:info@bclandegem.be">info@bclandegem.be</a>.
-      </p>
-      <h2>Speelmomenten</h2>
-    </article>
+  <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
+    <RailKop
+      title="Word lid!"
+      intro="BC Landegem is een club voor jong en oud, voor competitiespelers en recreanten. Bij ons staat speelplezier centraal!"
+    />
 
-    <ul class="mt-6 grid max-w-4xl gap-4 sm:grid-cols-2">
+    <div class="mt-10 max-w-3xl space-y-4 pl-10 leading-relaxed text-inkt-700">
+      <p>
+        De jeugd kan training volgen op <strong class="text-inkt-950">woensdagavond en zaterdagvoormiddag</strong>.
+        Op zaterdag wordt in verschillende groepen gewerkt: de eerste groep is voor de beginnende
+        spelertjes, de volgende groepen bieden al wat gevorderde lessen.
+        Op <strong class="text-inkt-950">maandagavond en zondagavond</strong> is er vrij spel voor de jeugd.
+        Meer info over de trainingen kan je bekomen via <a href="mailto:info@bclandegem.be" class="font-semibold text-club-700 underline hover:text-club-800">info@bclandegem.be</a>.
+      </p>
+      <p>
+        Recreanten zijn welkom op <strong class="text-inkt-950">zondagavond, maandagavond en woensdagavond</strong>.
+        Kom gerust eens langs voor een proefbeurt om te testen! Wil je graag de techniek leren?
+        Wij geven ook lessen voor beginnende recreanten. Voor meer info kan je terecht
+        op <a href="mailto:info@bclandegem.be" class="font-semibold text-club-700 underline hover:text-club-800">info@bclandegem.be</a>.
+      </p>
+    </div>
+
+    <h2 class="stem-display mt-14 pl-10 text-3xl text-inkt-950 sm:text-4xl">Speelmomenten</h2>
+    <!-- Statische rail: dezelfde grammatica als de homepage, zonder scroll-draad -->
+    <ol class="relative mt-8">
+      <span class="absolute bottom-4 left-[6px] top-4 w-1 -translate-x-1/2 rounded-full bg-club-500" aria-hidden="true"></span>
       {trainingen.momenten.map((moment) => (
-        <li class="rounded-xl border border-neutral-200 p-4">
-          <p class="text-sm font-semibold uppercase tracking-wide text-club-600">{moment.dag}</p>
-          <p class="text-lg font-bold">{moment.uren}</p>
-          <p class="text-sm">{moment.omschrijving} — {moment.doelgroep}</p>
+        <li class="relative border-b border-inkt-950/10 py-5 pl-10 first:border-t sm:grid sm:grid-cols-[8rem_14rem_1fr] sm:items-baseline sm:gap-6">
+          <span class="absolute left-[6px] top-7 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-club-500 ring-4 ring-veer-50" aria-hidden="true"></span>
+          <p class="stem-baan text-xs text-club-700">{moment.dag}</p>
+          <p class="stem-cijfer mt-1 text-2xl text-inkt-950 sm:mt-0">{moment.uren}</p>
+          <div class="mt-1 sm:mt-0">
+            <p class="font-bold">{moment.omschrijving}</p>
+            <p class="text-sm text-inkt-500">{moment.doelgroep}</p>
+          </div>
         </li>
       ))}
-    </ul>
+    </ol>
 
-    <article class="prose prose-neutral mt-6 max-w-4xl">
-      <p>
-        Exacte data vind je terug <a href={url('/kalender/')}>via de kalender</a>. Kom gerust eens
-        langs voor een proefbeurt — een niet-aangesloten speler kan drie keer komen spelen vooraleer
-        lidgeld betaald moet worden.
-      </p>
-    </article>
+    <p class="mt-8 max-w-3xl pl-10 leading-relaxed text-inkt-700">
+      Exacte data vind je terug <a href={url('/kalender/')} class="font-semibold text-club-700 underline hover:text-club-800">via de kalender</a>.
+      Kom gerust eens langs voor een proefbeurt — een niet-aangesloten speler kan drie keer komen
+      spelen vooraleer lidgeld betaald moet worden.
+    </p>
+  </div>
 
-    <div class="mt-10 max-w-4xl rounded-2xl bg-club-500 p-8 text-center">
-      <h2 class="text-2xl font-bold text-white">Graag lid worden?</h2>
-      <p class="mx-auto mt-2 max-w-md text-club-50">
-        Schrijf je in via ons online inschrijvingsformulier — je bent zo klaar.
-      </p>
+  <!-- De rode band draagt de inschrijfactie -->
+  <section class="mb-16 border-y-8 border-club-700 bg-club-500 text-white">
+    <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-6 px-4 py-12">
+      <div class="flex-[1_1_24rem]">
+        <h2 class="stem-display text-3xl sm:text-4xl">Graag lid worden?</h2>
+        <p class="mt-2 max-w-xl text-xl font-bold text-white">
+          Schrijf je in via ons online inschrijvingsformulier — je bent zo klaar.
+        </p>
+      </div>
       <a
         href={trainingen.inschrijfformulier}
         target="_blank"
         rel="noopener"
-        class="mt-6 inline-block rounded-full bg-white px-8 py-3 font-semibold text-club-600 transition hover:bg-club-50"
+        class="stem-baan inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm text-club-600 transition-colors hover:bg-club-50"
       >
         Naar het inschrijvingsformulier
+        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 12h16m0 0l-6-6m6 6l-6 6" />
+        </svg>
       </a>
     </div>
-  </div>
+  </section>
 </Layout>

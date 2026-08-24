@@ -72,7 +72,7 @@ export function setIndeling(match: Match) {
 function spelerHtml(speler: Speler, highlightId?: string): string {
   const isHighlight = highlightId !== undefined && speler.id === highlightId;
   if (isHighlight) {
-    return `<span class="rounded bg-club-100 px-1 font-semibold text-club-800">${naam(speler)}</span>`;
+    return `<span class="bg-club-100 px-1 font-semibold text-club-800">${naam(speler)}</span>`;
   }
   return `<a href="${spelerUrl(speler.id)}" class="hover:text-club-600 hover:underline">${naam(speler)}</a>`;
 }
@@ -93,19 +93,19 @@ export function renderMatchSets(match: Match, highlightId?: string): string {
       const gespeeld = score.home > 0 || score.away > 0;
       const scoreHtml = gespeeld
         ? `${score.home}–${score.away}`
-        : '<span class="text-neutral-300">–</span>';
+        : '<span class="text-inkt-950/20">–</span>';
       return `
         <div class="grid grid-cols-[2.75rem_1fr_auto_1fr] items-center gap-x-2 py-1">
-          <span class="text-xs font-semibold uppercase tracking-wide text-neutral-400">${label}</span>
+          <span class="stem-baan text-xs text-inkt-500">${label}</span>
           <span class="text-right">${duoHtml(thuis, gespeeld && score.home > score.away, highlightId)}</span>
-          <span class="min-w-14 rounded bg-neutral-100 px-2 py-0.5 text-center font-bold tabular-nums">${scoreHtml}</span>
+          <span class="stem-cijfer min-w-14 bg-veer-100 px-2 py-0.5 text-center">${scoreHtml}</span>
           <span>${duoHtml(uit, gespeeld && score.away > score.home, highlightId)}</span>
         </div>`;
     })
     .join('');
 }
 
-/** Eén matchkaart: drie set-rijen in een omkaderd blok. */
+/** Eén matchkaart: drie set-rijen in een scherp omkaderd blok. */
 export function renderMatchKaart(match: Match, highlightId?: string): string {
-  return `<div class="rounded-xl border border-neutral-200 p-4 text-sm">${renderMatchSets(match, highlightId)}</div>`;
+  return `<div class="border border-inkt-950/10 p-4 text-sm">${renderMatchSets(match, highlightId)}</div>`;
 }

@@ -1,6 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import PageHeader from '../components/PageHeader.astro';
+import RailKop from '../components/RailKop.astro';
 
 const tabs = [
   { key: 'general', label: 'Algemeen', soort: 'ranking' },
@@ -16,29 +16,37 @@ const tabs = [
   title="Intraclub"
   description="De standen en uitslagen van de intraclubcompetitie van BC Landegem."
 >
-  <PageHeader
-    title="Intraclub"
-    intro="Onze interne competitie: vier spelers per match, elke set een ander duo, het hele seizoen een klassement."
-  />
-  <div class="mx-auto max-w-6xl px-4 py-12">
+  <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
+    <RailKop
+      title="Intraclub"
+      intro="Onze interne competitie: vier spelers per match, elke set een ander duo, het hele seizoen een klassement."
+    />
+
     <div
       id="intra-fout"
-      class="hidden max-w-4xl rounded-xl border border-club-200 bg-club-50 p-4 text-club-800"
+      role="alert"
+      class="ml-10 mt-10 hidden max-w-3xl border-2 border-club-500 bg-club-50 p-4 font-medium text-club-800"
     >
       De standen konden niet geladen worden. Probeer het later opnieuw.
     </div>
 
-    <div id="intra-laden" class="text-neutral-500">Standen laden…</div>
+    <p id="intra-laden" class="mt-10 flex items-center gap-3 pl-10 text-sm font-medium text-inkt-500" aria-live="polite">
+      <span class="h-3.5 w-3.5 rounded-full bg-club-500 ring-4 ring-veer-50 motion-safe:animate-pulse" aria-hidden="true"></span>
+      Standen laden…
+    </p>
 
-    <div id="intra-inhoud" class="hidden max-w-4xl">
-      <div class="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 class="text-2xl font-bold tracking-tight">
-          Klassement
-        </h2>
-        <a id="intra-laatste" href="#" class="hidden text-sm font-semibold text-club-600 hover:underline"></a>
+    <div id="intra-inhoud" class="mt-12 hidden max-w-3xl pl-10">
+      <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+        <h2 class="stem-display text-2xl text-inkt-950 sm:text-3xl">Klassement</h2>
+        <a id="intra-laatste" href="#" class="stem-baan hidden items-center gap-2 text-xs text-club-700 hover:text-club-800 hover:underline">
+          <span id="intra-laatste-tekst"></span>
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 12h16m0 0l-6-6m6 6l-6 6" />
+          </svg>
+        </a>
       </div>
 
-      <div class="mt-4 flex flex-wrap gap-2" role="tablist" aria-label="Overzicht">
+      <div class="mt-6 flex flex-wrap gap-2" role="tablist" aria-label="Overzicht">
         {tabs.map((tab, i) => (
           <button
             type="button"
@@ -46,7 +54,7 @@ const tabs = [
             data-tab={tab.key}
             data-soort={tab.soort}
             aria-selected={i === 0 ? 'true' : 'false'}
-            class="rounded-full border border-neutral-300 px-4 py-1.5 text-sm font-semibold transition hover:border-club-500 hover:text-club-600 aria-selected:border-club-500 aria-selected:bg-club-500 aria-selected:text-white"
+            class="stem-baan rounded-full border-2 border-inkt-950/20 px-4 py-1.5 text-xs text-inkt-700 transition-colors hover:border-club-600 hover:text-club-600 aria-selected:border-club-500 aria-selected:bg-club-500 aria-selected:text-white"
           >
             {tab.label}
           </button>
@@ -54,14 +62,14 @@ const tabs = [
       </div>
 
       <!-- Klassementen -->
-      <div id="paneel-ranking" class="mt-6 overflow-x-auto">
+      <div id="paneel-ranking" class="mt-8 overflow-x-auto">
         <table class="w-full text-left text-sm">
           <thead>
-            <tr class="border-b border-neutral-300 text-xs uppercase tracking-wide text-neutral-500">
-              <th class="py-2 pr-3">#</th>
-              <th class="py-2 pr-3">Naam</th>
-              <th class="py-2 pr-3 text-right">Gemiddelde</th>
-              <th class="py-2 text-right">+/−</th>
+            <tr class="stem-baan border-b border-inkt-950/10 text-xs text-club-700">
+              <th class="py-2.5 pr-3 font-bold">#</th>
+              <th class="py-2.5 pr-3 font-bold">Naam</th>
+              <th class="py-2.5 pr-3 text-right font-bold">Gemiddelde</th>
+              <th class="py-2.5 text-right font-bold">+/−</th>
             </tr>
           </thead>
           <tbody id="intra-tabel"></tbody>
@@ -69,14 +77,14 @@ const tabs = [
       </div>
 
       <!-- Speeldagen -->
-      <div id="paneel-speeldagen" class="mt-6 hidden overflow-x-auto">
+      <div id="paneel-speeldagen" class="mt-8 hidden overflow-x-auto">
         <table class="w-full text-left text-sm">
           <thead>
-            <tr class="border-b border-neutral-300 text-xs uppercase tracking-wide text-neutral-500">
-              <th class="py-2 pr-3">Speeldag</th>
-              <th class="py-2 pr-3">Datum</th>
-              <th class="py-2 pr-3 text-right">Spelers</th>
-              <th class="py-2 text-right">Gem. afwezigen</th>
+            <tr class="stem-baan border-b border-inkt-950/10 text-xs text-club-700">
+              <th class="py-2.5 pr-3 font-bold">Speeldag</th>
+              <th class="py-2.5 pr-3 font-bold">Datum</th>
+              <th class="py-2.5 pr-3 text-right font-bold">Spelers</th>
+              <th class="py-2.5 text-right font-bold">Gem. afwezigen</th>
             </tr>
           </thead>
           <tbody id="intra-speeldagen"></tbody>
@@ -84,14 +92,14 @@ const tabs = [
       </div>
 
       <!-- Aanwezigheden -->
-      <div id="paneel-aanwezigheden" class="mt-6 hidden overflow-x-auto">
+      <div id="paneel-aanwezigheden" class="mt-8 hidden overflow-x-auto">
         <table class="w-full text-left text-sm">
           <thead>
-            <tr class="border-b border-neutral-300 text-xs uppercase tracking-wide text-neutral-500">
-              <th class="py-2 pr-3">#</th>
-              <th class="py-2 pr-3">Naam</th>
-              <th class="py-2 pr-3 text-right">Aanwezig</th>
-              <th class="py-2 text-right">Gewonnen sets</th>
+            <tr class="stem-baan border-b border-inkt-950/10 text-xs text-club-700">
+              <th class="py-2.5 pr-3 font-bold">#</th>
+              <th class="py-2.5 pr-3 font-bold">Naam</th>
+              <th class="py-2.5 pr-3 text-right font-bold">Aanwezig</th>
+              <th class="py-2.5 text-right font-bold">Gewonnen sets</th>
             </tr>
           </thead>
           <tbody id="intra-aanwezigheden"></tbody>
@@ -126,22 +134,26 @@ const tabs = [
   };
 
   const spelerLink = (rij: { id: string; firstName: string; name: string }) =>
-    `<a href="${spelerUrl(rij.id)}" class="hover:text-club-600 hover:underline">${naam(rij)}</a>`;
+    `<a href="${spelerUrl(rij.id)}" class="font-medium hover:text-club-600 hover:underline">${naam(rij)}</a>`;
+
+  // Richting zit in het teken; kleur blijft binnen het palet (daling = club-700)
+  const pijlOp = '<svg class="-mt-0.5 inline h-2.5 w-2.5" viewBox="0 0 10 10" fill="currentColor" aria-hidden="true"><path d="M5 1.5l4 7H1z"/></svg>';
+  const pijlNeer = '<svg class="-mt-0.5 inline h-2.5 w-2.5" viewBox="0 0 10 10" fill="currentColor" aria-hidden="true"><path d="M5 8.5l-4-7h8z"/></svg>';
 
   function toonRanking(rijen: RankingRij[]) {
     const tabel = document.getElementById('intra-tabel')!;
     tabel.innerHTML = rijen
       .map((rij) => {
         const diff = rij.difference > 0
-          ? `<span class="text-green-600">▲ ${rij.difference}</span>`
+          ? `<span class="stem-cijfer text-inkt-950">${pijlOp} ${rij.difference}</span>`
           : rij.difference < 0
-            ? `<span class="text-club-600">▼ ${Math.abs(rij.difference)}</span>`
-            : '<span class="text-neutral-400">–</span>';
-        return `<tr class="border-b border-neutral-100">
-          <td class="py-2 pr-3 font-semibold">${rij.rank}</td>
-          <td class="py-2 pr-3">${spelerLink(rij)}</td>
-          <td class="py-2 pr-3 text-right tabular-nums">${rij.average.toFixed(2)}</td>
-          <td class="py-2 text-right">${diff}</td>
+            ? `<span class="stem-cijfer text-club-700">${pijlNeer} ${Math.abs(rij.difference)}</span>`
+            : '<span class="text-inkt-950/30">–</span>';
+        return `<tr class="border-b border-inkt-950/10">
+          <td class="stem-cijfer py-2.5 pr-3 text-club-700">${rij.rank}</td>
+          <td class="py-2.5 pr-3">${spelerLink(rij)}</td>
+          <td class="stem-cijfer py-2.5 pr-3 text-right">${rij.average.toFixed(2)}</td>
+          <td class="py-2.5 text-right">${diff}</td>
         </tr>`;
       })
       .join('');
@@ -152,11 +164,11 @@ const tabs = [
     tabel.innerHTML = rondes
       .slice()
       .reverse()
-      .map((ronde) => `<tr class="border-b border-neutral-100">
-        <td class="py-2 pr-3 font-semibold"><a href="${speeldagUrl(ronde.id)}" class="text-club-600 hover:underline">Speeldag ${ronde.number}</a></td>
-        <td class="py-2 pr-3">${formatDatum(ronde.date)}</td>
-        <td class="py-2 pr-3 text-right tabular-nums">${parseInt(ronde.matches) * 4}</td>
-        <td class="py-2 text-right tabular-nums">${ronde.averageAbsent}</td>
+      .map((ronde) => `<tr class="border-b border-inkt-950/10">
+        <td class="py-2.5 pr-3"><a href="${speeldagUrl(ronde.id)}" class="font-semibold text-club-700 hover:text-club-800 hover:underline">Speeldag ${ronde.number}</a></td>
+        <td class="py-2.5 pr-3">${formatDatum(ronde.date)}</td>
+        <td class="stem-cijfer py-2.5 pr-3 text-right">${parseInt(ronde.matches) * 4}</td>
+        <td class="stem-cijfer py-2.5 text-right">${ronde.averageAbsent}</td>
       </tr>`)
       .join('');
   }
@@ -170,11 +182,11 @@ const tabs = [
     });
     const tabel = document.getElementById('intra-aanwezigheden')!;
     tabel.innerHTML = gesorteerd
-      .map((rij, i) => `<tr class="border-b border-neutral-100">
-        <td class="py-2 pr-3 font-semibold">${i + 1}</td>
-        <td class="py-2 pr-3">${spelerLink(rij)}</td>
-        <td class="py-2 pr-3 text-right tabular-nums">${rij.statistics.rounds.present}</td>
-        <td class="py-2 text-right tabular-nums">${rij.statistics.sets.won}</td>
+      .map((rij, i) => `<tr class="border-b border-inkt-950/10">
+        <td class="stem-cijfer py-2.5 pr-3 text-club-700">${i + 1}</td>
+        <td class="py-2.5 pr-3">${spelerLink(rij)}</td>
+        <td class="stem-cijfer py-2.5 pr-3 text-right">${rij.statistics.rounds.present}</td>
+        <td class="stem-cijfer py-2.5 text-right">${rij.statistics.sets.won}</td>
       </tr>`)
       .join('');
   }
@@ -195,8 +207,10 @@ const tabs = [
       if (laatste && laatste.id) {
         const link = document.getElementById('intra-laatste') as HTMLAnchorElement;
         link.href = speeldagUrl(laatste.id);
-        link.textContent = `Stand na speeldag ${laatste.number} (${formatDatum(laatste.date)}) →`;
+        document.getElementById('intra-laatste-tekst')!.textContent =
+          `Stand na speeldag ${laatste.number} (${formatDatum(laatste.date)})`;
         link.classList.remove('hidden');
+        link.classList.add('inline-flex');
       }
 
       for (const tab of tabs) {

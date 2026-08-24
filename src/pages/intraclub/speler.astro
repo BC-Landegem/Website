@@ -4,61 +4,64 @@ import { url } from '../../lib/url';
 ---
 
 <Layout title="Intraclub speler" description="Statistieken van een intraclub-speler van BC Landegem.">
-  <div class="border-b border-neutral-200 bg-neutral-50">
-    <div class="mx-auto max-w-6xl px-4 py-10">
-      <p class="text-sm">
-        <a href={url('/intraclub/')} class="font-semibold text-club-600 hover:underline">← Intraclub</a>
+  <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
+    <div class="relative pl-10">
+      <span class="absolute left-[6px] top-11 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-club-500 ring-4 ring-veer-50" aria-hidden="true"></span>
+      <span class="absolute bottom-1 left-[6px] top-[3.75rem] w-1 -translate-x-1/2 rounded-full bg-club-500" aria-hidden="true"></span>
+      <span class="absolute bottom-0 left-[6px] h-2 w-2 -translate-x-1/2 rounded-full bg-club-500" aria-hidden="true"></span>
+      <p>
+        <a href={url('/intraclub/')} class="stem-baan inline-flex items-center gap-2 text-xs text-club-700 hover:text-club-800 hover:underline">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4m0 0l6-6m-6 6l6 6" />
+          </svg>
+          Intraclub
+        </a>
       </p>
-      <h1 id="speler-naam" class="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Speler</h1>
-      <p id="speler-ranking" class="mt-3 text-lg text-neutral-600"></p>
+      <h1 id="speler-naam" class="stem-display mt-3 text-4xl text-inkt-950 sm:text-5xl">Speler</h1>
+      <p id="speler-ranking" class="mt-3 text-inkt-700"></p>
     </div>
-  </div>
 
-  <div class="mx-auto max-w-6xl px-4 py-12">
     <div
       id="speler-fout"
-      class="hidden max-w-4xl rounded-xl border border-club-200 bg-club-50 p-4 text-club-800"
+      role="alert"
+      class="ml-10 mt-10 hidden max-w-3xl border-2 border-club-500 bg-club-50 p-4 font-medium text-club-800"
     >
       De statistieken konden niet geladen worden. Probeer het later opnieuw.
     </div>
-    <div id="speler-laden" class="text-neutral-500">Statistieken laden…</div>
 
-    <div id="speler-inhoud" class="hidden max-w-4xl">
-      <div class="grid grid-cols-[repeat(auto-fit,minmax(11rem,1fr))] gap-3">
-        <div class="rounded-xl border border-neutral-200 p-4" data-stat="aanwezig">
-          <p class="text-xs font-semibold uppercase tracking-wide text-neutral-500">Aanwezig</p>
-          <p class="mt-1 text-2xl font-bold tabular-nums"><span data-waarde></span><span class="text-base font-semibold text-neutral-400">%</span></p>
-          <div class="mt-2 h-1 overflow-hidden rounded-full bg-neutral-100">
-            <div data-meter class="h-full rounded-full bg-club-500" style="width: 0%"></div>
-          </div>
-          <p data-context class="mt-1.5 text-xs text-neutral-500"></p>
-        </div>
-        <div class="rounded-xl border border-neutral-200 p-4" data-stat="sets">
-          <p class="text-xs font-semibold uppercase tracking-wide text-neutral-500">Sets gewonnen</p>
-          <p class="mt-1 text-2xl font-bold tabular-nums"><span data-waarde></span><span class="text-base font-semibold text-neutral-400">%</span></p>
-          <div class="mt-2 h-1 overflow-hidden rounded-full bg-neutral-100">
-            <div data-meter class="h-full rounded-full bg-club-500" style="width: 0%"></div>
-          </div>
-          <p data-context class="mt-1.5 text-xs text-neutral-500"></p>
-        </div>
-        <div class="rounded-xl border border-neutral-200 p-4" data-stat="punten">
-          <p class="text-xs font-semibold uppercase tracking-wide text-neutral-500">Punten gewonnen</p>
-          <p class="mt-1 text-2xl font-bold tabular-nums"><span data-waarde></span><span class="text-base font-semibold text-neutral-400">%</span></p>
-          <div class="mt-2 h-1 overflow-hidden rounded-full bg-neutral-100">
-            <div data-meter class="h-full rounded-full bg-club-500" style="width: 0%"></div>
-          </div>
-          <p data-context class="mt-1.5 text-xs text-neutral-500"></p>
-        </div>
-      </div>
+    <p id="speler-laden" class="mt-10 flex items-center gap-3 pl-10 text-sm font-medium text-inkt-500" aria-live="polite">
+      <span class="h-3.5 w-3.5 rounded-full bg-club-500 ring-4 ring-veer-50 motion-safe:animate-pulse" aria-hidden="true"></span>
+      Statistieken laden…
+    </p>
 
-      <section class="mt-10">
-        <h2 class="text-2xl font-bold tracking-tight">Klassementsverloop</h2>
+    <div id="speler-inhoud" class="mt-12 hidden max-w-3xl pl-10">
+      <!-- Drie cijfers op één lijn: geen kaarten, geen meters — de data draagt zichzelf -->
+      <dl class="grid gap-8 sm:grid-cols-3">
+        <div class="border-t border-inkt-950/10 pt-4" data-stat="aanwezig">
+          <dt class="stem-baan text-xs text-club-700">Aanwezig</dt>
+          <dd class="stem-cijfer mt-2 text-4xl text-inkt-950"><span data-waarde></span><span class="text-xl text-inkt-500">%</span></dd>
+          <dd data-context class="mt-1.5 text-xs text-inkt-500"></dd>
+        </div>
+        <div class="border-t border-inkt-950/10 pt-4" data-stat="sets">
+          <dt class="stem-baan text-xs text-club-700">Sets gewonnen</dt>
+          <dd class="stem-cijfer mt-2 text-4xl text-inkt-950"><span data-waarde></span><span class="text-xl text-inkt-500">%</span></dd>
+          <dd data-context class="mt-1.5 text-xs text-inkt-500"></dd>
+        </div>
+        <div class="border-t border-inkt-950/10 pt-4" data-stat="punten">
+          <dt class="stem-baan text-xs text-club-700">Punten gewonnen</dt>
+          <dd class="stem-cijfer mt-2 text-4xl text-inkt-950"><span data-waarde></span><span class="text-xl text-inkt-500">%</span></dd>
+          <dd data-context class="mt-1.5 text-xs text-inkt-500"></dd>
+        </div>
+      </dl>
+
+      <section class="mt-14">
+        <h2 class="stem-display text-2xl text-inkt-950 sm:text-3xl">Klassementsverloop</h2>
         <div id="chart-verloop" class="mt-4"></div>
       </section>
 
-      <section class="mt-10">
-        <h2 class="text-2xl font-bold tracking-tight">Wedstrijden</h2>
-        <p class="mt-1 mb-6 text-sm text-neutral-500">
+      <section class="mt-14">
+        <h2 class="stem-display text-2xl text-inkt-950 sm:text-3xl">Wedstrijden</h2>
+        <p class="mb-6 mt-3 text-sm text-inkt-500">
           Vier spelers per match, per set een andere samenstelling. Het winnende duo staat in het vet;
           de meest recente speeldag staat bovenaan.
         </p>
@@ -89,18 +92,19 @@ import { url } from '../../lib/url';
   const fout = document.getElementById('speler-fout')!;
   const laden = document.getElementById('speler-laden')!;
 
+  // Wereldtokens voor de grafiek (ApexCharts kent geen CSS-variabelen)
   const clubRood = '#eb4024';
+  const inktLicht = '#6b5c50';
+  const veerDiep = 'rgba(230, 220, 200, 0.3)';
 
   function percentage(deel: number, totaal: number): number {
     return totaal > 0 ? Math.round((deel / totaal) * 100) : 0;
   }
 
   function vulStat(stat: string, deel: number, totaal: number, context: string) {
-    const tegel = document.querySelector(`[data-stat="${stat}"]`)!;
-    const procent = percentage(deel, totaal);
-    tegel.querySelector('[data-waarde]')!.textContent = String(procent);
-    (tegel.querySelector('[data-meter]') as HTMLElement).style.width = `${procent}%`;
-    tegel.querySelector('[data-context]')!.textContent = context;
+    const blok = document.querySelector(`[data-stat="${stat}"]`)!;
+    blok.querySelector('[data-waarde]')!.textContent = String(percentage(deel, totaal));
+    blok.querySelector('[data-context]')!.textContent = context;
   }
 
   async function laadSpeler() {
@@ -131,20 +135,28 @@ import { url } from '../../lib/url';
       new ApexCharts(document.querySelector('#chart-verloop')!, {
         series: [{ name: 'Ranking', data: historiek.map((rij) => rij.rank) }],
         colors: [clubRood],
-        chart: { type: 'line', height: 320, zoom: { enabled: false }, toolbar: { show: false } },
+        chart: {
+          type: 'line',
+          height: 320,
+          zoom: { enabled: false },
+          toolbar: { show: false },
+          fontFamily: 'Archivo, ui-sans-serif, system-ui, sans-serif',
+          background: 'transparent',
+        },
         markers: { size: 4 },
         dataLabels: { enabled: false },
         stroke: { curve: 'straight', width: 3 },
-        grid: { row: { colors: ['#fafafa', 'transparent'], opacity: 0.5 } },
+        grid: { borderColor: 'rgba(27, 20, 16, 0.1)', row: { colors: [veerDiep, 'transparent'], opacity: 0.5 } },
         xaxis: {
           categories: historiek.map((rij) => String(rij.number)),
-          title: { text: 'Speeldag', style: { color: '#737373' } },
+          title: { text: 'Speeldag', style: { color: inktLicht } },
+          labels: { style: { colors: inktLicht } },
         },
         yaxis: {
           reversed: true,
           min: 1,
           max: Math.max(...historiek.map((rij) => rij.rank)),
-          labels: { formatter: (waarde: number) => waarde.toFixed(0) },
+          labels: { formatter: (waarde: number) => waarde.toFixed(0), style: { colors: inktLicht } },
         },
         tooltip: { x: { formatter: (waarde: string) => `Speeldag ${waarde}` } },
       }).render();
@@ -153,7 +165,7 @@ import { url } from '../../lib/url';
       document.getElementById('speler-matchen')!.innerHTML = matchen
         .map((match) => `
           <div>
-            <p class="mb-1 text-sm font-semibold text-neutral-500">Speeldag ${match.round?.number ?? ''}</p>
+            <p class="stem-baan mb-2 text-xs text-club-700">Speeldag ${match.round?.number ?? ''}</p>
             ${renderMatchKaart(match, speler.id)}
           </div>`)
         .join('');

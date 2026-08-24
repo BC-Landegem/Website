@@ -1,7 +1,7 @@
 ---
 import { Image } from 'astro:assets';
 import Layout from '../../layouts/Layout.astro';
-import PageHeader from '../../components/PageHeader.astro';
+import RailKop from '../../components/RailKop.astro';
 import portret from '../../assets/api.jpg';
 ---
 
@@ -9,60 +9,64 @@ import portret from '../../assets/api.jpg';
   title="Aanspreekpunt Integriteit"
   description="Bij het Aanspreekpunt Integriteit (API) van BC Landegem kan je terecht met vragen, vermoedens of klachten over grensoverschrijdend gedrag."
 >
-  <PageHeader
-    title="Aanspreekpunt Integriteit (API)"
-    intro="Een veilige plek voor je vraag, vermoeden of klacht over grensoverschrijdend gedrag."
-  />
-  <div class="mx-auto max-w-6xl px-4 py-12">
-    <article class="prose prose-neutral max-w-4xl">
-    <Image
-      src={portret}
-      alt="Lieselot Van Haute, Aanspreekpunt Integriteit van BC Landegem"
-      width={300}
-      class="float-none mx-auto !my-0 w-56 rounded-xl sm:float-right sm:ml-6"
+  <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
+    <RailKop
+      title="Aanspreekpunt Integriteit"
+      intro="Een veilige plek voor je vraag, vermoeden of klacht over grensoverschrijdend gedrag."
     />
-    <p>
-      Hallo! Mijn naam is Lieselot Van Haute. Ik ben het Aanspreekpunt voor Integriteit binnen onze
-      club, ook wel API genoemd.
-    </p>
-    <p>
-      Als sporter, ouder, trainer, bestuurder of andere vrijwilliger van onze sportclub kan je bij
-      mij als Club-API terecht met een vraag, vermoeden of klacht over grensoverschrijdend gedrag.
-      Als jouw grenzen of die van iemand anders worden overschreden, op welk vlak dan ook, kan je
-      bij mij terecht met je verhaal of melding.
-    </p>
-    <ul>
-      <li>Heb je vragen, vermoedens of klachten over een integriteitsschending?</li>
-      <li>Heb je te maken met pesten of chantage?</li>
-      <li>Is er (seksueel) ongewenst gedrag?</li>
-      <li>Kreeg je te maken met geweld, discriminatie of chantage…?</li>
-      <li>Zit je slecht in je vel binnen de club?</li>
-      <li>
-        Merk je tijdens je sportactiviteiten dat er handelingen gebeuren die in het algemeen niet
-        aanvaardbaar zijn?
-      </li>
-    </ul>
-    <p>Aarzel niet om mij te contacteren!</p>
-    <p>
-      Je hoeft zelf geen slachtoffer of getuige van bepaald gedrag te zijn om een vermoeden te
-      hebben van grensoverschrijdend gedrag, zowel op het badmintonveld als ernaast. Zodra je een
-      vermoeden of een slecht gevoel hebt over een situatie, kan je contact opnemen met mij.
-    </p>
-    <p>
-      We vinden het als club superbelangrijk dat je kan praten over grensoverschrijdende situaties
-      in een veilige omgeving. In eerste instantie ga ik luisteren naar je vraag of verhaal. Je mag
-      er zeker van zijn dat je melding in alle vertrouwen wordt behandeld. Ik zal ervoor zorgen dat
-      je bij iemand terecht kan die jou de juiste tools en hulp kan aanreiken. Ik bekijk samen met
-      jou hoe en waar je ondersteund kan worden. Misschien nog belangrijk om mee te delen: ik ben
-      geen hulpverlener. Ik heb wel de kennis om je gericht te kunnen doorverwijzen naar verdere
-      hulpverlening. En uiteraard volg ik mee op.
-    </p>
-    <p>
-      Op zondag-, maandag- en/of woensdagavond ben ik vaak aanwezig in de sporthal en kan je mij
-      persoonlijk aanspreken. Maar je kan me gerust ook een mailtje sturen:
-      <a href="mailto:lieselot_van_haute@hotmail.com">lieselot_van_haute@hotmail.com</a>
-    </p>
-    <p>Vele groetjes,<br />Lieselot</p>
-  </article>
+
+    <div class="mt-10 max-w-3xl space-y-4 pl-10 leading-relaxed text-inkt-700">
+      <!-- Echte foto in een veerblad-snit, zoals de clubfoto op de homepage -->
+      <figure class="mx-auto w-56 sm:float-right sm:ml-8 sm:mb-4" style="clip-path: polygon(0 6%, 100% 0, 100% 94%, 0 100%)">
+        <Image
+          src={portret}
+          alt="Lieselot Van Haute, Aanspreekpunt Integriteit van BC Landegem"
+          width={300}
+          class="w-full"
+        />
+      </figure>
+      <p>
+        Hallo! Mijn naam is Lieselot Van Haute. Ik ben het Aanspreekpunt voor Integriteit binnen
+        onze club, ook wel API genoemd.
+      </p>
+      <p>
+        Als sporter, ouder, trainer, bestuurder of andere vrijwilliger van onze sportclub kan je
+        bij mij als Club-API terecht met een vraag, vermoeden of klacht over grensoverschrijdend
+        gedrag. Als jouw grenzen of die van iemand anders worden overschreden, op welk vlak dan
+        ook, kan je bij mij terecht met je verhaal of melding.
+      </p>
+      <ul class="list-disc space-y-2 pl-5 marker:text-inkt-500">
+        <li>Heb je vragen, vermoedens of klachten over een integriteitsschending?</li>
+        <li>Heb je te maken met pesten of chantage?</li>
+        <li>Is er (seksueel) ongewenst gedrag?</li>
+        <li>Kreeg je te maken met geweld, discriminatie of chantage…?</li>
+        <li>Zit je slecht in je vel binnen de club?</li>
+        <li>
+          Merk je tijdens je sportactiviteiten dat er handelingen gebeuren die in het algemeen niet
+          aanvaardbaar zijn?
+        </li>
+      </ul>
+      <p class="font-bold text-inkt-950">Aarzel niet om mij te contacteren!</p>
+      <p>
+        Je hoeft zelf geen slachtoffer of getuige van bepaald gedrag te zijn om een vermoeden te
+        hebben van grensoverschrijdend gedrag, zowel op het badmintonveld als ernaast. Zodra je een
+        vermoeden of een slecht gevoel hebt over een situatie, kan je contact opnemen met mij.
+      </p>
+      <p>
+        We vinden het als club superbelangrijk dat je kan praten over grensoverschrijdende
+        situaties in een veilige omgeving. In eerste instantie ga ik luisteren naar je vraag of
+        verhaal. Je mag er zeker van zijn dat je melding in alle vertrouwen wordt behandeld. Ik zal
+        ervoor zorgen dat je bij iemand terecht kan die jou de juiste tools en hulp kan aanreiken.
+        Ik bekijk samen met jou hoe en waar je ondersteund kan worden. Misschien nog belangrijk om
+        mee te delen: ik ben geen hulpverlener. Ik heb wel de kennis om je gericht te kunnen
+        doorverwijzen naar verdere hulpverlening. En uiteraard volg ik mee op.
+      </p>
+      <p>
+        Op zondag-, maandag- en/of woensdagavond ben ik vaak aanwezig in de sporthal en kan je mij
+        persoonlijk aanspreken. Maar je kan me gerust ook een mailtje sturen:
+        <a href="mailto:lieselot_van_haute@hotmail.com" class="font-semibold text-club-700 underline hover:text-club-800">lieselot_van_haute@hotmail.com</a>
+      </p>
+      <p>Vele groetjes,<br />Lieselot</p>
+    </div>
   </div>
 </Layout>

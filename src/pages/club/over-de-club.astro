@@ -1,64 +1,74 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import PageHeader from '../../components/PageHeader.astro';
+import RailKop from '../../components/RailKop.astro';
 ---
 
 <Layout title="Over de club" description="De geschiedenis van Badmintonclub Landegem, van gemeentelijke initiatiecursus in 1987 tot bloeiende club.">
-  <PageHeader
-    title="Over de club"
-    intro="Een badmintonclub met jeugdwerking, recreatieve avonden én competitieploegen — en dat al sinds 1987."
-  />
-  <div class="mx-auto max-w-6xl px-4 py-12">
-    <article class="prose prose-neutral max-w-4xl">
-    <p>
-      BC Landegem is een badmintonclub met jeugdwerking, recreatieve avonden én competitieploegen.
-    </p>
-    <p>
-      Zo'n club ontstaat natuurlijk niet uit het niets. De laatste speler van het eerste uur, Herman,
-      zwaaide begin 2014 af. We vroegen hem hoe het allemaal begonnen is…
-    </p>
-    <blockquote>
+  <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
+    <RailKop
+      title="Over de club"
+      intro="Een badmintonclub met jeugdwerking, recreatieve avonden én competitieploegen — en dat al sinds 1987."
+    />
+
+    <div class="mt-10 max-w-3xl space-y-4 pl-10 leading-relaxed text-inkt-700">
       <p>
-        Tot 1987 speelden wij met een aantal mensen in Lovendegem, Christian Van Wassenhove en zijn
-        vrouw Rachel Lambert, Hubert Bollaert en zijn zoon en mezelf. In 1987 werd door de gemeente
-        samen met het Bloso een initiatiecursus badminton ingericht.
+        BC Landegem is een badmintonclub met jeugdwerking, recreatieve avonden én competitieploegen.
       </p>
       <p>
-        Lessen werden toen gegeven door Laurent Campe, zoon van, uit de Stationsstraat die lic L.O.
-        was en ook de Gentse Roeiclub trainde en die dan enkele jaren later in een tragisch
-        auto-ongeval in Baarle om het leven kwam. Om die cursus kenbaar te maken werden in
-        groot-Nevele flyers rondgedeeld. Na deze initiatiecursus werd de idee opgevat om een club te
-        starten. Het probleem was natuurlijk om vaste uren te bekomen. Omdat we in Lovendegem ook op
-        woensdag speelden, probeerden wij ook hier ons binnen te wringen op woensdagavond. Wij
-        speelden uit dat de oprichting van de club een gevolg was van een gemeentelijk initiatief en
-        dat ze ons na die initiatiecursus ook vaste uren dienden te geven.
+        Zo'n club ontstaat natuurlijk niet uit het niets. De laatste speler van het eerste uur,
+        Herman, zwaaide begin 2014 af. We vroegen hem hoe het allemaal begonnen is…
       </p>
-      <p>
-        In het begin was dat niet gemakkelijk, want er werd op woensdagavond ook dikwijls basketbal
-        gespeeld. Omdat in de discussie over het toekennen van vaste uren in de zaal al snel het
-        argument werd gebruikt "zij spelen competitie", zagen we ons genoodzaakt om ook te beginnen
-        met competitie. Pas dan konden we onze vaste uren op woensdagavond bekomen. Na enige tijd
-        kregen we ook op maandagavond om de 14 dagen vaste uren toegekend.
-      </p>
-      <p>Nog een anekdote…</p>
-      <p>
-        De gemeente had de terreinen zo ingericht, naar aanleiding van het plaatsvinden van de
-        initiatiecursus, dat er toch wel 4 terreinen pasten in de zaal. Ze hadden dat klaargespeeld
-        door de netkabel te spannen in de lengterichting van de zaal. Al snel bleek dat die 4
-        terreinen te weinig waren voor het aantal leden dat we hadden. Na wat meten bleek dat er 6
-        terreinen konden worden ingepast als de kabel in de lengterichting zou worden vervangen door
-        2 kabels dwars op de lengterichting van de zaal (zoals ze nu nog altijd zijn). In de
-        onderhandeling met de gemeente wilden ze slechts die aanpassing doen als wij de lijnen zouden
-        verwijderen. Zo geschiedde ook: op een zaterdagvoormiddag werd de klus geklaard en ik
-        herinner me dat wijlen Peter Thooft zich op dat vlak een zeer handige Harry toonde. En zo
-        bleef onze club draaien rond een ledenaantal van 30 à 40 man waarbij de instroom van leden
-        vooral kwam uit de chiro maar ook uit de ping-pongclub van Baarle, wat toch merkwaardig was.
-      </p>
-      <p>
-        De grote sprong vooruit in ledenaantal is er pas gekomen toen Luc Van Tornhout gestart is met
-        de jeugdopleiding op zaterdag.
-      </p>
+    </div>
+
+    <!-- Het verhaal van Herman: een veerblad-vlak, geen kaart -->
+    <blockquote
+      class="ml-10 mt-12 max-w-3xl bg-veer-100 p-8 sm:p-10"
+      style="clip-path: polygon(0 24px, 100% 0, 100% calc(100% - 24px), 0 100%)"
+    >
+      <div class="space-y-4 leading-relaxed text-inkt-700">
+        <p>
+          Tot 1987 speelden wij met een aantal mensen in Lovendegem, Christian Van Wassenhove en
+          zijn vrouw Rachel Lambert, Hubert Bollaert en zijn zoon en mezelf. In 1987 werd door de
+          gemeente samen met het Bloso een initiatiecursus badminton ingericht.
+        </p>
+        <p>
+          Lessen werden toen gegeven door Laurent Campe, zoon van, uit de Stationsstraat die lic
+          L.O. was en ook de Gentse Roeiclub trainde en die dan enkele jaren later in een tragisch
+          auto-ongeval in Baarle om het leven kwam. Om die cursus kenbaar te maken werden in
+          groot-Nevele flyers rondgedeeld. Na deze initiatiecursus werd de idee opgevat om een club
+          te starten. Het probleem was natuurlijk om vaste uren te bekomen. Omdat we in Lovendegem
+          ook op woensdag speelden, probeerden wij ook hier ons binnen te wringen op woensdagavond.
+          Wij speelden uit dat de oprichting van de club een gevolg was van een gemeentelijk
+          initiatief en dat ze ons na die initiatiecursus ook vaste uren dienden te geven.
+        </p>
+        <p>
+          In het begin was dat niet gemakkelijk, want er werd op woensdagavond ook dikwijls
+          basketbal gespeeld. Omdat in de discussie over het toekennen van vaste uren in de zaal al
+          snel het argument werd gebruikt "zij spelen competitie", zagen we ons genoodzaakt om ook
+          te beginnen met competitie. Pas dan konden we onze vaste uren op woensdagavond bekomen.
+          Na enige tijd kregen we ook op maandagavond om de 14 dagen vaste uren toegekend.
+        </p>
+        <p>Nog een anekdote…</p>
+        <p>
+          De gemeente had de terreinen zo ingericht, naar aanleiding van het plaatsvinden van de
+          initiatiecursus, dat er toch wel 4 terreinen pasten in de zaal. Ze hadden dat
+          klaargespeeld door de netkabel te spannen in de lengterichting van de zaal. Al snel bleek
+          dat die 4 terreinen te weinig waren voor het aantal leden dat we hadden. Na wat meten
+          bleek dat er 6 terreinen konden worden ingepast als de kabel in de lengterichting zou
+          worden vervangen door 2 kabels dwars op de lengterichting van de zaal (zoals ze nu nog
+          altijd zijn). In de onderhandeling met de gemeente wilden ze slechts die aanpassing doen
+          als wij de lijnen zouden verwijderen. Zo geschiedde ook: op een zaterdagvoormiddag werd
+          de klus geklaard en ik herinner me dat wijlen Peter Thooft zich op dat vlak een zeer
+          handige Harry toonde. En zo bleef onze club draaien rond een ledenaantal van 30 à 40 man
+          waarbij de instroom van leden vooral kwam uit de chiro maar ook uit de ping-pongclub van
+          Baarle, wat toch merkwaardig was.
+        </p>
+        <p>
+          De grote sprong vooruit in ledenaantal is er pas gekomen toen Luc Van Tornhout gestart is
+          met de jeugdopleiding op zaterdag.
+        </p>
+      </div>
+      <footer class="stem-baan mt-8 text-xs text-club-700">— Herman Van Damme</footer>
     </blockquote>
-  </article>
   </div>
 </Layout>
