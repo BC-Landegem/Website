@@ -1,0 +1,12 @@
+---
+// Pijl-naar-rechts bij "ontdek meer"-links en knoppen.
+interface Props {
+  class?: string;
+}
+
+const { class: className = 'h-4 w-4' } = Astro.props;
+---
+
+<svg class={className} fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M4 12h16m0 0l-6-6m6 6l-6 6" />
+</svg>

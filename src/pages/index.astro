@@ -1,29 +1,60 @@
 ---
 import { Image } from 'astro:assets';
 import Layout from '../layouts/Layout.astro';
+import Pijl from '../components/Pijl.astro';
 import { url } from '../lib/url';
 import trainingen from '../data/trainingen.json';
 import hero from '../assets/hero.jpg';
 
-// Verenkrans: 16 stralen die vanuit het kurkpunt (80,700) openwaaieren
 const KURK = { x: 80, y: 700 };
-const stralen = Array.from({ length: 16 }, (_, i) => {
-  const hoek = ((16 + i * (66 / 15)) * Math.PI) / 180;
-  const lengte = i % 4 === 0 ? 540 : i % 2 === 1 ? 400 : 470;
-  return {
-    x2: KURK.x + lengte * Math.cos(hoek),
-    y2: KURK.y - lengte * Math.sin(hoek),
-  };
-});
 const straal = (hoekGraden: number, lengte: number) => ({
   x: KURK.x + lengte * Math.cos((hoekGraden * Math.PI) / 180),
   y: KURK.y - lengte * Math.sin((hoekGraden * Math.PI) / 180),
 });
+// Verenkrans: 16 stralen die vanuit het kurkpunt (80,700) openwaaieren, van 16° tot 82°
+const stralen = Array.from({ length: 16 }, (_, i) =>
+  straal(16 + i * (66 / 15), i % 4 === 0 ? 540 : i % 2 === 1 ? 400 : 470),
+);
 // Drie gevulde veren tussen de stralen
 const veren = [
   { a: straal(24, 500), b: straal(33, 500), fill: 'var(--color-veer-200)', opacity: 0.6 },
   { a: straal(46, 540), b: straal(54, 540), fill: 'var(--color-kurk-300)', opacity: 0.35 },
   { a: straal(66, 480), b: straal(73, 480), fill: 'var(--color-club-100)', opacity: 0.55 },
+];
+
+// Drie veren aan de draad: jeugd, recreatief, competitie. De class-strings
+// staan integraal in de data (Tailwind scant geen samengestelde namen).
+const kaarten = [
+  {
+    href: '/jeugd/',
+    titel: 'Jeugd',
+    tekst: 'Jeugdtraining op woensdagavond en zaterdagvoormiddag, van eerste racket tot geselecteerde jeugd.',
+    clip: 'polygon(0 10%, 100% 0, 100% 100%, 0 100%)',
+    kaartClass: 'col-span-12 -rotate-1 bg-inkt-950 text-veer-50 sm:col-span-7 sm:col-start-3 sm:p-10',
+    titelClass: 'text-4xl text-white transition-colors group-hover:text-club-300',
+    tekstClass: 'max-w-md text-veer-200',
+    linkClass: 'text-club-300',
+  },
+  {
+    href: '/club/word-lid/',
+    titel: 'Recreatief',
+    tekst: 'Vrij spel op maandag, woensdag en zondag. Iedereen speelt mee, op elk niveau.',
+    clip: 'polygon(0 0, 100% 10%, 100% 100%, 0 100%)',
+    kaartClass: 'col-span-11 col-start-2 rotate-[1.25deg] bg-club-500 text-inkt-950 sm:col-span-5 sm:col-start-8 sm:-mt-12',
+    titelClass: 'text-3xl text-white',
+    tekstClass: 'font-medium',
+    linkClass: '',
+  },
+  {
+    href: '/competitie/',
+    titel: 'Competitie',
+    tekst: 'Onze ploegen spelen competitie — volg de wedstrijden, verslagen en standen.',
+    clip: 'polygon(0 8%, 100% 0, 100% 96%, 0 100%)',
+    kaartClass: 'col-span-12 -rotate-[0.75deg] bg-veer-200 text-inkt-950 sm:col-span-6 sm:col-start-4 sm:-mt-8',
+    titelClass: 'text-3xl',
+    tekstClass: 'max-w-sm text-inkt-700',
+    linkClass: 'text-club-700',
+  },
 ];
 ---
 
@@ -52,7 +83,7 @@ const veren = [
         ))}
         <!-- Stralen -->
         {stralen.map((s) => (
-          <line x1={KURK.x} y1={KURK.y} x2={s.x2} y2={s.y2} stroke="var(--color-inkt-950)" stroke-opacity="0.1" stroke-width="1.5" />
+          <line x1={KURK.x} y1={KURK.y} x2={s.x} y2={s.y} stroke="var(--color-inkt-950)" stroke-opacity="0.1" stroke-width="1.5" />
         ))}
       </svg>
 
@@ -162,9 +193,7 @@ const veren = [
               class="stem-baan mt-8 inline-flex items-center gap-2 rounded-full border-2 border-inkt-950 px-7 py-3 text-sm text-inkt-950 transition-colors hover:border-club-600 hover:text-club-600"
             >
               Bekijk de volledige stand
-              <svg class="h-4 w-4 transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4 12h16m0 0l-6-6m6 6l-6 6" />
-              </svg>
+              <Pijl class="h-4 w-4 transition-transform duration-300" />
             </a>
           </div>
           <!-- Op mobiel dezelfde rail-inspringing als de rest, zodat de draad links van de nummers loopt -->
@@ -224,9 +253,7 @@ const veren = [
         <p class="mt-8 pl-10">
           <a href={url('/kalender/')} class="stem-baan inline-flex items-center gap-2 text-xs text-club-700 hover:text-club-800 hover:underline">
             Bekijk de volledige kalender
-            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M4 12h16m0 0l-6-6m6 6l-6 6" />
-            </svg>
+            <Pijl />
           </a>
         </p>
       </div>
@@ -236,54 +263,20 @@ const veren = [
     <section class="mx-auto max-w-6xl px-4 py-24">
       <h2 class="sr-only">Wat de club te bieden heeft</h2>
       <div class="grid grid-cols-12 gap-y-5">
-        <a
-          href={url('/jeugd/')}
-          class="vlucht group col-span-12 -rotate-1 bg-inkt-950 p-8 text-veer-50 transition-transform duration-300 [transition-timing-function:var(--ease-lancering)] hover:-translate-y-2 sm:col-span-7 sm:col-start-3 sm:p-10"
-          style="clip-path: polygon(0 10%, 100% 0, 100% 100%, 0 100%)"
-        >
-          <h3 class="stem-display text-4xl text-white transition-colors group-hover:text-club-300">Jeugd</h3>
-          <p class="mt-3 max-w-md text-sm leading-relaxed text-veer-200">
-            Jeugdtraining op woensdagavond en zaterdagvoormiddag, van eerste racket tot geselecteerde jeugd.
-          </p>
-          <span class="stem-baan mt-6 inline-flex items-center gap-2 text-xs text-club-300">
-            Ontdek meer
-            <svg class="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M4 12h16m0 0l-6-6m6 6l-6 6" />
-            </svg>
-          </span>
-        </a>
-        <a
-          href={url('/club/word-lid/')}
-          class="vlucht group col-span-11 col-start-2 rotate-[1.25deg] bg-club-500 p-8 text-inkt-950 transition-transform duration-300 [transition-timing-function:var(--ease-lancering)] hover:-translate-y-2 sm:col-span-5 sm:col-start-8 sm:-mt-12"
-          style="clip-path: polygon(0 0, 100% 10%, 100% 100%, 0 100%)"
-        >
-          <h3 class="stem-display text-3xl text-white">Recreatief</h3>
-          <p class="mt-3 text-sm font-medium leading-relaxed">
-            Vrij spel op maandag, woensdag en zondag. Iedereen speelt mee, op elk niveau.
-          </p>
-          <span class="stem-baan mt-6 inline-flex items-center gap-2 text-xs">
-            Ontdek meer
-            <svg class="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M4 12h16m0 0l-6-6m6 6l-6 6" />
-            </svg>
-          </span>
-        </a>
-        <a
-          href={url('/competitie/')}
-          class="vlucht group col-span-12 -rotate-[0.75deg] bg-veer-200 p-8 text-inkt-950 transition-transform duration-300 [transition-timing-function:var(--ease-lancering)] hover:-translate-y-2 sm:col-span-6 sm:col-start-4 sm:-mt-8"
-          style="clip-path: polygon(0 8%, 100% 0, 100% 96%, 0 100%)"
-        >
-          <h3 class="stem-display text-3xl">Competitie</h3>
-          <p class="mt-3 max-w-sm text-sm leading-relaxed text-inkt-700">
-            Onze ploegen spelen competitie — volg de wedstrijden, verslagen en standen.
-          </p>
-          <span class="stem-baan mt-6 inline-flex items-center gap-2 text-xs text-club-700">
-            Ontdek meer
-            <svg class="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M4 12h16m0 0l-6-6m6 6l-6 6" />
-            </svg>
-          </span>
-        </a>
+        {kaarten.map((kaart) => (
+          <a
+            href={url(kaart.href)}
+            class={`vlucht group p-8 transition-transform duration-300 [transition-timing-function:var(--ease-lancering)] hover:-translate-y-2 ${kaart.kaartClass}`}
+            style={`clip-path: ${kaart.clip}`}
+          >
+            <h3 class={`stem-display ${kaart.titelClass}`}>{kaart.titel}</h3>
+            <p class={`mt-3 text-sm leading-relaxed ${kaart.tekstClass}`}>{kaart.tekst}</p>
+            <span class={`stem-baan mt-6 inline-flex items-center gap-2 text-xs ${kaart.linkClass}`}>
+              Ontdek meer
+              <Pijl class="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+            </span>
+          </a>
+        ))}
       </div>
     </section>
 
@@ -364,161 +357,23 @@ const veren = [
 
 <script>
   import trainingen from '../data/trainingen.json';
-  import { googleCalendarApiKey, bronnen, groepUitTitel, type KalenderBron } from '../data/kalender';
+  import { groepUitTitel } from '../data/kalender';
+  import { initDraad } from '../lib/draad';
+  import {
+    NU,
+    dagKey,
+    uurTekst,
+    datumTekst,
+    isThuismatch,
+    haalKalender,
+    type KalenderItem,
+  } from '../lib/kalender-client';
   import { fetchJson, naam, spelerUrl, formatDatum } from '../lib/intra';
   import type { RankingRij } from '../lib/intra';
 
-  // — Elementen laten neerdalen zodra ze in beeld komen —
-  const kijker = new IntersectionObserver(
-    (entries) => {
-      for (const entry of entries) {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('geland');
-          kijker.unobserve(entry.target);
-        }
-      }
-    },
-    { threshold: 0.2 },
-  );
-  document.querySelectorAll('.vlucht').forEach((el) => kijker.observe(el));
-
-  // — De vluchtdraad: één pad van kurkpunt via de speeluren naar het slot,
-  //   getekend naarmate de bezoeker scrolt. De staart leeft in de slotsectie
-  //   (boven de zwarte grond) en landt op de foto. Zonder JS is er geen draad,
-  //   maar alle inhoud blijft gewoon zichtbaar. —
-  const wrapper = document.getElementById('pagina');
-  const kern = document.getElementById('draad-kern') as SVGPathElement | null;
-  const staart = document.getElementById('draad-staart') as SVGPathElement | null;
-  const rustig = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let monsters: { y: number; len: number }[] = [];
-  let kernLengte = 0;
-  let staartLengte = 0;
-
-  function middenVan(el: Element, wrect: DOMRect) {
-    const r = el.getBoundingClientRect();
-    return { x: r.left - wrect.left + r.width / 2, y: r.top - wrect.top + r.height / 2 };
-  }
-
-  function bouwDraad() {
-    const kurk = document.getElementById('kurk-cta');
-    const glyph = document.getElementById('shuttle-glyph');
-    const uren = document.getElementById('speeluren-lijst');
-    const jaar = document.getElementById('punt-1987');
-    const slot = document.getElementById('slot-sectie');
-    const foto = document.getElementById('slot-foto');
-    if (!wrapper || !kern || !staart || !kurk || !glyph || !uren || !jaar || !slot || !foto) return;
-
-    const wrect = wrapper.getBoundingClientRect();
-    const K = middenVan(kurk, wrect);
-    const G = middenVan(glyph, wrect);
-    const urect = uren.getBoundingClientRect();
-    const railX = urect.left - wrect.left + 6;
-    const urenTop = urect.top - wrect.top + 8;
-    // Als de intra top-10 zichtbaar is, landt de draad daar eerst op de rail
-    const intraSectie = document.getElementById('intra-sectie');
-    const intraPunt = document.getElementById('punt-intra');
-    const railStart =
-      intraSectie && intraPunt && !intraSectie.classList.contains('hidden')
-        ? middenVan(intraPunt, wrect).y
-        : urenTop;
-    const J = middenVan(jaar, wrect);
-    const srect = slot.getBoundingClientRect();
-    const slotTop = srect.top - wrect.top;
-    const eindX = wrect.width * 0.52;
-    const dx = G.x - K.x;
-    const dy = K.y - G.y;
-
-    kern.setAttribute(
-      'd',
-      [
-        `M ${K.x} ${K.y}`,
-        `C ${K.x + dx * 0.185} ${K.y - dy * 0.466}, ${K.x + dx * 0.43} ${K.y - dy * 0.862}, ${G.x} ${G.y}`,
-        `C ${G.x + 90} ${G.y + 150}, ${railX} ${railStart - 320}, ${railX} ${railStart}`,
-        `L ${railX} ${J.y}`,
-        `C ${railX} ${J.y + 260}, ${eindX} ${slotTop - 220}, ${eindX} ${slotTop}`,
-      ].join(' '),
-    );
-
-    // Staart in slot-lokale coördinaten: verticaal binnenkomen, landen op de foto
-    const frect = foto.getBoundingClientRect();
-    const landX = frect.left - srect.left + 48;
-    const landY = frect.top - srect.top + 40;
-    const staartX = eindX + wrect.left - srect.left;
-    staart.setAttribute('d', `M ${staartX} 0 C ${staartX} ${landY * 0.7}, ${landX - 120} ${landY - 40}, ${landX} ${landY}`);
-
-    kernLengte = kern.getTotalLength();
-    staartLengte = staart.getTotalLength();
-    monsters = [];
-    for (let i = 0; i <= 240; i++) {
-      const len = (kernLengte * i) / 240;
-      monsters.push({ y: kern.getPointAtLength(len).y, len });
-    }
-    for (let i = 0; i <= 40; i++) {
-      const len = (staartLengte * i) / 40;
-      monsters.push({ y: slotTop + staart.getPointAtLength(len).y, len: kernLengte + len });
-    }
-    if (rustig) {
-      kern.style.strokeDasharray = staart.style.strokeDasharray = 'none';
-      kern.style.strokeDashoffset = staart.style.strokeDashoffset = '0';
-    } else {
-      kern.style.strokeDasharray = String(kernLengte + 2);
-      staart.style.strokeDasharray = String(staartLengte + 2);
-      tekenDraad();
-    }
-  }
-
-  function tekenDraad() {
-    if (!wrapper || !kern || !staart || !monsters.length) return;
-    const zichtbaarTot = -wrapper.getBoundingClientRect().top + window.innerHeight * 0.85;
-    let len = 0;
-    for (const m of monsters) {
-      if (m.y > zichtbaarTot) break;
-      len = m.len;
-    }
-    kern.style.strokeDashoffset = String(Math.max(0, kernLengte - len));
-    staart.style.strokeDashoffset = String(Math.max(0, staartLengte - Math.max(0, len - kernLengte)));
-  }
-
-  let scrollTik = false;
-  window.addEventListener('scroll', () => {
-    if (rustig || scrollTik) return;
-    scrollTik = true;
-    requestAnimationFrame(() => {
-      tekenDraad();
-      scrollTik = false;
-    });
-  });
-  let herbouwTimer: ReturnType<typeof setTimeout>;
-  window.addEventListener('resize', () => {
-    clearTimeout(herbouwTimer);
-    herbouwTimer = setTimeout(bouwDraad, 200);
-  });
-  if (document.readyState === 'complete') bouwDraad();
-  else window.addEventListener('load', bouwDraad);
-
-  // — Kalenderdata: de hero-chip ("Eerstvolgend speelmoment") en "Binnenkort
-  //   in de club" putten uit één gedeelde pass over alle bronnen. Bronnen die
-  //   falen of leeg zijn worden stil genegeerd. De ruimte is vooraf
-  //   gereserveerd (skeletten) zodat de pagina niet verspringt; enkel zonder
-  //   enige data klapt een blok alsnog dicht — de vaste uren staan in
-  //   "Wanneer we spelen". —
-  interface GoogleEvent {
-    summary?: string;
-    location?: string;
-    start: { date?: string; dateTime?: string };
-    end?: { date?: string; dateTime?: string };
-  }
-  interface KalenderItem {
-    bron: KalenderBron;
-    event: GoogleEvent;
-    start: Date;
-    einde: Date | null;
-  }
-
-  const NU = new Date();
-  // Venster voor de routinebronnen; de schaarse Events-kalender kent geen
-  // venster (een tornooi wil je weken vooraf zien).
-  const VENSTER = new Date(NU.getTime() + 42 * 24 * 60 * 60 * 1000);
+  // De vluchtdraad en de landing-animatie leven in lib/draad.ts; `herbouw`
+  // herberekent de draad zodra een sectie van hoogte verandert of dichtklapt.
+  const { herbouw } = initDraad();
 
   function esc(tekst: string): string {
     const span = document.createElement('span');
@@ -526,46 +381,11 @@ const veren = [
     return span.innerHTML;
   }
 
-  const dagKey = (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
-  const uurTekst = (d: Date) => `${d.getHours()}u${String(d.getMinutes()).padStart(2, '0')}`;
-  const datumTekst = (d: Date) => d.toLocaleDateString('nl-BE', { weekday: 'short', day: 'numeric', month: 'long' });
-
-  // Thuismatch: titel begint met "Landegem" (thuisploeg staat eerst in de
-  // Badminton Vlaanderen-import) én de locatie ligt in Nevele.
-  function isThuismatch(item: KalenderItem): boolean {
-    return (
-      item.bron.categorie === 'match' &&
-      (item.event.summary?.startsWith('Landegem') ?? false) &&
-      /nevele/i.test(item.event.location ?? '')
-    );
-  }
-
-  async function haalBron(bron: KalenderBron): Promise<KalenderItem[]> {
-    const url = new URL(
-      `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(bron.googleCalendarId)}/events`,
-    );
-    const params = new URLSearchParams({
-      key: googleCalendarApiKey,
-      timeMin: NU.toISOString(),
-      maxResults: '30',
-      singleEvents: 'true',
-      orderBy: 'startTime',
-    });
-    if (bron.label !== 'Events') params.set('timeMax', VENSTER.toISOString());
-    url.search = params.toString();
-
-    const res = await fetch(url);
-    if (!res.ok) return [];
-    const data: { items?: GoogleEvent[] } = await res.json();
-    return (data.items ?? [])
-      .filter((event) => event.start?.dateTime || event.start?.date)
-      .map((event) => ({
-        bron,
-        event,
-        start: new Date(event.start.dateTime ?? event.start.date!),
-        einde: event.end?.dateTime ? new Date(event.end.dateTime) : null,
-      }));
-  }
+  // — Kalenderdata: de hero-chip ("Eerstvolgend speelmoment") en "Binnenkort
+  //   in de club" putten uit één gedeelde pass over alle bronnen
+  //   (lib/kalender-client.ts). De ruimte is vooraf gereserveerd (skeletten)
+  //   zodat de pagina niet verspringt; enkel zonder enige data klapt een blok
+  //   alsnog dicht — de vaste uren staan in "Wanneer we spelen". —
 
   // — Hero-chip: alle speelmomenten van de eerstvolgende speeldag. Tijden
   //   komen uit de kalender, teksten uit de vaste labels per bron
@@ -691,10 +511,7 @@ const veren = [
   }
 
   async function laadKalender() {
-    const resultaten = await Promise.allSettled(bronnen.map(haalBron));
-    const alle = resultaten
-      .flatMap((resultaat) => (resultaat.status === 'fulfilled' ? resultaat.value : []))
-      .sort((a, b) => a.start.getTime() - b.start.getTime());
+    const alle = await haalKalender();
     if (!alle.length) {
       // Geen enkele bron bereikbaar: gereserveerde blokken opruimen.
       document.getElementById('volgend-moment')?.classList.add('hidden');
@@ -703,7 +520,7 @@ const veren = [
       toonSpeelmomenten(alle);
       toonBinnenkort(alle);
     }
-    bouwDraad();
+    herbouw();
   }
 
   laadKalender();
@@ -720,7 +537,7 @@ const veren = [
       const rijen = rankings.general ?? [];
       if (!rijen.length) {
         sectie.classList.add('hidden');
-        bouwDraad();
+        herbouw();
         return;
       }
 
@@ -740,10 +557,10 @@ const veren = [
         document.getElementById('intra-stand-na')!.textContent =
           `Stand na speeldag ${laatste.number} · ${formatDatum(laatste.date)}`;
       }
-      bouwDraad();
+      herbouw();
     } catch {
       sectie.classList.add('hidden');
-      bouwDraad();
+      herbouw();
     }
   }
 
