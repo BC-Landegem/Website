@@ -114,7 +114,7 @@ const kaarten = [
 
       <div class="mx-auto w-full max-w-6xl px-4 pb-44 pt-24 sm:pb-52 md:py-24">
         <div class="max-w-3xl md:ml-[22%]">
-          <h1 class="stem-display text-inkt-950">
+          <h1 id="hero-kop" class="stem-display text-inkt-950">
             <span class="block text-[clamp(2rem,10.2vw,3rem)] sm:text-6xl lg:text-7xl">Badminton</span>
             <span class="block text-[clamp(1.25rem,6.4vw,1.875rem)] sm:text-4xl lg:text-5xl">voor jong en oud</span>
             <span class="block text-[clamp(2rem,10.2vw,3rem)] text-club-500 sm:text-6xl lg:text-7xl">in Nevele</span>
@@ -144,8 +144,10 @@ const kaarten = [
       </div>
     </section>
 
-    <!-- De rode band rond de kurk -->
-    <section class="border-y-8 border-club-700 bg-club-500 text-white">
+    <!-- De rode band rond de kurk. Anker voor de draad: op smalle schermen
+         verspringt hij ván de rechtermarge náár de rail ín deze band, waar rood
+         op rood onzichtbaar is (zie lib/draad.ts). -->
+    <section id="rode-band" class="border-y-8 border-club-700 bg-club-500 text-white">
       <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-6 px-4 py-12">
         <div class="flex-[1_1_28rem]">
           <h2 class="stem-display text-3xl sm:text-4xl">Proefbeurten altijd welkom</h2>
@@ -309,7 +311,7 @@ const kaarten = [
             Schrijf je in, of kom eerst gewoon eens kijken en meespelen tijdens een speelmoment.
             Jong of oud, beginner of gevorderde — je bent welkom.
           </p>
-          <div class="mt-8 flex flex-wrap gap-4">
+          <div id="slot-knoppen" class="mt-8 flex flex-wrap gap-4">
             <a
               id="slot-cta"
               href={url('/club/word-lid/')}

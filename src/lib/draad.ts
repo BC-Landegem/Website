@@ -17,7 +17,23 @@ const IDS = {
   foto: 'slot-foto',
   intraSectie: 'intra-sectie',
   intraPunt: 'punt-intra',
+  band: 'rode-band',
+  slotKnoppen: 'slot-knoppen',
+  kop: 'hero-kop',
+  heroSlot: 'volgend-moment',
 } as const;
+
+// Onder md staat alle tekst in één volle kolom (px-4): de diagonaal van kurk
+// naar shuttle en die van de rail naar het slot zouden dwars door koppen en
+// lopende tekst snijden. De baan blijft daar dezelfde vlucht — lancering,
+// hangmoment bij de shuttle, val — maar loopt door de vrije stroken: omhoog
+// langs de linkermarge, over de kop heen, langs de rechtermarge naar beneden
+// en dan schuin door de lege band onder de tekst de rode band in, waar rood op
+// rood de oversteek naar de rail verbergt.
+const SMAL_TOT = 768;
+// Baan in de buitenmarge: de tekstkolom begint op px-4 (16px), de draad (4px)
+// blijft er met zijn hele dikte links van.
+const MARGE = 7;
 
 function middenVan(el: Element, wrect: DOMRect) {
   const r = el.getBoundingClientRect();
@@ -77,27 +93,76 @@ export function initDraad(): { herbouw: () => void } {
     const J = middenVan(jaar, wrect);
     const srect = slot.getBoundingClientRect();
     const slotTop = srect.top - wrect.top;
-    const eindX = wrect.width * 0.52;
+    const smal = wrect.width < SMAL_TOT;
+    const rechterMarge = wrect.width - MARGE;
+    const eindX = smal ? MARGE : wrect.width * 0.52;
     const dx = G.x - K.x;
     const dy = K.y - G.y;
 
+    // De rode band vangt de oversteek van rechter- naar linkermarge; zonder
+    // band (of zonder id) valt de draad terug op de ruimte boven de rail.
+    const bandEl = document.getElementById(IDS.band);
+    const brect = bandEl?.getBoundingClientRect();
+    const bandTop = brect ? brect.top - wrect.top : railStart - 360;
+    const bandOnder = brect ? brect.bottom - wrect.top : railStart - 120;
+
+    // Hoogte van de boog over de hero-kop heen: boven de regelbox van de kop,
+    // nooit hoger dan nodig en nooit tot tegen de paginarand. Vanaf sm groeit
+    // de kop tot boven de shuttle, dus G.y alleen volstaat niet.
+    const kopEl = document.getElementById(IDS.kop);
+    const kopTop = kopEl ? kopEl.getBoundingClientRect().top - wrect.top : G.y;
+    const boogY = Math.max(24, Math.min(G.y, kopTop - 16));
+    // Onderkant van de herokolom: daaronder ligt de vrije band met de
+    // verenkrans, waar de val schuin doorheen mag duiken.
+    const heroSlotEl = document.getElementById(IDS.heroSlot);
+    const valY = heroSlotEl
+      ? heroSlotEl.getBoundingClientRect().bottom - wrect.top + 24
+      : K.y - 80;
+
     kern.setAttribute(
       'd',
-      [
-        `M ${K.x} ${K.y}`,
-        `C ${K.x + dx * 0.185} ${K.y - dy * 0.466}, ${K.x + dx * 0.43} ${K.y - dy * 0.862}, ${G.x} ${G.y}`,
-        `C ${G.x + 90} ${G.y + 150}, ${railX} ${railStart - 320}, ${railX} ${railStart}`,
-        `L ${railX} ${J.y}`,
-        `C ${railX} ${J.y + 260}, ${eindX} ${slotTop - 220}, ${eindX} ${slotTop}`,
-      ].join(' '),
+      smal
+        ? [
+            `M ${K.x} ${K.y}`,
+            // lancering: uit de kurk naar links en in één boog omhoog
+            `C ${K.x - 60} ${K.y + 6}, ${MARGE} ${K.y - dy * 0.32}, ${MARGE} ${boogY + 30}`,
+            // over de kop heen naar het hangmoment bij de shuttle
+            `C ${MARGE} ${boogY + 8}, ${G.x - 240} ${boogY}, ${G.x} ${G.y}`,
+            // de val: langs de rechtermarge naar beneden
+            `C ${G.x + 46} ${G.y + 50}, ${rechterMarge} ${G.y + 40}, ${rechterMarge} ${valY}`,
+            // schuin door de vrije band onder de tekst, langs de kurk, de rode
+            // band in — daar (rood op rood) steekt hij onzichtbaar over
+            `C ${rechterMarge} ${valY + 80}, ${wrect.width * 0.6} ${bandTop - 24}, ${railX} ${bandOnder + 24}`,
+            `L ${railX} ${J.y}`,
+            // de rail verlaten richting slot: op mobiel blijft hij in de marge
+            `C ${railX} ${J.y + 200}, ${eindX} ${slotTop - 200}, ${eindX} ${slotTop}`,
+          ].join(' ')
+        : [
+            `M ${K.x} ${K.y}`,
+            `C ${K.x + dx * 0.185} ${K.y - dy * 0.466}, ${K.x + dx * 0.43} ${K.y - dy * 0.862}, ${G.x} ${G.y}`,
+            `C ${G.x + 90} ${G.y + 150}, ${railX} ${railStart - 320}, ${railX} ${railStart}`,
+            `L ${railX} ${J.y}`,
+            `C ${railX} ${J.y + 260}, ${eindX} ${slotTop - 220}, ${eindX} ${slotTop}`,
+          ].join(' '),
     );
 
     // Staart in slot-lokale coördinaten: verticaal binnenkomen, landen op de foto
     const frect = foto.getBoundingClientRect();
-    const landX = frect.left - srect.left + 48;
-    const landY = frect.top - srect.top + 40;
+    // Op mobiel is de foto breed en laag: dan wat dieper landen, anders komt de
+    // staart op de schuine snede van de clip-path uit i.p.v. óp de foto.
+    const landX = frect.left - srect.left + (smal ? 64 : 48);
+    const landY = frect.top - srect.top + (smal ? Math.min(96, frect.height * 0.38) : 40);
     const staartX = eindX + wrect.left - srect.left;
-    staart.setAttribute('d', `M ${staartX} 0 C ${staartX} ${landY * 0.7}, ${landX - 120} ${landY - 40}, ${landX} ${landY}`);
+    if (smal) {
+      // Op mobiel staat de foto ónder de tekst: eerst rechtlijnig door de marge
+      // langs kop, tekst en knoppen, en pas daaronder inbuigen naar de foto.
+      const knoppen = document.getElementById(IDS.slotKnoppen);
+      const vrij = knoppen ? knoppen.getBoundingClientRect().bottom - srect.top + 16 : landY - 120;
+      const bocht = Math.min(Math.max(vrij, landY * 0.5), landY - 40);
+      staart.setAttribute('d', `M ${staartX} 0 L ${staartX} ${bocht} C ${staartX} ${bocht + (landY - bocht) * 0.6}, ${landX - 60} ${landY}, ${landX} ${landY}`);
+    } else {
+      staart.setAttribute('d', `M ${staartX} 0 C ${staartX} ${landY * 0.7}, ${landX - 120} ${landY - 40}, ${landX} ${landY}`);
+    }
 
     kernLengte = kern.getTotalLength();
     staartLengte = staart.getTotalLength();
