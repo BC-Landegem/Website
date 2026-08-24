@@ -18,20 +18,20 @@ const jaar = new Date().getFullYear();
       <h2 class="stem-baan mb-6 text-center text-xs text-veer-200/70">
         Met dank aan onze sponsors
       </h2>
-      <ul class="flex flex-wrap items-center justify-center gap-6">
+      <ul class="flex flex-wrap items-center justify-center gap-5">
         {sponsors.map((sponsor) => (
           <li>
             <a
               href={sponsor.url}
               target="_blank"
               rel="noopener"
-              class="flex h-28 items-center bg-veer-50 px-6 transition hover:ring-2 hover:ring-club-500"
+              class="flex h-28 w-64 items-center justify-center rounded-2xl bg-white px-6 transition hover:ring-2 hover:ring-club-500"
             >
               <Image
                 src={logos[sponsor.logo]}
                 alt={sponsor.naam}
                 height={sponsor.hoogte * 2}
-                class="w-auto object-contain"
+                class="w-auto max-w-full object-contain"
                 style={`height: ${sponsor.hoogte}px`}
               />
             </a>

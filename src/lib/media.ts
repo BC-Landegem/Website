@@ -27,9 +27,10 @@ export const categorieLabels: Record<MediaCategorie, string> = {
   club: 'Clubleven',
 };
 
-/** '2026-03' -> 'maart 2026' */
+/** '2026-03' -> 'maart 2026'; '2015' (maand onbekend) -> '2015' */
 export function maandNaam(datum: string): string {
   const [jaar, maand] = datum.split('-').map(Number);
+  if (!maand) return String(jaar);
   return new Date(jaar, maand - 1, 1).toLocaleDateString('nl-BE', {
     month: 'long',
     year: 'numeric',
