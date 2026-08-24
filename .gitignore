@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Build output (Astro)
+dist/
+.astro/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Editor / IDE
+.vscode/*
+!.vscode/extensions.json
+!.vscode/launch.json
+.idea/
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Claude Code (lokale sessie-instellingen)
+.claude/settings.local.json
