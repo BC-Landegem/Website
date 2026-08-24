@@ -28,6 +28,7 @@ Dorpsclub met echte breedte: jeugdwerking, recreatieve avonden én competitieplo
 - Inschrijven gebeurt via een extern Twizzit-formulier (link in trainingen.json).
 - Events komen live uit een publieke Google Calendar (`src/data/kalender.ts`); de events-sectie op de homepage blijft verborgen als er niets gepland is of de API faalt.
 - Intraclub-standen worden apart getoond (`/intraclub/`).
+- Fotoalbums (`/media/`) komen uit publiek gedeelde Google Photos-albums: de gecureerde lijst staat in `src/data/media.ts`, een nachtelijke workflow (`media-sync.yml`) scrapet de share-pagina's naar `src/data/media.json` (nooit met de hand bewerken) en de build leest enkel dat bestand. Foto's worden gehotlinkt vanaf Google's CDN. Foto verwijderen = uit het Google Photos-album halen; de volgende sync haalt hem van de site.
 - Site is statisch (Astro, GitHub Pages) en volledig Nederlandstalig (nl-BE).
 
 ## Capabilities and Constraints

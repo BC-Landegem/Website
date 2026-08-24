@@ -1,6 +1,16 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { categorieen } from '../data/kalender';
+import { bronnen, categorieen } from '../data/kalender';
+
+// Voor "In je eigen agenda": bronnen gegroepeerd per categorie, plus de
+// statische links voor de eerste bron zodat de knoppen ook zonder JS werken.
+const agendaGroepen = Object.entries(categorieen).map(([key, categorie]) => ({
+  label: categorie.label,
+  bronnen: bronnen.filter((bron) => bron.categorie === key),
+}));
+const eersteBron = agendaGroepen[0].bronnen[0];
+const icsUrl = (id: string) => `https://calendar.google.com/calendar/ical/${encodeURIComponent(id)}/public/basic.ics`;
+const googleUrl = (id: string) => `https://calendar.google.com/calendar/render?cid=${encodeURIComponent(id)}`;
 ---
 
 <Layout
@@ -66,6 +76,65 @@ import { categorieen } from '../data/kalender';
         <p id="kalender-detail-beschrijving" class="mt-3 max-h-40 overflow-y-auto text-sm leading-relaxed text-inkt-700"></p>
       </div>
     </div>
+
+    <!-- In je eigen agenda: stille regel op de rail, abonneren per bron -->
+    <section class="relative mt-16 pl-10" aria-labelledby="agenda-kop">
+      <span class="absolute left-[6px] top-2 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-club-500 ring-4 ring-veer-50" aria-hidden="true"></span>
+      <h2 id="agenda-kop" class="stem-display text-2xl text-inkt-950 sm:text-3xl">In je eigen agenda</h2>
+      <p class="mt-3 max-w-2xl text-inkt-700">
+        Abonneer je op een clubkalender en nieuwe activiteiten verschijnen vanzelf in je eigen
+        agenda-app — bijvoorbeeld het vrij spel, of alle matchen van je eigen ploeg.
+      </p>
+      <div class="mt-6 flex flex-wrap items-center gap-3">
+        <label class="sr-only" for="agenda-bron">Kies een kalender</label>
+        <select
+          id="agenda-bron"
+          class="max-w-full rounded-full border-2 border-inkt-950 bg-white px-4 py-2.5 text-sm font-semibold text-inkt-950"
+        >
+          {agendaGroepen.map((groep) => (
+            <optgroup label={groep.label}>
+              {groep.bronnen.map((bron) => (
+                <option value={bron.googleCalendarId}>{bron.label}</option>
+              ))}
+            </optgroup>
+          ))}
+        </select>
+        <a
+          id="agenda-google"
+          href={googleUrl(eersteBron.googleCalendarId)}
+          target="_blank"
+          rel="noopener"
+          class="stem-baan group inline-flex items-center gap-2 rounded-full border-2 border-inkt-950 px-5 py-2.5 text-xs text-inkt-950 transition-colors hover:border-club-600 hover:text-club-600"
+        >
+          Google Agenda
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:translate-x-1" aria-hidden="true">
+            <path d="M4 12h16m0 0l-6-6m6 6l-6 6" />
+          </svg>
+        </a>
+        <a
+          id="agenda-ical"
+          href={icsUrl(eersteBron.googleCalendarId).replace('https://', 'webcal://')}
+          class="stem-baan group inline-flex items-center gap-2 rounded-full border-2 border-inkt-950 px-5 py-2.5 text-xs text-inkt-950 transition-colors hover:border-club-600 hover:text-club-600"
+        >
+          Apple / Outlook
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:translate-x-1" aria-hidden="true">
+            <path d="M4 12h16m0 0l-6-6m6 6l-6 6" />
+          </svg>
+        </a>
+        <button
+          id="agenda-kopieer"
+          type="button"
+          class="stem-baan inline-flex items-center gap-2 rounded-full border-2 border-inkt-950 px-5 py-2.5 text-xs text-inkt-950 transition-colors hover:border-club-600 hover:text-club-600"
+        >
+          Kopieer link
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="9" y="9" width="11" height="11" />
+            <path d="M5 15H4V4h11v1" />
+          </svg>
+        </button>
+      </div>
+      <p id="agenda-status" role="status" class="mt-3 min-h-5 break-words text-sm font-medium text-club-700"></p>
+    </section>
   </div>
 </Layout>
 
@@ -143,6 +212,40 @@ import { categorieen } from '../data/kalender';
   document.addEventListener('click', (e) => {
     const doel = e.target as HTMLElement;
     if (!paneel.contains(doel) && !doel.closest('.fc-event')) sluitDetail();
+  });
+
+  // — In je eigen agenda: de knoppen volgen de gekozen bron; kopiëren geeft
+  //   de publieke iCal-link voor elke agenda-app. —
+  const agendaSelect = document.getElementById('agenda-bron') as HTMLSelectElement;
+  const agendaGoogle = document.getElementById('agenda-google') as HTMLAnchorElement;
+  const agendaIcal = document.getElementById('agenda-ical') as HTMLAnchorElement;
+  const agendaKopieer = document.getElementById('agenda-kopieer')!;
+  const agendaStatus = document.getElementById('agenda-status')!;
+
+  const agendaIcsUrl = (id: string) => `https://calendar.google.com/calendar/ical/${encodeURIComponent(id)}/public/basic.ics`;
+
+  function vernieuwAgendaLinks() {
+    const id = agendaSelect.value;
+    agendaGoogle.href = `https://calendar.google.com/calendar/render?cid=${encodeURIComponent(id)}`;
+    agendaIcal.href = agendaIcsUrl(id).replace('https://', 'webcal://');
+  }
+  agendaSelect.addEventListener('change', vernieuwAgendaLinks);
+  vernieuwAgendaLinks();
+
+  let kopieerTimer: number | undefined;
+  agendaKopieer.addEventListener('click', async () => {
+    const url = agendaIcsUrl(agendaSelect.value);
+    try {
+      await navigator.clipboard.writeText(url);
+      agendaStatus.textContent = 'Link gekopieerd — plak hem in je agenda-app bij "Abonneren op kalender" of "Toevoegen via URL".';
+    } catch {
+      // Kopiëren kan geblokkeerd zijn; toon dan de link zelf om over te nemen.
+      agendaStatus.textContent = url;
+    }
+    clearTimeout(kopieerTimer);
+    kopieerTimer = window.setTimeout(() => {
+      agendaStatus.textContent = '';
+    }, 8000);
   });
 
   // — Mobiel: bij het openen meteen naar vandaag scrollen. De maandlijst

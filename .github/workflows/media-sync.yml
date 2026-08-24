@@ -1,0 +1,59 @@
+# Nachtelijke sync van de fotoalbums: leest de Google Photos share-pagina's
+# (albums in src/data/media.ts) en commit src/data/media.json als er iets
+# wijzigde. De gewone deploy raakt Google nooit aan — faalt deze workflow,
+# dan blijft de site gewoon op de laatste goede data draaien.
+#
+# Omdat een push met het standaard GITHUB_TOKEN geen andere workflows triggert,
+# trapt deze workflow na een commit zelf de deploy af via workflow_dispatch.
+name: Media sync
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: media-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Scrape albums
+        run: node scripts/scrape-media.mjs
+
+      - name: Commit en push bij wijzigingen
+        id: commit
+        # Draait ook als de scrape deels faalde (exitcode 1): gezonde albums
+        # syncen dan gewoon mee, en de rode workflow blijft de alarmbel.
+        if: ${{ !cancelled() }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/data/media.json
+          if git diff --cached --quiet; then
+            echo "Geen wijzigingen."
+          else
+            git commit -m "chore: media sync"
+            git push
+            echo "pushed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Trigger deploy
+        if: ${{ steps.commit.outputs.pushed == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run deploy.yml --ref master

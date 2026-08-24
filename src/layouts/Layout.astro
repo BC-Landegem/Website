@@ -6,9 +6,20 @@ import Footer from '../components/Footer.astro';
 interface Props {
   title?: string;
   description?: string;
+  /**
+   * Onderdruk de Referer-header voor alle requests vanaf deze pagina.
+   * Nodig op de mediapagina's: Google's foto-CDN (lh3.googleusercontent.com)
+   * antwoordt met 429 zodra er een vreemde referer meekomt. Niet site-breed
+   * zetten — de Google Calendar API-key is juist referrer-restricted.
+   */
+  noReferrer?: boolean;
 }
 
-const { title, description = 'Badmintonclub Landegem — recreatief en competitief badminton voor jong en oud.' } = Astro.props;
+const {
+  title,
+  description = 'Badmintonclub Landegem — recreatief en competitief badminton voor jong en oud.',
+  noReferrer = false,
+} = Astro.props;
 const pageTitle = title ? `${title} | BC Landegem` : 'BC Landegem — Badmintonclub Landegem';
 const base = import.meta.env.BASE_URL;
 ---
@@ -20,6 +31,7 @@ const base = import.meta.env.BASE_URL;
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
+    {noReferrer && <meta name="referrer" content="no-referrer" />}
     <link rel="icon" href={`${base}favicon.ico`} sizes="32x32" />
     <link rel="icon" type="image/png" sizes="32x32" href={`${base}favicon-32x32.png`} />
     <link rel="icon" type="image/png" sizes="16x16" href={`${base}favicon-16x16.png`} />
