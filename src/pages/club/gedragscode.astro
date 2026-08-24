@@ -1,0 +1,254 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import RailKop from '../../components/RailKop.astro';
+import { url } from '../../lib/url';
+
+// De kern: wat iedereen onthoudt, ook wie de rest niet uitleest.
+const kern = [
+  { woord: 'Plezant', lijn: 'Iedereen moet met goesting naar de zaal komen.' },
+  { woord: 'Veilig', lijn: 'Op het veld, in de kleedkamer en ernaast.' },
+  { woord: 'Respect', lijn: 'Voor elkaar, voor de tegenstander, voor de vrijwilliger.' },
+  { woord: 'Samen', lijn: 'We zetten samen op en we ruimen samen op.' },
+];
+
+// Wederkerig: leden zien ook wat ze van trainers en bestuur mogen verwachten.
+const secties = [
+  {
+    titel: 'Algemeen',
+    onder: 'Voor iedereen in en rond de club',
+    regels: [
+      'We houden het voor iedereen plezant, veilig en respectvol.',
+      'We respecteren spelers, trainers, tegenstanders en vrijwilligers.',
+      'We respecteren beginners, gevorderden en competitiespelers evenveel.',
+      'We behandelen het materiaal en de sportzaal met zorg.',
+      'We laten de zaal, de kleedkamers en de omgeving netjes achter — ook voor wie na ons komt.',
+      'We drinken alcohol in de cafetaria, niet in de sporthal.',
+    ],
+  },
+  {
+    titel: 'Spelers',
+    regels: [
+      'We spelen sportief en respecteren de regels.',
+      'We komen op tijd en melden afwezigheden vooraf.',
+      'We helpen mee met het opzetten en opruimen van het materiaal.',
+      'We dragen gepaste indoorschoenen en sportkledij.',
+      'We warmen op met de opwarmshuttles, niet met nieuwe shuttles.',
+      'We gooien kapotte veren in de bakken die daarvoor klaarstaan.',
+    ],
+    subtitel: 'Op de vrijspelavonden',
+    subregels: [
+      'We starten met dubbelwedstrijden; enkels spelen we wanneer er terreinen vrijkomen.',
+      'Na een match gaan we terug naar de kant, zodat vier anderen kunnen spelen.',
+    ],
+  },
+  {
+    titel: 'Ouders',
+    regels: [
+      'We moedigen aan, we coachen niet vanaf de zijlijn — dat is de taak van de trainer.',
+      'We brengen en halen onze kinderen op tijd.',
+      'We melden afwezigheid vooraf aan de trainer.',
+      'We spreken trainers of bestuur aan buiten de training, niet in het bijzijn van de kinderen.',
+      'We respecteren de keuzes van de trainers rond groepsindeling en selectie.',
+    ],
+  },
+  {
+    titel: 'Trainers',
+    regels: [
+      'We geven duidelijke, veilige en gestructureerde trainingen.',
+      'We tonen voorbeeldgedrag in taal, houding en sportiviteit.',
+      'We houden rekening met het niveau, de leeftijd en de fysieke grenzen van spelers.',
+      'We communiceren positief en geven opbouwende feedback.',
+      'We zorgen dat iedereen zich welkom voelt, ongeacht niveau.',
+      'We begeleiden nooit een training met alcohol op.',
+    ],
+  },
+  {
+    titel: 'Bestuurders',
+    regels: [
+      'We nemen beslissingen in het belang van de club en haar leden.',
+      'We communiceren helder over afspraken, lidgeld, planning en clubwerking.',
+      'We zorgen voor kwaliteitsvol materiaal en een veilige sportomgeving.',
+      'We ondersteunen trainers en vrijwilligers.',
+      'We bewaken een correcte toepassing van deze gedragscode.',
+      'We behandelen meldingen discreet en respectvol.',
+    ],
+  },
+];
+
+const ongewenst = [
+  'Pesten, intimidatie of uitsluiting',
+  'Verbale of fysieke agressie',
+  'Discriminatie',
+  'Seksueel grensoverschrijdend gedrag',
+  'Drugsgebruik',
+  'Opzettelijke beschadiging van materiaal of infrastructuur',
+];
+---
+
+<Layout
+  title="Gedragscode"
+  description="De gedragscode van BC Landegem: wat we van elkaar mogen verwachten, op en naast het veld."
+>
+  <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
+    <RailKop
+      title="Gedragscode"
+      intro="Wat we van elkaar mogen verwachten, op en naast het veld. Voor spelers, ouders, trainers en bestuur — in beide richtingen."
+    />
+
+    <!-- De kern: vier woorden die de rest samenvatten -->
+    <ul class="mt-12 grid gap-px border border-inkt-950/10 bg-inkt-950/10 sm:grid-cols-2 xl:grid-cols-4">
+      {kern.map((k) => (
+        <li class="bg-veer-50 px-6 py-8">
+          <p class="stem-display text-3xl text-club-700">{k.woord}</p>
+          <p class="mt-3 text-sm leading-relaxed text-inkt-700">{k.lijn}</p>
+        </li>
+      ))}
+    </ul>
+  </div>
+
+  <!-- Het meldpunt staat bewust vooraan: wie het nodig heeft, mag niet moeten scrollen -->
+  <section class="border-y-8 border-club-700 bg-club-500 text-white">
+    <div class="mx-auto max-w-6xl px-4 py-12">
+      <h2 class="stem-display text-3xl sm:text-4xl">Iets melden?</h2>
+      <p class="mt-3 max-w-2xl text-xl font-bold">
+        Je kiest zelf bij wie je terecht wil. Er is geen volgorde en je hoeft het niet eerst
+        binnen de club te proberen.
+      </p>
+
+      <ul class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <li>
+          <p class="stem-baan text-xs text-white/70">In de club</p>
+          <p class="mt-2 font-bold">Aanspreekpunt Integriteit</p>
+          <p class="mt-1 text-sm text-white/90">
+            Lieselot Van Haute luistert in vertrouwen en verwijst je gericht door.
+            <a href={url('/club/aanspreekpunt-integriteit/')} class="mt-1 block font-semibold underline hover:text-club-100">
+              Lees haar verhaal
+            </a>
+          </p>
+        </li>
+        <li>
+          <p class="stem-baan text-xs text-white/70">In de club</p>
+          <p class="mt-2 font-bold">Je trainer of het bestuur</p>
+          <p class="mt-1 text-sm text-white/90">
+            Spreek ons gerust aan in de zaal, of mail naar <a href="mailto:info@bclandegem.be" class="font-semibold underline hover:text-club-100">info@bclandegem.be</a>.
+          </p>
+        </li>
+        <li>
+          <p class="stem-baan text-xs text-white/70">Buiten de club</p>
+          <p class="mt-2 font-bold">Meldpunt Integriteit</p>
+          <p class="mt-1 text-sm text-white/90">
+            Bij Badminton Vlaanderen, los van onze club.
+            <a
+              href="https://badminton.vlaanderen/meldpunt-integriteit/"
+              target="_blank"
+              rel="noopener"
+              class="mt-1 block font-semibold underline hover:text-club-100"
+            >
+              badminton.vlaanderen
+            </a>
+          </p>
+        </li>
+        <li>
+          <p class="stem-baan text-xs text-white/70">Buiten de sport</p>
+          <p class="mt-2 font-bold">Hulplijn 1712</p>
+          <p class="mt-1 text-sm text-white/90">
+            Gratis en anoniem, voor iedereen met vragen over geweld, misbruik of pesten.
+            <a href="tel:1712" class="mt-1 block font-semibold underline hover:text-club-100">Bel 1712</a>
+          </p>
+        </li>
+      </ul>
+
+      <p class="mt-8 max-w-2xl text-sm leading-relaxed text-white/90">
+        Elke melding wordt vertrouwelijk behandeld. Je beslist mee wat er met je verhaal gebeurt:
+        er wordt geen stap gezet zonder dat je het weet.
+      </p>
+    </div>
+  </section>
+
+  <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
+    <h2 class="stem-display pl-10 text-3xl text-inkt-950 sm:text-4xl">
+      Wat we van elkaar verwachten
+    </h2>
+
+    <!-- Statische rail, dezelfde grammatica als de speelmomenten op Word lid -->
+    <div class="relative mt-8">
+      <span class="absolute bottom-6 left-[6px] top-6 w-1 -translate-x-1/2 rounded-full bg-club-500" aria-hidden="true"></span>
+      {secties.map((sectie) => (
+        <section class="relative border-b border-inkt-950/10 py-8 pl-10 first:border-t md:grid md:grid-cols-[16rem_1fr] md:gap-8">
+          <span class="absolute left-[6px] top-10 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-club-500 ring-4 ring-veer-50" aria-hidden="true"></span>
+          <div>
+            <h3 class="stem-display text-2xl text-inkt-950">{sectie.titel}</h3>
+            {sectie.onder && <p class="mt-1 text-sm text-inkt-500">{sectie.onder}</p>}
+          </div>
+          <div class="mt-4 md:mt-0">
+            <ul class="space-y-2 leading-relaxed text-inkt-700">
+              {sectie.regels.map((regel) => (
+                <li class="grid grid-cols-[1.25rem_1fr] items-baseline">
+                  <span class="text-club-500" aria-hidden="true">—</span>
+                  <span>{regel}</span>
+                </li>
+              ))}
+            </ul>
+            {sectie.subtitel && (
+              <>
+                <p class="stem-baan mt-6 text-xs text-club-700">{sectie.subtitel}</p>
+                <ul class="mt-2 space-y-2 leading-relaxed text-inkt-700">
+                  {sectie.subregels?.map((regel) => (
+                    <li class="grid grid-cols-[1.25rem_1fr] items-baseline">
+                      <span class="text-club-500" aria-hidden="true">—</span>
+                      <span>{regel}</span>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </div>
+        </section>
+      ))}
+    </div>
+
+    <!-- Hier spreekt de club, niet de groep: geen wij-vorm -->
+    <section class="mt-14 border-l-4 border-club-700 bg-veer-100 px-6 py-8 sm:px-8">
+      <h2 class="stem-display text-2xl text-inkt-950 sm:text-3xl">Ongewenst gedrag</h2>
+      <p class="mt-3 font-bold text-inkt-950">BC Landegem tolereert niet:</p>
+      <ul class="mt-3 grid gap-2 leading-relaxed text-inkt-700 sm:grid-flow-col sm:grid-rows-3">
+        {ongewenst.map((item) => (
+          <li class="grid grid-cols-[1.25rem_1fr] items-baseline">
+            <span class="text-club-700" aria-hidden="true">—</span>
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
+      <div class="mt-6 max-w-3xl space-y-3 leading-relaxed text-inkt-700">
+        <p>
+          Afhankelijk van de ernst gaat het bestuur in gesprek, geeft het een waarschuwing, of
+          schorst of sluit het een lid uit. Wie betrokken is, krijgt altijd de kans om zijn kant
+          van het verhaal te doen.
+        </p>
+        <p>
+          Ernstige feiten kunnen leiden tot een tuchtprocedure bij de federatie of bij het Vlaams
+          Sporttribunaal, en bij strafbare feiten tot aangifte bij de politie.
+        </p>
+      </div>
+    </section>
+
+    <!-- Slotblok: engagement, aansprakelijkheid en datum. Bewust klein en zakelijk. -->
+    <section class="mt-14 border-t border-inkt-950/10 pt-8 text-sm leading-relaxed text-inkt-500">
+      <h2 class="stem-baan text-xs text-inkt-700">Engagement</h2>
+      <p class="mt-2 max-w-3xl">
+        Wie lid wordt van BC Landegem — en bij jeugdleden hun ouders — gaat akkoord met deze
+        gedragscode en draagt bij aan een positieve, sportieve en respectvolle clubomgeving.
+        Over proefbeurten en lidgeld lees je alles op <a href={url('/club/word-lid/')} class="font-semibold text-club-700 underline hover:text-club-800">Word lid</a>.
+      </p>
+      <h2 class="stem-baan mt-6 text-xs text-inkt-700">Aansprakelijkheid</h2>
+      <p class="mt-2 max-w-3xl">
+        De club is niet verantwoordelijk voor diefstal in de kleedkamers en de sportzaal. De club
+        is evenmin verantwoordelijk voor schade aangebracht door derden aan de sportinfrastructuur
+        en het materiaal ter plaatse.
+      </p>
+      <p class="mt-6 max-w-3xl">
+        Deze gedragscode vervangt het intern reglement en is van kracht sinds &lt;datum&gt;.
+      </p>
+    </section>
+  </div>
+</Layout>

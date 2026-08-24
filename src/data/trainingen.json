@@ -1,7 +1,9 @@
 {
   "locatie": {
     "naam": "Sporthal Oostbroek",
-    "gemeente": "Nevele (Deinze)"
+    "adres": "Zeistraat 41",
+    "gemeente": "Nevele (Deinze)",
+    "kaart": "https://www.google.com/maps/search/?api=1&query=Sporthal+Oostbroek%2C+Zeistraat+41%2C+Nevele"
   },
   "inschrijfformulier": "https://app.twizzit.com/v2/form/YkxVdGdBVkhlRGJHUkFMM2loalRZZz09",
   "momenten": [
@@ -15,7 +17,8 @@
       "dag": "Woensdag",
       "uren": "19u00 – 20u30",
       "omschrijving": "Jeugdtraining & vrij spel jeugd",
-      "doelgroep": "Jeugd"
+      "doelgroep": "Jeugd",
+      "opmerking": "Niet tijdens de schoolvakanties"
     },
     {
       "dag": "Woensdag",
@@ -27,7 +30,8 @@
       "dag": "Zaterdag",
       "uren": "9u30 – 12u30",
       "omschrijving": "Jeugdtraining (groep 1 om 9u30, groep 2 om 11u)",
-      "doelgroep": "Geselecteerde jeugd"
+      "doelgroep": "Geselecteerde jeugd",
+      "opmerking": "Niet tijdens de schoolvakanties"
     },
     {
       "dag": "Zondag",
@@ -35,5 +39,35 @@
       "omschrijving": "Vrij spel",
       "doelgroep": "Jeugd, recreanten & competitiespelers"
     }
-  ]
+  ],
+  "lidgeld": {
+    "jaar": 2026,
+    "tarieven": [
+      {
+        "prijs": "80 €",
+        "titel": "Vrij spelen op maandag en zondag",
+        "detail": "Volwassenen"
+      },
+      {
+        "prijs": "120 €",
+        "titel": "Alle vrije speelmomenten",
+        "detail": "Volwassenen — maandag, woensdag én zondag"
+      },
+      {
+        "prijs": "120 €",
+        "titel": "Jeugd tot 18 jaar",
+        "detail": "Vrij spelen en training, ongeacht hoe vaak je komt"
+      },
+      {
+        "prijs": "160 €",
+        "titel": "Competitiespeler in één ploeg",
+        "detail": "Inclusief alle vrije speelmomenten"
+      },
+      {
+        "prijs": "200 €",
+        "titel": "Competitiespeler in twee ploegen",
+        "detail": "Inclusief alle vrije speelmomenten"
+      }
+    ]
+  }
 }

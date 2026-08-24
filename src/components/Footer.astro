@@ -52,6 +52,7 @@ const jaar = new Date().getFullYear();
       <h2 class="stem-baan mb-3 text-xs text-white">Waar we spelen</h2>
       <p class="text-sm leading-relaxed">
         {trainingen.locatie.naam}<br />
+        {trainingen.locatie.adres}<br />
         {trainingen.locatie.gemeente}
       </p>
     </div>
@@ -60,7 +61,7 @@ const jaar = new Date().getFullYear();
       <ul class="space-y-2 text-sm">
         <li><a href={url('/club/word-lid/')} class="transition-colors hover:text-club-300">Word lid!</a></li>
         <li><a href={url('/kalender/')} class="transition-colors hover:text-club-300">Kalender</a></li>
-        <li><a href={url('/club/intern-reglement/')} class="transition-colors hover:text-club-300">Intern reglement</a></li>
+        <li><a href={url('/club/gedragscode/')} class="transition-colors hover:text-club-300">Gedragscode</a></li>
         <li><a href={url('/club/privacy/')} class="transition-colors hover:text-club-300">Privacy</a></li>
       </ul>
     </nav>

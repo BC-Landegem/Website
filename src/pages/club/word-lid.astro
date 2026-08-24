@@ -3,65 +3,196 @@ import Layout from '../../layouts/Layout.astro';
 import RailKop from '../../components/RailKop.astro';
 import { url } from '../../lib/url';
 import trainingen from '../../data/trainingen.json';
+
+const { locatie, lidgeld } = trainingen;
+
+// Wat de club te bieden heeft — het rijtje uit de clubfolder.
+const aanbod = [
+  'Recreatief en competitief badminton',
+  'Intraclubcompetitie',
+  'Liga- en PBO-competitie',
+  'Provinciaal jeugdcircuit',
+  'Officiële en recreatieve tornooien',
+  'Jeugdtrainingen en jeugdweekend',
+  'Lessenreeksen voor beginners en gevorderden',
+  'Clubweekend voor volwassenen',
+];
 ---
 
 <Layout
   title="Word lid!"
-  description="Word lid van BC Landegem: badminton voor jong en oud, competitie en recreatie. Proefbeurten zijn altijd welkom."
+  description="Alles wat je moet weten voor je eerste keer bij BC Landegem: wanneer we spelen, wat je meebrengt, wat het lidgeld kost en hoe je inschrijft. Drie gratis proefbeurten voor nieuwe spelers."
 >
   <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
     <RailKop
       title="Word lid!"
-      intro="BC Landegem is een club voor jong en oud, voor competitiespelers en recreanten. Bij ons staat speelplezier centraal!"
+      intro="Nooit eerder gebadmintond of al jaren bezig — bij BC Landegem begint iedereen op dezelfde manier: je komt drie keer gratis meespelen, en pas daarna beslis je."
     />
 
-    <div class="mt-10 max-w-3xl space-y-4 pl-10 leading-relaxed text-inkt-700">
-      <p>
-        De jeugd kan training volgen op <strong class="text-inkt-950">woensdagavond en zaterdagvoormiddag</strong>.
-        Op zaterdag wordt in verschillende groepen gewerkt: de eerste groep is voor de beginnende
-        spelertjes, de volgende groepen bieden al wat gevorderde lessen.
-        Op <strong class="text-inkt-950">maandagavond en zondagavond</strong> is er vrij spel voor de jeugd.
-        Meer info over de trainingen kan je bekomen via <a href="mailto:info@bclandegem.be" class="font-semibold text-club-700 underline hover:text-club-800">info@bclandegem.be</a>.
-      </p>
-      <p>
-        Recreanten zijn welkom op <strong class="text-inkt-950">zondagavond, maandagavond en woensdagavond</strong>.
-        Kom gerust eens langs voor een proefbeurt om te testen! Wil je graag de techniek leren?
-        Wij geven ook lessen voor beginnende recreanten. Voor meer info kan je terecht
-        op <a href="mailto:info@bclandegem.be" class="font-semibold text-club-700 underline hover:text-club-800">info@bclandegem.be</a>.
-      </p>
-    </div>
+    <!-- Vier stappen als meetpunten op de rail; het vierde meetpunt is de rode
+         band onderaan, die de inschrijfactie draagt. -->
+    <ol class="relative mt-14">
+      <span class="absolute bottom-12 left-[6px] top-12 w-1 -translate-x-1/2 rounded-full bg-club-500" aria-hidden="true"></span>
 
-    <h2 class="stem-display mt-14 pl-10 text-3xl text-inkt-950 sm:text-4xl">Speelmomenten</h2>
-    <!-- Statische rail: dezelfde grammatica als de homepage, zonder scroll-draad -->
-    <ol class="relative mt-8">
-      <span class="absolute bottom-4 left-[6px] top-4 w-1 -translate-x-1/2 rounded-full bg-club-500" aria-hidden="true"></span>
-      {trainingen.momenten.map((moment) => (
-        <li class="relative border-b border-inkt-950/10 py-5 pl-10 first:border-t sm:grid sm:grid-cols-[8rem_14rem_1fr] sm:items-baseline sm:gap-6">
-          <span class="absolute left-[6px] top-7 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-club-500 ring-4 ring-veer-50" aria-hidden="true"></span>
-          <p class="stem-baan text-xs text-club-700">{moment.dag}</p>
-          <p class="stem-cijfer mt-1 text-2xl text-inkt-950 sm:mt-0">{moment.uren}</p>
-          <div class="mt-1 sm:mt-0">
-            <p class="font-bold">{moment.omschrijving}</p>
-            <p class="text-sm text-inkt-500">{moment.doelgroep}</p>
+      <li class="relative border-b border-inkt-950/10 py-10 pl-10 first:border-t">
+        <span class="stem-cijfer absolute left-[6px] top-12 flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full bg-club-500 text-sm text-white ring-4 ring-veer-50" aria-hidden="true">1</span>
+        <p class="stem-baan text-xs text-club-700">Stap 1</p>
+        <h2 class="stem-display mt-1 text-3xl text-inkt-950 sm:text-4xl">Kom gewoon eens meespelen</h2>
+
+        <div class="mt-5 max-w-3xl space-y-4 leading-relaxed text-inkt-700">
+          <p>
+            Wie nog niet aangesloten is, mag <strong class="text-inkt-950">drie keer gratis komen
+            meespelen</strong> voor er lidgeld betaald moet worden. Bevalt het niet, dan heeft het je
+            niets gekost.
+          </p>
+          <p>
+            Heb je nog geen racket? Voor je eerste keren
+            {' '}<strong class="text-inkt-950">leen je er een van de club</strong>. Sportschoenen
+            volstaan om te beginnen.
+          </p>
+          <p>
+            Je mag zonder afspraak binnenwandelen, maar een seintje vooraf
+            via <a href="mailto:info@bclandegem.be" class="font-semibold text-club-700 underline hover:text-club-800">info@bclandegem.be</a> maakt
+            je eerste avond een pak aangenamer: dan staat er iemand voor je klaar, ligt er een racket
+            klaar en word je meteen ingedeeld.
+          </p>
+        </div>
+
+        <h3 class="stem-baan mt-10 text-xs text-club-700">Wanneer je terechtkan</h3>
+        <ol class="mt-4">
+          {trainingen.momenten.map((moment) => (
+            <li class="border-b border-inkt-950/10 py-4 first:border-t sm:grid sm:grid-cols-[7rem_13rem_1fr] sm:items-baseline sm:gap-6">
+              <p class="stem-baan text-xs text-club-700">{moment.dag}</p>
+              <p class="stem-cijfer mt-1 text-2xl text-inkt-950 sm:mt-0">{moment.uren}</p>
+              <div class="mt-1 sm:mt-0">
+                <p class="font-bold">{moment.omschrijving}</p>
+                <p class="text-sm text-inkt-500">{moment.doelgroep}</p>
+                {moment.opmerking && <p class="text-sm text-inkt-500">{moment.opmerking}</p>}
+              </div>
+            </li>
+          ))}
+        </ol>
+
+        <p class="mt-6 max-w-3xl leading-relaxed text-inkt-700">
+          Alles gaat door in <strong class="text-inkt-950">{locatie.naam}</strong>, {locatie.adres},
+          {' '}{locatie.gemeente} —
+          {' '}<a href={locatie.kaart} target="_blank" rel="noopener" class="font-semibold text-club-700 underline hover:text-club-800">bekijk op de kaart</a>.
+          De exacte data, ook wanneer er uitzonderlijk niet gespeeld wordt, vind je
+          {' '}<a href={url('/kalender/')} class="font-semibold text-club-700 underline hover:text-club-800">in de kalender</a>.
+        </p>
+      </li>
+
+      <li class="relative border-b border-inkt-950/10 py-10 pl-10">
+        <span class="stem-cijfer absolute left-[6px] top-12 flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full bg-club-500 text-sm text-white ring-4 ring-veer-50" aria-hidden="true">2</span>
+        <p class="stem-baan text-xs text-club-700">Stap 2</p>
+        <h2 class="stem-display mt-1 text-3xl text-inkt-950 sm:text-4xl">Wat je meebrengt</h2>
+
+        <ul class="mt-5 max-w-3xl space-y-4">
+          <li class="grid grid-cols-[1.25rem_1fr] items-baseline gap-2 leading-relaxed text-inkt-700">
+            <span class="text-club-500" aria-hidden="true">—</span>
+            <span>
+              <strong class="text-inkt-950">Sportschoenen met een niet-afgevende zool.</strong>
+              Dat is een harde zaalregel: schoenen die strepen nalaten of buiten gedragen zijn,
+              mogen niet op het parket.
+            </span>
+          </li>
+          <li class="grid grid-cols-[1.25rem_1fr] items-baseline gap-2 leading-relaxed text-inkt-700">
+            <span class="text-club-500" aria-hidden="true">—</span>
+            <span>
+              <strong class="text-inkt-950">Gewone sportkledij.</strong>
+              Er is geen dresscode en clubkledij is nergens verplicht.
+            </span>
+          </li>
+          <li class="grid grid-cols-[1.25rem_1fr] items-baseline gap-2 leading-relaxed text-inkt-700">
+            <span class="text-club-500" aria-hidden="true">—</span>
+            <span>
+              <strong class="text-inkt-950">Een racket.</strong>
+              Heb je er zelf een, breng het mee. Zo niet, leen je er een van de club om te proberen.
+              Blijf je spelen, dan schaf je best snel een eigen racket aan — dat kan via de club,
+              vraag er gerust naar.
+            </span>
+          </li>
+          <li class="grid grid-cols-[1.25rem_1fr] items-baseline gap-2 leading-relaxed text-inkt-700">
+            <span class="text-club-500" aria-hidden="true">—</span>
+            <span>
+              <strong class="text-inkt-950">Shuttles hoef je nooit zelf te kopen.</strong>
+              We spelen met clubshuttles, en die zitten in het lidgeld.
+            </span>
+          </li>
+        </ul>
+      </li>
+
+      <li class="relative border-b border-inkt-950/10 py-10 pl-10">
+        <span class="stem-cijfer absolute left-[6px] top-12 flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full bg-club-500 text-sm text-white ring-4 ring-veer-50" aria-hidden="true">3</span>
+        <p class="stem-baan text-xs text-club-700">Stap 3</p>
+        <h2 class="stem-display mt-1 text-3xl text-inkt-950 sm:text-4xl">Wat het kost</h2>
+
+        <p class="mt-5 max-w-3xl leading-relaxed text-inkt-700">
+          Het lidgeld hangt af van hoe vaak je komt spelen. Clubshuttles zijn in elk tarief
+          inbegrepen.
+        </p>
+
+        <ul class="mt-6 max-w-3xl">
+          {lidgeld.tarieven.map((tarief) => (
+            <li class="grid grid-cols-[5rem_1fr] items-baseline gap-4 border-b border-inkt-950/10 py-4 first:border-t">
+              <span class="stem-cijfer text-2xl text-club-700">{tarief.prijs}</span>
+              <span>
+                <span class="block font-bold text-inkt-950">{tarief.titel}</span>
+                <span class="block text-sm text-inkt-500">{tarief.detail}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+
+        <!-- De kwartaalregel is de vraag die het vaakst per mail binnenkomt:
+             expliciet zeggen dat de nieuwkomer zelf niets moet uitrekenen. -->
+        <div class="mt-8 max-w-3xl border-l-4 border-club-700 bg-veer-100 px-6 py-6">
+          <h3 class="stem-display text-xl text-inkt-950">Stap je later in het jaar in?</h3>
+          <div class="mt-3 space-y-3 leading-relaxed text-inkt-700">
+            <p>
+              Het lidgeld loopt per kalenderjaar en wordt per kwartaal verrekend: hoe later op het
+              jaar je lid wordt, hoe minder je betaalt. Wie vanaf oktober instapt, betaalt het
+              laatste kwartaal samen met het lidgeld voor het jaar erna.
+            </p>
+            <p class="font-bold text-inkt-950">
+              Je hoeft zelf niets uit te rekenen — na je inschrijving bezorgen wij je het juiste
+              bedrag en de betaalgegevens.
+            </p>
           </div>
-        </li>
-      ))}
+        </div>
+      </li>
     </ol>
 
-    <p class="mt-8 max-w-3xl pl-10 leading-relaxed text-inkt-700">
-      Exacte data vind je terug <a href={url('/kalender/')} class="font-semibold text-club-700 underline hover:text-club-800">via de kalender</a>.
-      Kom gerust eens langs voor een proefbeurt — een niet-aangesloten speler kan drie keer komen
-      spelen vooraleer lidgeld betaald moet worden.
-    </p>
+    <!-- Ouders lezen deze pagina met een andere vraag dan volwassen spelers. -->
+    <section class="mt-14 max-w-3xl pl-10">
+      <h2 class="stem-display text-2xl text-inkt-950 sm:text-3xl">Gaat het over een kind?</h2>
+      <div class="mt-3 space-y-4 leading-relaxed text-inkt-700">
+        <p>
+          Jeugdspelers zijn welkom vanaf 8 jaar. De gewone instap
+          is <strong class="text-inkt-950">woensdagavond</strong>, waar training en vrij spel samen
+          doorgaan. De zaterdagtrainingen zijn voor jeugd die door de trainers geselecteerd wordt;
+          nieuwe spelers worden daarvoor in de loop van september getest.
+        </p>
+        <p>
+          Wil je midden in het seizoen starten? Dat kan vaak wel, maar het hangt af van leeftijd en
+          groep. Vraag het gerust
+          aan <a href="mailto:vantornhoutluc@skynet.be" class="font-semibold text-club-700 underline hover:text-club-800">Luc Van Tornhout</a>,
+          of lees eerst <a href={url('/jeugd/')} class="font-semibold text-club-700 underline hover:text-club-800">alles over onze jeugdwerking</a>.
+        </p>
+      </div>
+    </section>
   </div>
 
-  <!-- De rode band draagt de inschrijfactie -->
-  <section class="mb-16 border-y-8 border-club-700 bg-club-500 text-white">
+  <!-- Stap 4: de rode band draagt de inschrijfactie -->
+  <section class="border-y-8 border-club-700 bg-club-500 text-white">
     <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-6 px-4 py-12">
       <div class="flex-[1_1_24rem]">
-        <h2 class="stem-display text-3xl sm:text-4xl">Graag lid worden?</h2>
+        <!-- Kleine tekst op de rode band is inkt-950 (kleine-letter-regel) -->
+        <p class="stem-baan text-xs text-inkt-950">Stap 4</p>
+        <h2 class="stem-display mt-1 text-3xl sm:text-4xl">Schrijf je in</h2>
         <p class="mt-2 max-w-xl text-xl font-bold text-white">
-          Schrijf je in via ons online inschrijvingsformulier — je bent zo klaar.
+          Vul het online formulier in — daarna bezorgen wij je het bedrag en de betaalgegevens.
+          Pas dan betaal je.
         </p>
       </div>
       <a
@@ -77,4 +208,36 @@ import trainingen from '../../data/trainingen.json';
       </a>
     </div>
   </section>
+
+  <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
+    <section class="pl-10">
+      <h2 class="stem-display text-2xl text-inkt-950 sm:text-3xl">Wat je bij ons kan doen</h2>
+      <ul class="mt-5 grid max-w-3xl gap-2 leading-relaxed text-inkt-700 sm:grid-cols-2">
+        {aanbod.map((item) => (
+          <li class="grid grid-cols-[1.25rem_1fr] items-baseline">
+            <span class="text-club-500" aria-hidden="true">—</span>
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
+
+      <p class="mt-8 max-w-3xl leading-relaxed text-inkt-700">
+        Nog een vraag die hier niet beantwoord wordt? Mail
+        {' '}<a href="mailto:info@bclandegem.be" class="font-semibold text-club-700 underline hover:text-club-800">info@bclandegem.be</a> —
+        we antwoorden graag.
+      </p>
+
+      <p class="mt-8">
+        <a
+          href={url('/folder/bc-landegem-folder-2026.pdf')}
+          class="stem-baan inline-flex items-center gap-2 text-xs text-club-700 transition-colors hover:text-club-800 hover:underline"
+        >
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v11m0 0l-5-5m5 5l5-5M5 20h14" />
+          </svg>
+          Liever op papier? Download de clubfolder
+        </a>
+      </p>
+    </section>
+  </div>
 </Layout>
