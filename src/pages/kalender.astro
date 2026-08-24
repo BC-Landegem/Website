@@ -1,6 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { legende } from '../data/kalender';
+import { categorieen } from '../data/kalender';
 ---
 
 <Layout
@@ -11,44 +11,155 @@ import { legende } from '../data/kalender';
     <!-- Kop op de rail: statische draad (geen scroll-script op deze pagina) -->
     <div class="relative pl-10">
       <span class="absolute left-[6px] top-3 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-club-500 ring-4 ring-veer-50" aria-hidden="true"></span>
-      <span class="absolute bottom-0 left-[6px] top-7 w-1 -translate-x-1/2 rounded-full bg-club-500" aria-hidden="true"></span>
+      <span class="absolute bottom-1 left-[6px] top-7 w-1 -translate-x-1/2 rounded-full bg-club-500" aria-hidden="true"></span>
+      <span class="absolute bottom-0 left-[6px] h-2 w-2 -translate-x-1/2 rounded-full bg-club-500" aria-hidden="true"></span>
       <h1 class="stem-display text-4xl text-inkt-950 sm:text-5xl">Kalender</h1>
       <p class="mt-3 max-w-2xl text-inkt-700">
         Alle trainingen, speelmomenten, competitiematchen en events op één plek.
+        Klik op een activiteit voor het uur, de plaats en de details.
       </p>
-      <!-- De kleuren zijn databronkleuren van de kalender, geen decoratie -->
-      <ul class="mt-8 flex flex-wrap gap-x-5 gap-y-2">
-        {legende.map((item) => (
-          <li class="stem-baan flex items-center gap-2 text-xs text-inkt-700">
-            <span class="h-3 w-3 rounded-full" style={`background: ${item.color}`}></span>
-            {item.label}
+      <!-- Kleur zegt wát je er kan doen; de titel draagt de details -->
+      <ul class="mt-8 flex flex-wrap gap-x-6 gap-y-2">
+        {Object.values(categorieen).map((categorie) => (
+          <li class="flex items-center gap-2 text-sm text-inkt-700">
+            <span class="h-3 w-3 rounded-full" style={`background: ${categorie.kleur}`}></span>
+            {categorie.label}
           </li>
         ))}
       </ul>
     </div>
 
-    <div
-      id="kalender-fout"
-      class="mt-10 hidden border-2 border-club-500 bg-club-50 p-4 font-medium text-club-800"
-    >
-      De kalender kon niet (volledig) geladen worden. Probeer het later opnieuw.
-    </div>
+    <div id="kalender-wrap" class="relative mt-10">
+      <p id="kalender-laden" class="mb-4 hidden items-center gap-3 text-sm font-medium text-inkt-500" aria-live="polite">
+        <span class="h-3.5 w-3.5 rounded-full bg-club-500 ring-4 ring-veer-50 motion-safe:animate-pulse" aria-hidden="true"></span>
+        Kalender laden…
+      </p>
+      <div
+        id="kalender-fout"
+        role="alert"
+        class="mb-4 hidden border-2 border-club-500 bg-club-50 p-4 font-medium text-club-800"
+      >
+        De kalender kon niet (volledig) geladen worden. Probeer het later opnieuw.
+      </div>
+      <div id="kalender"></div>
 
-    <div id="kalender" class="mt-10"></div>
+      <!-- Detailpaneel: dezelfde grammatica als een railrij (cijfer-wanneer, vette titel, stille plaats) -->
+      <div
+        id="kalender-detail"
+        role="dialog"
+        aria-labelledby="kalender-detail-titel"
+        class="absolute z-20 hidden w-80 max-w-[calc(100vw-2rem)] border-2 border-inkt-950 bg-white p-5"
+      >
+        <button
+          id="kalender-detail-sluit"
+          type="button"
+          class="absolute right-2 top-2 flex h-8 w-8 items-center justify-center text-inkt-500 transition-colors hover:text-club-600"
+          aria-label="Sluiten"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+            <path d="M5 5l14 14M19 5L5 19" />
+          </svg>
+        </button>
+        <p id="kalender-detail-wanneer" class="stem-cijfer pr-8 text-lg text-club-700"></p>
+        <h2 id="kalender-detail-titel" class="mt-0.5 pr-8 font-bold text-inkt-950"></h2>
+        <p id="kalender-detail-plaats" class="mt-0.5 text-sm text-inkt-500"></p>
+        <p id="kalender-detail-beschrijving" class="mt-3 max-h-40 overflow-y-auto text-sm leading-relaxed text-inkt-700"></p>
+      </div>
+    </div>
   </div>
 </Layout>
 
 <script>
   import { Calendar } from '@fullcalendar/core';
+  import type { EventApi } from '@fullcalendar/core';
   import nlLocale from '@fullcalendar/core/locales/nl';
   import dayGridPlugin from '@fullcalendar/daygrid';
   import listPlugin from '@fullcalendar/list';
   import googleCalendarPlugin from '@fullcalendar/google-calendar';
-  import { googleCalendarApiKey, bronnen } from '../data/kalender';
+  import { googleCalendarApiKey, bronnen, categorieen, groepUitTitel } from '../data/kalender';
 
   const el = document.getElementById('kalender')!;
+  const wrap = document.getElementById('kalender-wrap')!;
+  const laden = document.getElementById('kalender-laden')!;
   const foutmelding = document.getElementById('kalender-fout')!;
+  const paneel = document.getElementById('kalender-detail')!;
+  const paneelWanneer = document.getElementById('kalender-detail-wanneer')!;
+  const paneelTitel = document.getElementById('kalender-detail-titel')!;
+  const paneelPlaats = document.getElementById('kalender-detail-plaats')!;
+  const paneelBeschrijving = document.getElementById('kalender-detail-beschrijving')!;
+  const sluitKnop = document.getElementById('kalender-detail-sluit')!;
   const isMobiel = window.matchMedia('(max-width: 640px)').matches;
+
+  // — Detailpaneel: klik of Enter op een activiteit toont uur, plaats en
+  //   beschrijving in de wereld zelf; de Google Calendar-pagina blijft dicht. —
+  let trigger: HTMLElement | null = null;
+
+  const uurTekst = (d: Date) => `${d.getHours()}u${String(d.getMinutes()).padStart(2, '0')}`;
+
+  function wanneerTekst(event: EventApi): string {
+    const start = event.start;
+    if (!start) return '';
+    const datum = start.toLocaleDateString('nl-BE', { weekday: 'short', day: 'numeric', month: 'long' });
+    if (event.allDay) return datum;
+    return event.end ? `${datum} · ${uurTekst(start)} – ${uurTekst(event.end)}` : `${datum} · ${uurTekst(start)}`;
+  }
+
+  function openDetail(event: EventApi, eventEl: HTMLElement) {
+    const plaats = (event.extendedProps.location as string | undefined) ?? '';
+    const beschrijving = ((event.extendedProps.description as string | undefined) ?? '')
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    paneelWanneer.textContent = wanneerTekst(event);
+    paneelTitel.textContent = event.title;
+    paneelPlaats.textContent = plaats.toLowerCase() === 'onbekend' ? '' : plaats;
+    paneelPlaats.classList.toggle('hidden', !paneelPlaats.textContent);
+    paneelBeschrijving.textContent = beschrijving;
+    paneelBeschrijving.classList.toggle('hidden', !beschrijving);
+
+    paneel.classList.remove('hidden');
+    const rect = eventEl.getBoundingClientRect();
+    const wrect = wrap.getBoundingClientRect();
+    const links = Math.max(0, Math.min(rect.left - wrect.left, wrap.clientWidth - paneel.offsetWidth));
+    paneel.style.left = `${links}px`;
+    paneel.style.top = `${rect.bottom - wrect.top + 8}px`;
+
+    trigger = eventEl;
+    sluitKnop.focus();
+  }
+
+  function sluitDetail() {
+    if (paneel.classList.contains('hidden')) return;
+    paneel.classList.add('hidden');
+    trigger?.focus();
+    trigger = null;
+  }
+
+  sluitKnop.addEventListener('click', sluitDetail);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') sluitDetail();
+  });
+  document.addEventListener('click', (e) => {
+    const doel = e.target as HTMLElement;
+    if (!paneel.contains(doel) && !doel.closest('.fc-event')) sluitDetail();
+  });
+
+  // — Mobiel: bij het openen meteen naar vandaag scrollen. De maandlijst
+  //   begint anders bij de eerste dag van de maand, ver boven het
+  //   eerstvolgende speelmoment. Eén keer, meteen na de eerste lading. —
+  let naarVandaagGescrold = false;
+  function scrolNaarVandaag() {
+    if (!isMobiel || naarVandaagGescrold) return;
+    const nu = new Date();
+    const vandaagIso = `${nu.getFullYear()}-${String(nu.getMonth() + 1).padStart(2, '0')}-${String(nu.getDate()).padStart(2, '0')}`;
+    const dagen = [...el.querySelectorAll<HTMLElement>('.fc-list-day')];
+    const doel = dagen.find((dag) => (dag.dataset.date ?? '') >= vandaagIso);
+    if (!doel) return;
+    naarVandaagGescrold = true;
+    const hoogteChroom = (document.querySelector('header')?.getBoundingClientRect().height ?? 0) + 8;
+    window.scrollTo({ top: doel.getBoundingClientRect().top + window.scrollY - hoogteChroom });
+  }
 
   const calendar = new Calendar(el, {
     plugins: [dayGridPlugin, listPlugin, googleCalendarPlugin],
@@ -60,18 +171,50 @@ import { legende } from '../data/kalender';
       right: 'dayGridMonth,listMonth',
     },
     height: 'auto',
+    dayMaxEvents: true,
     googleCalendarApiKey,
     eventSources: bronnen.map((bron) => ({
       googleCalendarId: bron.googleCalendarId,
-      backgroundColor: bron.color,
-      borderColor: bron.color,
+      backgroundColor: categorieen[bron.categorie].kleur,
+      borderColor: categorieen[bron.categorie].kleur,
+      textColor: categorieen[bron.categorie].tekst,
+      eventDataTransform(data: Record<string, unknown>) {
+        // Nooit naar de Google Calendar-pagina navigeren (ook niet via
+        // middelklik of "open in nieuw tabblad"); details tonen we zelf.
+        delete data.url;
+        // Kalendertitels zijn interne jargon; bronnen met een speelmoment
+        // krijgen dezelfde vaste tekst als de hero-chip op de homepage.
+        // De groep (jeugd zaterdag: groep 1 en 2) blijft wel zichtbaar.
+        if (bron.speelmoment) {
+          const groep = groepUitTitel(data.title as string | undefined);
+          data.title = `${bron.speelmoment.omschrijving}${groep ? ` ${groep}` : ''} (${bron.speelmoment.doelgroep})`;
+        }
+        return data;
+      },
     })),
+    loading(bezig) {
+      laden.classList.toggle('hidden', !bezig);
+      laden.classList.toggle('flex', bezig);
+      if (!bezig) requestAnimationFrame(scrolNaarVandaag);
+    },
     eventSourceFailure() {
       foutmelding.classList.remove('hidden');
     },
-    // Klik op een event opent de Google Calendar-pagina niet; toon enkel de info.
+    eventDidMount(arg) {
+      // Zonder url is het element geen link meer; maak het zelf bedienbaar.
+      arg.el.setAttribute('role', 'button');
+      if (!arg.el.hasAttribute('tabindex')) arg.el.tabIndex = 0;
+      arg.el.title = arg.event.title;
+      arg.el.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          openDetail(arg.event, arg.el);
+        }
+      });
+    },
     eventClick(info) {
       info.jsEvent.preventDefault();
+      openDetail(info.event, info.el);
     },
   });
 
@@ -109,22 +252,40 @@ import { legende } from '../data/kalender';
   #kalender .fc-button-group {
     gap: 0.375rem;
   }
+  /* Baan-tekst is klein: club-600 als basis haalt 4.5:1 met wit (club-500 niet) */
   #kalender .fc-button-primary {
-    background: var(--color-club-500);
-    border-color: var(--color-club-500);
-  }
-  #kalender .fc-button-primary:hover {
     background: var(--color-club-600);
     border-color: var(--color-club-600);
   }
-  #kalender .fc-button-primary:not(:disabled).fc-button-active,
-  #kalender .fc-button-primary:not(:disabled):active {
+  #kalender .fc-button-primary:hover {
     background: var(--color-club-700);
     border-color: var(--color-club-700);
   }
+  #kalender .fc-button-primary:not(:disabled).fc-button-active,
+  #kalender .fc-button-primary:not(:disabled):active {
+    background: var(--color-club-800);
+    border-color: var(--color-club-800);
+  }
+  /* Uitgeschakeld = omtrek in inkt, geen pil die op een highlight lijkt */
   #kalender .fc-button-primary:disabled {
-    background: var(--color-club-300);
-    border-color: var(--color-club-300);
+    background: transparent;
+    border-color: rgba(107, 92, 80, 0.4);
+    color: var(--color-inkt-500);
+    opacity: 1;
+  }
+  /* Focus in het clubrood van de wereld, niet FullCalendars grijze gloed */
+  #kalender .fc-button:focus,
+  #kalender .fc-event:focus {
+    box-shadow: none;
+  }
+  #kalender .fc-event:focus::after {
+    display: none;
+  }
+  #kalender .fc-button:focus-visible,
+  #kalender .fc-event:focus-visible {
+    outline: 2px solid var(--color-club-500);
+    outline-offset: 3px;
+    box-shadow: none;
   }
   #kalender .fc-col-header-cell-cushion {
     font-variation-settings: "wdth" 110;
@@ -146,6 +307,42 @@ import { legende } from '../data/kalender';
   }
   #kalender .fc-daygrid-day-number {
     padding: 0.375rem 0.5rem;
+  }
+  /* Activiteiten zijn bedienbaar: afknippen met ellipsis, cursor toont het */
+  #kalender .fc-event {
+    cursor: pointer;
+  }
+  #kalender .fc-event-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  /* "+N meer" en de dagpopover in de wereldtokens: baan-link, scherp vlak */
+  #kalender .fc-daygrid-more-link {
+    font-variation-settings: "wdth" 110;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.75rem;
+    color: var(--color-club-700);
+  }
+  #kalender .fc-daygrid-more-link:hover {
+    background: var(--color-veer-100);
+    color: var(--color-club-800);
+  }
+  #kalender .fc-popover {
+    background: #ffffff;
+    border: 2px solid var(--color-inkt-950);
+    border-radius: 0;
+    box-shadow: none;
+  }
+  #kalender .fc-popover-header {
+    font-variation-settings: "wdth" 110;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.75rem;
+    background: var(--color-veer-100);
+    padding: 0.5rem 0.75rem;
   }
   @media (max-width: 640px) {
     #kalender .fc-toolbar {

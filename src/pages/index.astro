@@ -332,7 +332,7 @@ const veren = [
 
 <script>
   import trainingen from '../data/trainingen.json';
-  import { googleCalendarApiKey, bronnen, type KalenderBron } from '../data/kalender';
+  import { googleCalendarApiKey, bronnen, groepUitTitel, type KalenderBron } from '../data/kalender';
   import { fetchJson, naam, spelerUrl, formatDatum } from '../lib/intra';
   import type { RankingRij } from '../lib/intra';
 
@@ -500,7 +500,7 @@ const veren = [
   // Badminton Vlaanderen-import) én de locatie ligt in Nevele.
   function isThuismatch(item: KalenderItem): boolean {
     return (
-      item.bron.groep === 'Competitiematchen' &&
+      item.bron.categorie === 'match' &&
       (item.event.summary?.startsWith('Landegem') ?? false) &&
       /nevele/i.test(item.event.location ?? '')
     );
@@ -558,11 +558,13 @@ const veren = [
         doelgroep: 'supporters welkom',
       };
       const bezig = item.start <= NU && item.einde !== null && NU < item.einde;
+      // De groep (jeugd zaterdag: groep 1 en 2) moet overal zichtbaar zijn.
+      const groep = groepUitTitel(item.event.summary);
       const li = document.createElement('li');
       const uur = document.createElement('strong');
       uur.className = 'stem-cijfer text-inkt-950';
       uur.textContent = item.einde ? `${uurTekst(item.start)} – ${uurTekst(item.einde)}` : uurTekst(item.start);
-      li.append(uur, ` · ${omschrijving}${bezig ? ' — nu bezig' : ''} `);
+      li.append(uur, ` · ${omschrijving}${groep ? ` ${groep}` : ''}${bezig ? ' — nu bezig' : ''} `);
       const dg = document.createElement('span');
       dg.className = 'text-inkt-500';
       dg.textContent = `(${doelgroep})`;

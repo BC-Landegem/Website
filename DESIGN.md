@@ -140,7 +140,7 @@ Warm drieklank: veerwit als grond, warm inktbruinzwart als basis, clubrood dat h
 **Character:** Eén familie, drie breedtes — sportief, direct en zonder franje. De stemmen verschillen in `font-variation-settings: "wdth"`, niet in familie. Geladen via Google Fonts als variabel font (`Archivo:wdth,wght@62..125,300..900`).
 
 ### Hierarchy
-- **Display** (`.stem-display`: wdth 125, weight 900, uppercase, letter-spacing -0.02em, line-height 0.95, text-wrap balance): alle sectiekoppen en de hero-kop. Grootte per context: hero text-5xl→7xl, sectiekoppen text-4xl/5xl, paneelkoppen text-3xl/4xl.
+- **Display** (`.stem-display`: wdth 125, weight 900, uppercase, letter-spacing -0.02em, line-height 0.95, text-wrap balance): alle sectiekoppen en de hero-kop. Grootte per context: hero text-5xl→7xl, sectiekoppen text-4xl/5xl, paneelkoppen text-3xl/4xl, compacte chroomkoppen (bv. de kalender-maandtitel) text-2xl (1.5rem).
 - **Baan** (`.stem-baan`: wdth 110, weight 700, uppercase, letter-spacing 0.08em): labels en knoppen — dag-labels op de speelurenrail, alle knopteksten, navigatiekopjes, footerkopjes, "Ontdek meer"-links. Vrijwel altijd text-xs of text-sm.
 - **Cijfer** (`.stem-cijfer`: wdth 112, weight 800, tabular-nums, letter-spacing -0.01em): alle data op de draad — speeluren (text-2xl/3xl), eventdatums (text-lg), het jaartal 1987 (text-2xl), het eerstvolgende speelmoment. Tabulaire cijfers zodat uren op de rail uitlijnen.
 - **Body** (weight 400–500, text-sm–lg, leading-relaxed): lopende tekst in inkt-950 of inkt-700; nadruk met weight 700 (`font-bold`), nooit met een extra kleur.

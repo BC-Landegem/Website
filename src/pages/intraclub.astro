@@ -33,7 +33,7 @@ const tabs = [
     <div id="intra-inhoud" class="hidden max-w-4xl">
       <div class="flex flex-wrap items-baseline justify-between gap-2">
         <h2 class="text-2xl font-bold tracking-tight">
-          Klassement <span id="intra-seizoen" class="text-neutral-400"></span>
+          Klassement
         </h2>
         <a id="intra-laatste" href="#" class="hidden text-sm font-semibold text-club-600 hover:underline"></a>
       </div>
@@ -188,7 +188,6 @@ const tabs = [
         fetchJson<Ronde | false>('/rounds/latestCalculated'),
       ]);
 
-      document.getElementById('intra-seizoen')!.textContent = `— seizoen ${rankings.seasonId}`;
       toonRanking(rankings.general as RankingRij[]);
       toonSpeeldagen(rondes);
       toonAanwezigheden(statistieken);
