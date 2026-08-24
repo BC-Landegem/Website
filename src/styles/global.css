@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+@theme {
+  /* Clubkleuren: rood accent uit de huidige huisstijl, zwart/wit basis */
+  --color-club-50: #fdf1ef;
+  --color-club-100: #fbdfda;
+  --color-club-200: #f6bcb2;
+  --color-club-300: #f19486;
+  --color-club-400: #ee6a54;
+  --color-club-500: #eb4024;
+  --color-club-600: #d03117;
+  --color-club-700: #a72713;
+  --color-club-800: #7d1d0e;
+  --color-club-900: #541309;
+}
