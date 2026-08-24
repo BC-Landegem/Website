@@ -1,0 +1,142 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-24T00:00:00Z",
+  "title": "Design System: BC Landegem — De Shuttle",
+  "extensions": {
+    "colorMeta": {
+      "club-500": {
+        "role": "primary",
+        "displayName": "Clubrood",
+        "canonical": "#eb4024",
+        "tonalRamp": ["#541309", "#7d1d0e", "#a72713", "#d03117", "#eb4024", "#ee6a54", "#f19486", "#fbdfda", "#fdf1ef"]
+      },
+      "veer-50": {
+        "role": "neutral",
+        "displayName": "Veerwit",
+        "canonical": "#faf7f1",
+        "tonalRamp": ["#e6dcc8", "#f2ecdf", "#faf7f1"]
+      },
+      "inkt-950": {
+        "role": "neutral",
+        "displayName": "Inktzwart",
+        "canonical": "#1b1410",
+        "tonalRamp": ["#1b1410", "#493c33", "#6b5c50"]
+      },
+      "kurk-400": {
+        "role": "secondary",
+        "displayName": "Kurk",
+        "canonical": "#cf9a5f",
+        "tonalRamp": ["#a97438", "#cf9a5f", "#ddb887"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Stem: display (.stem-display)", "purpose": "Alle sectiekoppen en de hero-kop. Archivo wdth 125, weight 900, uppercase, line-height 0.95." },
+      "baan": { "displayName": "Stem: baan (.stem-baan)", "purpose": "Labels en knopteksten. Archivo wdth 110, weight 700, uppercase, tracking 0.08em, meestal text-xs/sm." },
+      "cijfer": { "displayName": "Stem: cijfer (.stem-cijfer)", "purpose": "Data op de draad: speeluren, datums, jaartallen. Archivo wdth 112, weight 800, tabulaire cijfers." },
+      "body": { "displayName": "Lopende tekst", "purpose": "Paragrafen in inkt-950 of inkt-700; nadruk via weight 700, nooit via extra kleur." }
+    },
+    "shadows": [
+      { "name": "nav-uitklap", "value": "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)", "purpose": "Uitsluitend het uitklapmenu van de navigatie (mobiel paneel en desktop-dropdown). Inhoud krijgt nooit schaduw; diepte komt uit kleurbanen, overlap en transform." }
+    ],
+    "motion": [
+      { "name": "ease-lancering", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Explosief uit, dan hangen: verschijnen (opacity), hover-lifts, schaal, pijlverschuiving. Duur 0.3–0.45s." },
+      { "name": "ease-drop", "value": "cubic-bezier(0.55, 0, 0.55, 1)", "purpose": "De val van de shuttle: de transform van landende .vlucht-elementen (translateY -1.25rem naar 0). Duur 0.6s. Alles dubbel gegate achter .js op <html> en prefers-reduced-motion." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primaire knop",
+      "kind": "button",
+      "refersTo": "knop-primair",
+      "description": "Clubrode pil in baan-stem; hover verdiept alleen de kleur.",
+      "html": "<a href=\"#\" class=\"ds-knop-primair\">Word lid!</a>",
+      "css": ".ds-knop-primair { display: inline-block; background: var(--color-club-500, #eb4024); color: #fff; border-radius: 9999px; padding: 0.875rem 1.75rem; font-family: 'Archivo', ui-sans-serif, system-ui, sans-serif; font-variation-settings: 'wdth' 110; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.875rem; text-decoration: none; transition: background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1); } .ds-knop-primair:hover { background: var(--color-club-600, #d03117); } .ds-knop-primair:focus-visible { outline: 2px solid var(--color-club-500, #eb4024); outline-offset: 3px; border-radius: 9999px; }"
+    },
+    {
+      "name": "Omtrekknop",
+      "kind": "button",
+      "refersTo": "knop-omtrek",
+      "description": "Secundaire actie: inkt-omrande pil die bij hover naar clubrood kleurt.",
+      "html": "<a href=\"#\" class=\"ds-knop-omtrek\">Bekijk de kalender</a>",
+      "css": ".ds-knop-omtrek { display: inline-block; background: transparent; color: var(--color-inkt-950, #1b1410); border: 2px solid var(--color-inkt-950, #1b1410); border-radius: 9999px; padding: 0.75rem 1.75rem; font-family: 'Archivo', ui-sans-serif, system-ui, sans-serif; font-variation-settings: 'wdth' 110; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.875rem; text-decoration: none; transition: color 0.3s, border-color 0.3s; } .ds-knop-omtrek:hover { color: var(--color-club-600, #d03117); border-color: var(--color-club-600, #d03117); } .ds-knop-omtrek:focus-visible { outline: 2px solid var(--color-club-500, #eb4024); outline-offset: 3px; }"
+    },
+    {
+      "name": "Inverse knop (op rode band)",
+      "kind": "button",
+      "refersTo": "knop-invers",
+      "description": "Witte pil met club-600-tekst, alleen op clubrode banen.",
+      "html": "<div class=\"ds-band-demo\"><a href=\"#\" class=\"ds-knop-invers\">Kom vrijblijvend proberen</a></div>",
+      "css": ".ds-band-demo { background: var(--color-club-500, #eb4024); border-top: 8px solid var(--color-club-700, #a72713); border-bottom: 8px solid var(--color-club-700, #a72713); padding: 2rem; } .ds-knop-invers { display: inline-block; background: #fff; color: var(--color-club-600, #d03117); border-radius: 9999px; padding: 0.875rem 1.75rem; font-family: 'Archivo', ui-sans-serif, system-ui, sans-serif; font-variation-settings: 'wdth' 110; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.875rem; text-decoration: none; transition: background-color 0.3s; } .ds-knop-invers:hover { background: var(--color-club-50, #fdf1ef); } .ds-knop-invers:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }"
+    },
+    {
+      "name": "Kurk-CTA",
+      "kind": "custom",
+      "refersTo": "kurk-cta",
+      "description": "Signatuur: de primaire actie als kurkpunt — clubrode cirkel met kurkring, verankerd op het vertrekpunt van de verenkrans (alleen hero).",
+      "html": "<a href=\"#\" class=\"ds-kurk-cta\">Word lid!</a>",
+      "css": ".ds-kurk-cta { display: inline-flex; align-items: center; justify-content: center; width: 9rem; height: 9rem; border-radius: 9999px; background: var(--color-club-500, #eb4024); color: #fff; text-align: center; padding: 0.75rem; font-family: 'Archivo', ui-sans-serif, system-ui, sans-serif; font-variation-settings: 'wdth' 110; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.875rem; line-height: 1.375; text-decoration: none; box-shadow: 0 0 0 4px var(--color-veer-50, #faf7f1), 0 0 0 8px var(--color-kurk-400, #cf9a5f); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); } .ds-kurk-cta:hover { transform: scale(1.1); } .ds-kurk-cta:focus-visible { outline: 2px solid var(--color-club-500, #eb4024); outline-offset: 10px; }"
+    },
+    {
+      "name": "Railrij (meetpunt op de draad)",
+      "kind": "custom",
+      "refersTo": "rail-item",
+      "description": "Signatuur: een datarij op de vluchtdraad — meetpuntbol op de rail-x, hairline-scheiding, baan-label in club-700 en tabulaire cijfers.",
+      "html": "<ol class=\"ds-rail\"><li class=\"ds-rail-rij\"><span class=\"ds-rail-bol\" aria-hidden=\"true\"></span><p class=\"ds-rail-dag\">Maandag</p><p class=\"ds-rail-uren\">20u00–23u00</p><p class=\"ds-rail-wat\">Vrij spel volwassenen</p></li></ol>",
+      "css": ".ds-rail { list-style: none; margin: 0; padding: 0; } .ds-rail-rij { position: relative; padding: 1.5rem 0 1.5rem 2.5rem; border-top: 1px solid rgb(27 20 16 / 0.1); border-bottom: 1px solid rgb(27 20 16 / 0.1); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); } .ds-rail-rij:hover { transform: translateX(0.5rem); } .ds-rail-bol { position: absolute; left: 6px; top: 2rem; width: 0.875rem; height: 0.875rem; transform: translateX(-50%); border-radius: 9999px; background: var(--color-club-500, #eb4024); box-shadow: 0 0 0 4px var(--color-veer-50, #faf7f1); transition: transform 0.3s; } .ds-rail-rij:hover .ds-rail-bol { transform: translateX(-50%) scale(1.25); } .ds-rail-dag { margin: 0; font-family: 'Archivo', ui-sans-serif, system-ui, sans-serif; font-variation-settings: 'wdth' 110; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.75rem; color: var(--color-club-700, #a72713); } .ds-rail-uren { margin: 0.25rem 0 0; font-family: 'Archivo', ui-sans-serif, system-ui, sans-serif; font-variation-settings: 'wdth' 112; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; font-size: 1.5rem; color: var(--color-inkt-950, #1b1410); } .ds-rail-wat { margin: 0.25rem 0 0; font-family: 'Archivo', ui-sans-serif, system-ui, sans-serif; font-weight: 700; font-size: 1rem; color: var(--color-inkt-950, #1b1410); }"
+    },
+    {
+      "name": "Veerpaneel",
+      "kind": "card",
+      "refersTo": "veer-paneel",
+      "description": "Signatuur: schuin geknipt, licht geroteerd vlak dat als geheel een link is; kleurbaan per paneel (inkt, clubrood of veer-200).",
+      "html": "<a href=\"#\" class=\"ds-veer-paneel\"><h3 class=\"ds-veer-kop\">Jeugd</h3><p class=\"ds-veer-tekst\">Jeugdtraining op woensdagavond en zaterdagvoormiddag, van eerste racket tot geselecteerde jeugd.</p><span class=\"ds-veer-link\">Ontdek meer <svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" aria-hidden=\"true\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M4 12h16m0 0l-6-6m6 6l-6 6\"/></svg></span></a>",
+      "css": ".ds-veer-paneel { display: block; background: var(--color-inkt-950, #1b1410); color: var(--color-veer-50, #faf7f1); padding: 2.5rem; max-width: 28rem; clip-path: polygon(0 10%, 100% 0, 100% 100%, 0 100%); transform: rotate(-1deg); text-decoration: none; transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); } .ds-veer-paneel:hover { transform: rotate(-1deg) translateY(-0.5rem); } .ds-veer-kop { margin: 0; font-family: 'Archivo', ui-sans-serif, system-ui, sans-serif; font-variation-settings: 'wdth' 125; font-weight: 900; text-transform: uppercase; letter-spacing: -0.02em; line-height: 0.95; font-size: 2.25rem; color: #fff; transition: color 0.3s; } .ds-veer-paneel:hover .ds-veer-kop { color: var(--color-club-300, #f19486); } .ds-veer-tekst { margin: 0.75rem 0 0; font-size: 0.875rem; line-height: 1.625; color: var(--color-veer-200, #e6dcc8); } .ds-veer-link { display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 1.5rem; font-family: 'Archivo', ui-sans-serif, system-ui, sans-serif; font-variation-settings: 'wdth' 110; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.75rem; color: var(--color-club-300, #f19486); } .ds-veer-link svg { transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); } .ds-veer-paneel:hover .ds-veer-link svg { transform: translateX(0.25rem); }"
+    },
+    {
+      "name": "Navigatielink",
+      "kind": "nav",
+      "refersTo": "nav-link",
+      "description": "Headerlink: semibold, hover naar club-600, actief met clubrode onderstreping.",
+      "html": "<nav class=\"ds-nav\"><a href=\"#\" class=\"ds-nav-link ds-nav-link-actief\">Home</a><a href=\"#\" class=\"ds-nav-link\">Competitie</a><a href=\"#\" class=\"ds-nav-link\">Jeugd</a></nav>",
+      "css": ".ds-nav { display: flex; gap: 0.25rem; background: var(--color-veer-50, #faf7f1); padding: 0.5rem; } .ds-nav-link { display: block; padding: 0.5rem 0.75rem; border-bottom: 2px solid transparent; font-family: 'Archivo', ui-sans-serif, system-ui, sans-serif; font-weight: 600; font-size: 0.875rem; color: var(--color-inkt-950, #1b1410); text-decoration: none; transition: color 0.3s; } .ds-nav-link:hover { color: var(--color-club-600, #d03117); } .ds-nav-link-actief { border-bottom-color: var(--color-club-500, #eb4024); color: var(--color-club-600, #d03117); } .ds-nav-link:focus-visible { outline: 2px solid var(--color-club-500, #eb4024); outline-offset: 3px; border-radius: 2px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "De Shuttle",
+    "overview": "De site is opgebouwd uit de anatomie van de veren shuttle — kurk, rode band, verenkrans, vluchtbaan — en weigert bewust de standaard clubsite van fotohero plus kaartengrid. Elk visueel middel is een shuttle-onderdeel: het kurkpunt linksonder in de hero draagt de primaire actie (\"Word lid!\"), de rode band is een full-bleed rode sectie met dikke donkerrode randen, de verenkrans is radiale vlakgeometrie op een strak raster, en één doorlopende rode vluchtlijn draagt echte data (speeluren, events, 1987) als meetpunten.\n\nDe wereld is warm en nuchter, zoals de dorpsclub zelf: veerwit (#faf7f1) als grond, warm inktzwart (bruinzwart, geen koolzwart) als basis, clubrood #eb4024 dat hele banen bezit, kurk-beige als zeldzaam accent. Eén lettertype (Archivo variabel) over drie breedtes doet al het typografische werk. Vlakken zijn scherp gesneden (clip-path), lijnen zijn getekend, en beweging volgt shuttlevlucht-fysica: explosief lanceren, beslist neervallen.\n\nDe browser draagt de wereld mee: selectie is clubrood met wit, de caret is clubrood, de scrollbalk is inkt op veer, focusringen zijn 2px clubrood met 3px offset.",
+    "keyCharacteristics": [
+      "Grafisch in plaats van fotografisch: geometrie uit de shuttle, één echte clubfoto in het zwarte slot.",
+      "Eén doorlopende rode draad (4px, clubrood) die echte data als meetpunten draagt.",
+      "Clubrood bezit hele banen (secties, panelen), nooit versnipperd als decoratie.",
+      "Eén familie, drie breedtes: Archivo expanded display, baan-labels, tabulaire cijfers.",
+      "Rasterdiscipline: 12-kolomsraster met bewuste verspringing, geen gelijke kaartengrids.",
+      "Beweging als shuttlevlucht: van boven, kort, beslist — en volledig optioneel (JS- en reduced-motion-gegate)."
+    ],
+    "rules": [
+      { "name": "De hele-baan-regel", "body": "Clubrood bezit hele banen: een volledige sectie, een volledig paneel, de volledige draad. Rood verschijnt nooit als klein decoratief strooisel — de enige kleine rode elementen zijn functioneel (meetpuntbollen op de draad, de actieve nav-streep) en horen bij de draadgrammatica.", "section": "colors" },
+      { "name": "De kleine-letter-regel", "body": "Kleine rode tekst (baan-labels, tekstlinks, cijfers ≤ text-lg) op lichte grond gebruikt club-700, nooit club-500 — club-500 haalt op veerwit onvoldoende contrast voor kleine tekst. Wit op club-500 is alleen toegestaan voor grote/vette tekst (display-koppen, baan-knoppen, tekst ≥ text-xl bold); gewone lopende tekst op een rood vlak is inkt-950. Op inkt-950 is de rode accentkleur club-300.", "section": "colors" },
+      { "name": "De drie-stemmen-regel", "body": "Elke tekst is één van vier dingen: display-kop, baan-label, cijfer of lopende tekst. Nieuwe tekstsoorten worden op een van deze vier gemapt; er komt geen vierde stem bij.", "section": "typography" },
+      { "name": "De geen-kicker-regel", "body": "Boven een display-kop staat nooit een kicker/eyebrow-label. De kop draagt zichzelf; context komt uit de paragraaf eronder of uit de draad ernaast.", "section": "typography" }
+    ],
+    "dos": [
+      "Do laat elke nieuwe pagina met echte tijdsdata (uren, datums, standen) op de rail aansluiten: pl-10, meetpuntbollen (h-3.5 w-3.5, club-500, ring-4 veer-50) op de rail-x, hairline-rijen, stem-cijfer voor de data. Zonder eigen script: statische rail, geen scroll-draad.",
+      "Do geef clubrood hele banen (een rode band-sectie of een rood paneel) en gebruik club-700 voor alle kleine rode tekst op lichte grond.",
+      "Do gate alle beweging dubbel: achter .js op <html> én prefers-reduced-motion; gebruik uitsluitend --ease-lancering en --ease-drop en houd de duur ≤ 0.6s.",
+      "Do snijd panelen met clip-path (8–10% helling) en roteer ze licht (±1.5°, afwisselend teken) op het 12-kolomsraster met bewuste overlap.",
+      "Do laat lege secties stil verdwijnen (hidden tot data er is), zoals de events-sectie — echt boven mooi."
+    ],
+    "donts": [
+      "Don't zet kickers of eyebrow-labels boven koppen; de display-kop draagt zichzelf.",
+      "Don't bouw gelijke kaartengrids (drie identieke kolommen met dezelfde kaart) — dit is de wereld die de site expliciet weigert.",
+      "Don't gebruik unicode-tekens als iconen (→, ▸, ✓, •) — pijlen en iconen zijn getekende inline SVG's.",
+      "Don't zet witte tekst kleiner dan text-xl op club-500, en gebruik nooit club-500 voor kleine tekst op veerwit (neem club-700); lopende tekst op rood is inkt-950.",
+      "Don't voeg schaduwen toe aan inhoud of foto's; diepte komt uit kleurbanen, overlap en transform.",
+      "Don't introduceer een tweede lettertype of een vierde typestem; alles is Archivo in drie breedtes."
+    ]
+  }
+}

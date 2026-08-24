@@ -20,11 +20,11 @@ const currentPath = Astro.url.pathname;
 const isActive = (href: string) => currentPath.startsWith(url(href).replace(/\/$/, ''));
 ---
 
-<header class="sticky top-0 z-50 border-b border-neutral-200 bg-white/95 backdrop-blur">
+<header class="sticky top-0 z-50 border-b border-inkt-950/10 bg-veer-50/95 backdrop-blur">
   <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
     <a href={url('/')} class="flex items-center gap-3">
       <img src={url('/images/logo-bc1.svg')} alt="" class="h-10 w-auto" />
-      <span class="text-lg font-bold tracking-tight">BC Landegem</span>
+      <span class="stem-baan text-sm text-inkt-950">BC Landegem</span>
     </a>
 
     <input type="checkbox" id="nav-toggle" class="peer sr-only" aria-label="Menu openen of sluiten" />
@@ -32,7 +32,7 @@ const isActive = (href: string) => currentPath.startsWith(url(href).replace(/\/$
     <!-- Hamburger (mobiel) -->
     <label
       for="nav-toggle"
-      class="cursor-pointer rounded p-2 hover:bg-neutral-100 peer-checked:[&_.icon-open]:hidden peer-checked:[&_.icon-close]:block md:hidden"
+      class="cursor-pointer rounded p-2 hover:bg-veer-100 peer-checked:[&_.icon-open]:hidden peer-checked:[&_.icon-close]:block md:hidden"
     >
       <svg class="icon-open h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
         <path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16" />
@@ -44,15 +44,15 @@ const isActive = (href: string) => currentPath.startsWith(url(href).replace(/\/$
 
     <!-- Navigatie -->
     <nav
-      class="absolute inset-x-0 top-full hidden border-b border-neutral-200 bg-white shadow-lg peer-checked:block md:static md:block md:border-0 md:bg-transparent md:shadow-none"
+      class="absolute inset-x-0 top-full hidden border-b border-inkt-950/10 bg-veer-50 shadow-lg peer-checked:block md:static md:block md:border-0 md:bg-transparent md:shadow-none"
     >
       <ul class="flex flex-col gap-1 p-4 md:flex-row md:items-center md:gap-1 md:p-0">
         <li>
           <a
             href={url('/')}
             class:list={[
-              'block rounded px-3 py-2 font-medium hover:bg-neutral-100 hover:text-club-600',
-              currentPath === url('/') && 'text-club-600',
+              'block border-b-2 border-transparent px-3 py-2 text-sm font-semibold transition-colors hover:text-club-600',
+              currentPath === url('/') && 'border-club-500 text-club-600',
             ]}
           >
             Home
@@ -64,8 +64,8 @@ const isActive = (href: string) => currentPath.startsWith(url(href).replace(/\/$
           <a
             href={url('/club/over-de-club/')}
             class:list={[
-              'hidden items-center gap-1 rounded px-3 py-2 font-medium hover:bg-neutral-100 hover:text-club-600 md:flex',
-              isActive('/club/') && 'text-club-600',
+              'hidden items-center gap-1 border-b-2 border-transparent px-3 py-2 text-sm font-semibold transition-colors hover:text-club-600 md:flex',
+              isActive('/club/') && 'border-club-500 text-club-600',
             ]}
           >
             Club
@@ -73,16 +73,16 @@ const isActive = (href: string) => currentPath.startsWith(url(href).replace(/\/$
               <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
             </svg>
           </a>
-          <span class="block px-3 pt-2 text-sm font-semibold uppercase tracking-wide text-neutral-500 md:hidden">Club</span>
+          <span class="stem-baan block px-3 pt-2 text-xs text-inkt-500 md:hidden">Club</span>
           <ul
-            class="md:invisible md:absolute md:left-0 md:top-full md:min-w-56 md:rounded-lg md:border md:border-neutral-200 md:bg-white md:py-1 md:opacity-0 md:shadow-lg md:transition md:group-hover:visible md:group-hover:opacity-100 md:group-focus-within:visible md:group-focus-within:opacity-100"
+            class="md:invisible md:absolute md:left-0 md:top-full md:min-w-56 md:border md:border-inkt-950/10 md:bg-veer-50 md:py-1 md:opacity-0 md:shadow-lg md:transition md:group-hover:visible md:group-hover:opacity-100 md:group-focus-within:visible md:group-focus-within:opacity-100"
           >
             {clubItems.map((item) => (
               <li>
                 <a
                   href={url(item.href)}
                   class:list={[
-                    'block rounded px-3 py-2 pl-6 hover:bg-neutral-100 hover:text-club-600 md:rounded-none md:pl-4',
+                    'block px-3 py-2 pl-6 text-sm font-medium hover:bg-veer-100 hover:text-club-600 md:pl-4',
                     isActive(item.href) && 'text-club-600',
                   ]}
                 >
@@ -98,8 +98,8 @@ const isActive = (href: string) => currentPath.startsWith(url(href).replace(/\/$
             <a
               href={url(item.href)}
               class:list={[
-                'block rounded px-3 py-2 font-medium hover:bg-neutral-100 hover:text-club-600',
-                isActive(item.href) && 'text-club-600',
+                'block border-b-2 border-transparent px-3 py-2 text-sm font-semibold transition-colors hover:text-club-600',
+                isActive(item.href) && 'border-club-500 text-club-600',
               ]}
             >
               {item.label}
@@ -107,10 +107,10 @@ const isActive = (href: string) => currentPath.startsWith(url(href).replace(/\/$
           </li>
         ))}
 
-        <li class="mt-2 md:ml-2 md:mt-0">
+        <li class="mt-2 md:ml-3 md:mt-0">
           <a
             href={url('/club/word-lid/')}
-            class="block rounded-full bg-club-500 px-4 py-2 text-center font-semibold text-white transition hover:bg-club-600"
+            class="stem-baan block rounded-full bg-club-500 px-5 py-2.5 text-center text-xs text-white transition-colors hover:bg-club-600"
           >
             Word lid!
           </a>

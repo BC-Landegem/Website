@@ -13,4 +13,82 @@
   --color-club-700: #a72713;
   --color-club-800: #7d1d0e;
   --color-club-900: #541309;
+
+  /* De Shuttle: veer (grond), inkt (leer/basis), kurk (accent) */
+  --color-veer-50: #faf7f1;
+  --color-veer-100: #f2ecdf;
+  --color-veer-200: #e6dcc8;
+  --color-inkt-500: #6b5c50;
+  --color-inkt-700: #493c33;
+  --color-inkt-950: #1b1410;
+  --color-kurk-300: #ddb887;
+  --color-kurk-400: #cf9a5f;
+  --color-kurk-600: #a97438;
+
+  --font-sans: "Archivo", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+
+  /* Vluchtfysica: lancering (explosief uit, dan hangen) en drop (val) */
+  --ease-lancering: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-drop: cubic-bezier(0.55, 0, 0.55, 1);
+}
+
+/* Browser-oppervlakken dragen mee de wereld */
+::selection {
+  background: var(--color-club-500);
+  color: #fff;
+}
+
+html {
+  caret-color: var(--color-club-500);
+  scrollbar-color: var(--color-inkt-500) var(--color-veer-100);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-club-500);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+a {
+  text-underline-offset: 0.2em;
+}
+
+/* Typestemmen van de shuttle-wereld: één familie, drie breedtes */
+.stem-display {
+  font-variation-settings: "wdth" 125;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  line-height: 0.95;
+  text-wrap: balance;
+}
+
+.stem-baan {
+  font-variation-settings: "wdth" 110;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.stem-cijfer {
+  font-variation-settings: "wdth" 112;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* Vluchtmotoriek: elementen vallen als een shuttle — van boven, kort, beslist.
+   Gegate achter een .js-klasse zodat de inhoud zonder JavaScript gewoon zichtbaar is. */
+@media (prefers-reduced-motion: no-preference) {
+  .js .vlucht {
+    opacity: 0;
+    transform: translateY(-1.25rem);
+  }
+  .js .vlucht.geland {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 0.45s var(--ease-lancering),
+      transform 0.6s var(--ease-drop);
+  }
 }

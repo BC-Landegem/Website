@@ -11,11 +11,11 @@ const logos: Record<string, ImageMetadata> = { libertatem, lieventyvaert, wema }
 const jaar = new Date().getFullYear();
 ---
 
-<footer class="mt-16 bg-neutral-900 text-neutral-300">
+<footer class="bg-inkt-950 text-veer-200">
   <!-- Sponsors -->
-  <div class="border-b border-neutral-800">
+  <div class="border-b border-veer-50/10">
     <div class="mx-auto max-w-6xl px-4 py-8">
-      <h2 class="mb-6 text-center text-sm font-semibold uppercase tracking-widest text-neutral-400">
+      <h2 class="stem-baan mb-6 text-center text-xs text-veer-200/70">
         Met dank aan onze sponsors
       </h2>
       <ul class="flex flex-wrap items-center justify-center gap-6">
@@ -25,7 +25,7 @@ const jaar = new Date().getFullYear();
               href={sponsor.url}
               target="_blank"
               rel="noopener"
-              class="flex h-28 items-center rounded-lg bg-white px-6 transition hover:ring-2 hover:ring-club-500"
+              class="flex h-28 items-center bg-veer-50 px-6 transition hover:ring-2 hover:ring-club-500"
             >
               <Image
                 src={logos[sponsor.logo]}
@@ -43,31 +43,31 @@ const jaar = new Date().getFullYear();
 
   <div class="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:grid-cols-2 lg:grid-cols-3">
     <div>
-      <h2 class="mb-3 font-bold text-white">BC Landegem</h2>
+      <h2 class="stem-baan mb-3 text-xs text-white">BC Landegem</h2>
       <p class="text-sm leading-relaxed">
         Badmintonclub Landegem — recreatief en competitief badminton voor jong en oud, sinds 1987.
       </p>
     </div>
     <div>
-      <h2 class="mb-3 font-bold text-white">Waar we spelen</h2>
+      <h2 class="stem-baan mb-3 text-xs text-white">Waar we spelen</h2>
       <p class="text-sm leading-relaxed">
         {trainingen.locatie.naam}<br />
         {trainingen.locatie.gemeente}
       </p>
     </div>
     <nav aria-label="Footer">
-      <h2 class="mb-3 font-bold text-white">Snel naar</h2>
+      <h2 class="stem-baan mb-3 text-xs text-white">Snel naar</h2>
       <ul class="space-y-2 text-sm">
-        <li><a href={url('/club/word-lid/')} class="hover:text-white">Word lid!</a></li>
-        <li><a href={url('/kalender/')} class="hover:text-white">Kalender</a></li>
-        <li><a href={url('/club/intern-reglement/')} class="hover:text-white">Intern reglement</a></li>
-        <li><a href={url('/club/privacy/')} class="hover:text-white">Privacy</a></li>
+        <li><a href={url('/club/word-lid/')} class="transition-colors hover:text-club-300">Word lid!</a></li>
+        <li><a href={url('/kalender/')} class="transition-colors hover:text-club-300">Kalender</a></li>
+        <li><a href={url('/club/intern-reglement/')} class="transition-colors hover:text-club-300">Intern reglement</a></li>
+        <li><a href={url('/club/privacy/')} class="transition-colors hover:text-club-300">Privacy</a></li>
       </ul>
     </nav>
   </div>
 
-  <div class="border-t border-neutral-800">
-    <p class="mx-auto max-w-6xl px-4 py-4 text-center text-xs text-neutral-500">
+  <div class="border-t border-veer-50/10">
+    <p class="mx-auto max-w-6xl px-4 py-4 text-center text-xs text-veer-200/60">
       © {jaar} Badmintonclub Landegem
     </p>
   </div>
