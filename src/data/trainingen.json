@@ -1,0 +1,39 @@
+{
+  "locatie": {
+    "naam": "Sporthal Oostbroek",
+    "gemeente": "Nevele (Deinze)"
+  },
+  "inschrijfformulier": "https://app.twizzit.com/v2/form/YkxVdGdBVkhlRGJHUkFMM2loalRZZz09",
+  "momenten": [
+    {
+      "dag": "Maandag",
+      "uren": "20u00 – 23u00",
+      "omschrijving": "Vrij spel",
+      "doelgroep": "Jeugd, recreanten & competitiespelers"
+    },
+    {
+      "dag": "Woensdag",
+      "uren": "19u00 – 20u30",
+      "omschrijving": "Jeugdtraining & vrij spel jeugd",
+      "doelgroep": "Jeugd"
+    },
+    {
+      "dag": "Woensdag",
+      "uren": "20u00 – 23u00",
+      "omschrijving": "Vrij spel",
+      "doelgroep": "Recreanten & competitiespelers"
+    },
+    {
+      "dag": "Zaterdag",
+      "uren": "9u30 – 12u30",
+      "omschrijving": "Jeugdtraining (groep 1 om 9u30, groep 2 om 11u)",
+      "doelgroep": "Geselecteerde jeugd"
+    },
+    {
+      "dag": "Zondag",
+      "uren": "19u00 – 22u00",
+      "omschrijving": "Vrij spel",
+      "doelgroep": "Jeugd, recreanten & competitiespelers"
+    }
+  ]
+}
