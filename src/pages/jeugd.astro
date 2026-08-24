@@ -1,11 +1,83 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import PageHeader from '../components/PageHeader.astro';
+import { url } from '../lib/url';
 ---
 
-<Layout title="Jeugd">
-  <PageHeader title="Jeugd" />
-  <div class="mx-auto max-w-6xl px-4 py-12">
-    <p class="text-neutral-600">Deze pagina wordt binnenkort gevuld.</p>
+<Layout
+  title="Jeugd"
+  description="De jeugdwerking van BC Landegem: trainingen op woensdag en zaterdag, vrij spel, en deelname aan de PBO Jeugdcup."
+>
+  <PageHeader
+    title="Jeugd"
+    intro="Onze jeugdwerking start elk seizoen opnieuw op de eerste woensdag of zaterdag van september."
+  />
+  <div class="mx-auto max-w-3xl px-4 py-12">
+    <article class="prose prose-neutral">
+      <h2>Jeugdwerking</h2>
+      <p>
+        De jeugd (-18) kan vrij spelen op <strong>woensdagavond van 19u00 tot 20u00</strong>; vanaf
+        20u00 kunnen ze nog een half uurtje samen met de volwassenen spelen als ze daar zin in
+        hebben.
+      </p>
+      <p>
+        Er wordt training gegeven op <strong>zaterdag vanaf 9u30 in 2 groepen</strong> (9u30 tot
+        11u00 en 11u00 tot 12u30) voor de door de trainers geselecteerde jeugd. Er wordt in
+        verschillende leeftijdsgroepen gewerkt naargelang de opkomst en de ervaring.
+      </p>
+      <p>
+        Omdat wij ons als club engageren om wekelijks jeugdtrainingen te voorzien, verwachten wij dat
+        wie de trainingen wil volgen ook elke week aanwezig is. Kan je een training niet volgen,
+        verwittig dan op voorhand de trainers.
+      </p>
+      <p>
+        Nieuwe jeugdleden (vanaf 8 jaar) en jongeren die vrij willen spelen kunnen dit ook op
+        <strong>maandag van 20u00 tot 21u30</strong> en op <strong>zondag van 19u00 tot 21u00</strong>.
+      </p>
+      <p>
+        Nieuwe jeugdspelers die training willen volgen, worden getest in de loop van de maand
+        september. Zij worden op woensdag en/of zaterdag getest door gedreven jeugdtrainers van onze
+        eigen club en enkele ervaren rotten die al tientallen jaren de jeugd begeleiden.
+      </p>
+      <p>
+        Verdere informatie bij <strong>Luc Van Tornhout</strong>: je kan hem bereiken in sportzaal
+        Oostbroek te Nevele tijdens de trainingsuren (zie <a href={url('/kalender/')}>kalender</a>)
+        of per mail via <a href="mailto:vantornhoutluc@skynet.be">vantornhoutluc@skynet.be</a>.
+      </p>
+
+      <h2>PBO Jeugdcup</h2>
+      <h3>Wat is de Jeugdcup?</h3>
+      <p>
+        De PBO Jeugdcup is een reeks jeugdtornooien binnen de provincie Oost-Vlaanderen. Het is een
+        open jeugdcircuit voor <strong>alle badmintonners van -9 tot -19 jaar</strong>. De bedoeling
+        van de Jeugdcup is elke jeugdspeler aangesloten bij een Oost-Vlaamse club te laten
+        kennismaken met badminton in tornooivorm. Elke jeugdspeler speelt in de eigen
+        leeftijdscategorie een aantal wedstrijden <strong>tegen leeftijdsgenoten</strong>. Er wordt
+        steeds een
+        <a href="https://www.badminton-pbo.be/jeugd/jeugdcup/pbo-jeugdcuptour-ranking/" target="_blank" rel="noopener">rangschikking</a>
+        opgemaakt, zodat op het einde van het badmintonseizoen een winnaar per reeks kan worden
+        aangeduid.
+      </p>
+      <p>
+        Wil je proeven van tornooien en competitie, aarzel dan zeker niet om in te schrijven voor
+        meerdere Jeugdcups.
+      </p>
+      <h3>Hoe inschrijven?</h3>
+      <p>
+        Het inschrijven voor tornooien gebeurt <strong>online of via mail</strong>, met de link naar
+        het tornooi die wordt doorgestuurd naar onze jeugd. Je hebt wel een VBL-lidnummer nodig om te
+        kunnen inschrijven. Dit kan je opzoeken op de
+        <a href="https://www.badmintonvlaanderen.be/ranking/find.aspx?rid=139" target="_blank" rel="noopener">site van Badminton Vlaanderen</a>
+        of aanvragen bij <a href="mailto:vantornhoutluc@skynet.be">Luc Van Tornhout</a>.
+      </p>
+      <h3>Deelname betalend</h3>
+      <p>Voor de deelname aan het tornooi wordt per discipline een inschrijvingsgeld betaald.</p>
+      <h3>Trainers &amp; vervoer</h3>
+      <p>
+        Er kan door de deelnemers onderling afgesproken worden om met enkele ouders de verplaatsing
+        te doen. Indien mogelijk zal er ook een trainer of begeleider aanwezig zijn die de taak van
+        coach en chauffeur op zich neemt.
+      </p>
+    </article>
   </div>
 </Layout>

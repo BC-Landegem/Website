@@ -1,11 +1,67 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import PageHeader from '../../components/PageHeader.astro';
+import { url } from '../../lib/url';
+import trainingen from '../../data/trainingen.json';
 ---
 
-<Layout title="Word lid!">
-  <PageHeader title="Word lid!" />
-  <div class="mx-auto max-w-6xl px-4 py-12">
-    <p class="text-neutral-600">Deze pagina wordt binnenkort gevuld.</p>
+<Layout
+  title="Word lid!"
+  description="Word lid van BC Landegem: badminton voor jong en oud, competitie en recreatie. Proefbeurten zijn altijd welkom."
+>
+  <PageHeader
+    title="Word lid!"
+    intro="BC Landegem is een club voor jong en oud, voor competitiespelers en recreanten. Bij ons staat speelplezier centraal!"
+  />
+  <div class="mx-auto max-w-3xl px-4 py-12">
+    <article class="prose prose-neutral">
+      <p>
+        De jeugd kan training volgen op <strong>woensdagavond en zaterdagvoormiddag</strong>. Op
+        zaterdag wordt in verschillende groepen gewerkt: de eerste groep is voor de beginnende
+        spelertjes, de volgende groepen bieden al wat gevorderde lessen. Op
+        <strong>maandagavond en zondagavond</strong> is er vrij spel voor de jeugd. Meer info over de
+        trainingen kan je bekomen via <a href="mailto:info@bclandegem.be">info@bclandegem.be</a>.
+      </p>
+      <p>
+        Recreanten zijn welkom op <strong>zondagavond, maandagavond en woensdagavond</strong>. Kom
+        gerust eens langs voor een proefbeurt om te testen! Wil je graag de techniek leren? Wij geven
+        ook lessen voor beginnende recreanten. Voor meer info kan je terecht op
+        <a href="mailto:info@bclandegem.be">info@bclandegem.be</a>.
+      </p>
+      <h2>Speelmomenten</h2>
+    </article>
+
+    <ul class="mt-6 grid gap-4 sm:grid-cols-2">
+      {trainingen.momenten.map((moment) => (
+        <li class="rounded-xl border border-neutral-200 p-4">
+          <p class="text-sm font-semibold uppercase tracking-wide text-club-600">{moment.dag}</p>
+          <p class="text-lg font-bold">{moment.uren}</p>
+          <p class="text-sm">{moment.omschrijving} — {moment.doelgroep}</p>
+        </li>
+      ))}
+    </ul>
+
+    <article class="prose prose-neutral mt-6">
+      <p>
+        Exacte data vind je terug <a href={url('/kalender/')}>via de kalender</a>. Kom gerust eens
+        langs voor een proefbeurt — een niet-aangesloten speler kan drie keer komen spelen vooraleer
+        lidgeld betaald moet worden.
+      </p>
+    </article>
+
+    <div class="mt-10 rounded-2xl bg-club-500 p-8 text-center">
+      <h2 class="text-2xl font-bold text-white">Graag lid worden?</h2>
+      <p class="mx-auto mt-2 max-w-md text-club-50">
+        Schrijf je in via ons online inschrijvingsformulier — je bent zo klaar.
+      </p>
+      <a
+        href={trainingen.inschrijfformulier}
+        target="_blank"
+        rel="noopener"
+        class="mt-6 inline-block rounded-full bg-white px-8 py-3 font-semibold text-club-600 transition hover:bg-club-50"
+      >
+        Naar het inschrijvingsformulier
+      </a>
+    </div>
   </div>
 </Layout>

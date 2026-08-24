@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 @theme {
   /* Clubkleuren: rood accent uit de huidige huisstijl, zwart/wit basis */

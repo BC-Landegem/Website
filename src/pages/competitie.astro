@@ -1,11 +1,71 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import PageHeader from '../components/PageHeader.astro';
+import teams from '../data/teams.json';
+
+const types = ['Heren', 'Gemengd', 'Dames'];
 ---
 
-<Layout title="Competitie">
-  <PageHeader title="Competitie" />
+<Layout
+  title="Competitie"
+  description={`De competitieploegen van BC Landegem in seizoen ${teams.seizoen}: klassementen en wedstrijdkalenders per ploeg.`}
+>
+  <PageHeader
+    title="Competitie"
+    intro="Wat ooit begon als noodzakelijk kwaad om vaste uren te verkrijgen, is uitgegroeid tot een belangrijk onderdeel van de club."
+  />
   <div class="mx-auto max-w-6xl px-4 py-12">
-    <p class="text-neutral-600">Deze pagina wordt binnenkort gevuld.</p>
+    <article class="prose prose-neutral max-w-3xl">
+      <p>
+        Het blijft allemaal natuurlijk voor 't plezier en iedereen kan meedoen met een
+        competitieploeg! Ondertussen dingen {teams.ploegen.length} ploegen mee naar een titel. Onze
+        damesploegen zijn de trots van de club: ze bestaan volledig uit speelsters uit eigen jeugd —
+        een dikke pluim voor alle jeugdtrainers en begeleiders.
+      </p>
+      <p>
+        Thuismatchen worden op zondag- en maandagavond, en af en toe ook op woensdag, afgewerkt.
+        Supporters zijn altijd van harte welkom! En ook "den derden time" in 't cafetaria mag hierbij
+        niet ontbreken.
+      </p>
+    </article>
+
+    <h2 class="mt-12 text-2xl font-bold tracking-tight">Onze ploegen in seizoen {teams.seizoen}</h2>
+    <p class="mt-1 text-neutral-600">
+      Klik op een ploeg voor het klassement en de wedstrijdkalender op Badminton Vlaanderen.
+    </p>
+
+    {types.map((type) => (
+      <section class="mt-8">
+        <h3 class="text-sm font-semibold uppercase tracking-widest text-club-600">{type}</h3>
+        <ul class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {teams.ploegen.filter((p) => p.type === type).map((ploeg) => (
+            <li>
+              <a
+                href={ploeg.url}
+                target="_blank"
+                rel="noopener"
+                class="flex items-center justify-between rounded-xl border border-neutral-200 p-4 font-semibold transition hover:border-club-300 hover:shadow-md"
+              >
+                {ploeg.naam}
+                <svg class="h-4 w-4 text-neutral-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H18v4.5M18 6l-7.5 7.5M15 13.5V18H6V9h4.5" />
+                </svg>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))}
+
+    <p class="mt-10">
+      <a
+        href={teams.clubkalender}
+        target="_blank"
+        rel="noopener"
+        class="font-semibold text-club-600 hover:underline"
+      >
+        Alle clubwedstrijden op Badminton Vlaanderen →
+      </a>
+    </p>
   </div>
 </Layout>
