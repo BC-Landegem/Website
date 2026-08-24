@@ -1,18 +1,29 @@
 ---
 // Paginakop op de statische rail: meetpuntbol, korte vaste draad en eindpunt,
 // zoals op de kalenderpagina. Voor pagina's zonder scroll-getekende draad.
+// Met `doorlopend` valt het eindpunt weg en loopt de draad tot de onderrand,
+// zodat de pagina hem zelf kan verderzetten (bv. de jaartijdlijn op /media/).
 interface Props {
   title: string;
   intro?: string;
+  doorlopend?: boolean;
 }
 
-const { title, intro } = Astro.props;
+const { title, intro, doorlopend = false } = Astro.props;
 ---
 
 <div class="relative pl-10">
   <span class="absolute left-[6px] top-3 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-club-500 ring-4 ring-veer-50" aria-hidden="true"></span>
-  <span class="absolute bottom-1 left-[6px] top-7 w-1 -translate-x-1/2 rounded-full bg-club-500" aria-hidden="true"></span>
-  <span class="absolute bottom-0 left-[6px] h-2 w-2 -translate-x-1/2 rounded-full bg-club-500" aria-hidden="true"></span>
+  <span
+    class:list={[
+      'absolute left-[6px] top-7 w-1 -translate-x-1/2 bg-club-500',
+      doorlopend ? 'bottom-0' : 'bottom-1 rounded-full',
+    ]}
+    aria-hidden="true"
+  ></span>
+  {!doorlopend && (
+    <span class="absolute bottom-0 left-[6px] h-2 w-2 -translate-x-1/2 rounded-full bg-club-500" aria-hidden="true"></span>
+  )}
   <h1 class="stem-display text-4xl text-inkt-950 sm:text-5xl">{title}</h1>
   {intro && <p class="mt-3 max-w-2xl text-inkt-700">{intro}</p>}
   <slot />
