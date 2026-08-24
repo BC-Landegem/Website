@@ -1,6 +1,5 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import PageHeader from '../components/PageHeader.astro';
 import { legende } from '../data/kalender';
 ---
 
@@ -8,28 +7,34 @@ import { legende } from '../data/kalender';
   title="Kalender"
   description="De kalender van BC Landegem: trainingen, vrij spel, competitiematchen, intraclub en events."
 >
-  <PageHeader
-    title="Kalender"
-    intro="Alle trainingen, speelmomenten, competitiematchen en events op één plek."
-  />
-  <div class="mx-auto max-w-6xl px-4 py-12">
-    <ul class="mb-6 flex flex-wrap gap-x-5 gap-y-2 text-sm text-neutral-600">
-      {legende.map((item) => (
-        <li class="flex items-center gap-2">
-          <span class="h-3 w-3 rounded-full" style={`background: ${item.color}`}></span>
-          {item.label}
-        </li>
-      ))}
-    </ul>
+  <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
+    <!-- Kop op de rail: statische draad (geen scroll-script op deze pagina) -->
+    <div class="relative pl-10">
+      <span class="absolute left-[6px] top-3 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-club-500 ring-4 ring-veer-50" aria-hidden="true"></span>
+      <span class="absolute bottom-0 left-[6px] top-7 w-1 -translate-x-1/2 rounded-full bg-club-500" aria-hidden="true"></span>
+      <h1 class="stem-display text-4xl text-inkt-950 sm:text-5xl">Kalender</h1>
+      <p class="mt-3 max-w-2xl text-inkt-700">
+        Alle trainingen, speelmomenten, competitiematchen en events op één plek.
+      </p>
+      <!-- De kleuren zijn databronkleuren van de kalender, geen decoratie -->
+      <ul class="mt-8 flex flex-wrap gap-x-5 gap-y-2">
+        {legende.map((item) => (
+          <li class="stem-baan flex items-center gap-2 text-xs text-inkt-700">
+            <span class="h-3 w-3 rounded-full" style={`background: ${item.color}`}></span>
+            {item.label}
+          </li>
+        ))}
+      </ul>
+    </div>
 
     <div
       id="kalender-fout"
-      class="mb-6 hidden rounded-xl border border-club-200 bg-club-50 p-4 text-club-800"
+      class="mt-10 hidden border-2 border-club-500 bg-club-50 p-4 font-medium text-club-800"
     >
       De kalender kon niet (volledig) geladen worden. Probeer het later opnieuw.
     </div>
 
-    <div id="kalender"></div>
+    <div id="kalender" class="mt-10"></div>
   </div>
 </Layout>
 
@@ -74,9 +79,35 @@ import { legende } from '../data/kalender';
 </script>
 
 <style is:global>
+  /* FullCalendar in De Shuttle: hairlines, baan-knoppen, display-titel, tabulaire cijfers */
+  #kalender {
+    --fc-border-color: rgba(27, 20, 16, 0.1);
+    --fc-page-bg-color: var(--color-veer-50);
+    --fc-neutral-bg-color: var(--color-veer-100);
+    --fc-today-bg-color: rgba(230, 220, 200, 0.45);
+    --fc-list-event-hover-bg-color: var(--color-veer-100);
+  }
   #kalender .fc-toolbar-title {
-    font-size: 1.25rem;
+    font-variation-settings: "wdth" 125;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    font-size: 1.5rem;
+  }
+  #kalender .fc-button {
+    font-variation-settings: "wdth" 110;
     font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.75rem;
+    padding: 0.5rem 1.1rem;
+  }
+  #kalender .fc-button,
+  #kalender .fc-button-group > .fc-button {
+    border-radius: 9999px;
+  }
+  #kalender .fc-button-group {
+    gap: 0.375rem;
   }
   #kalender .fc-button-primary {
     background: var(--color-club-500);
@@ -94,6 +125,27 @@ import { legende } from '../data/kalender';
   #kalender .fc-button-primary:disabled {
     background: var(--color-club-300);
     border-color: var(--color-club-300);
+  }
+  #kalender .fc-col-header-cell-cushion {
+    font-variation-settings: "wdth" 110;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.75rem;
+    color: var(--color-club-700);
+    padding: 0.5rem 0.25rem;
+  }
+  #kalender .fc-daygrid-day-number,
+  #kalender .fc-list-day-text,
+  #kalender .fc-list-day-side-text {
+    font-variation-settings: "wdth" 112;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+    color: var(--color-inkt-950);
+  }
+  #kalender .fc-daygrid-day-number {
+    padding: 0.375rem 0.5rem;
   }
   @media (max-width: 640px) {
     #kalender .fc-toolbar {

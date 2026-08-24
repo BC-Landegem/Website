@@ -8,16 +8,23 @@ export interface KalenderBron {
   color: string;
   /** Gegroepeerd label voor de legende */
   groep: string;
+  /**
+   * Vaste weergavetekst in de hero-chip ("Eerstvolgend speelmoment"). Enkel
+   * bronnen met dit veld tellen als speelmoment; de tijden komen uit de
+   * kalender, de tekst bewust niet (kalendertitels zijn interne jargon).
+   * Thuismatchen tellen ook mee, maar krijgen hun tekst uit het ploeglabel.
+   */
+  speelmoment?: { omschrijving: string; doelgroep: string };
 }
 
 export const bronnen: KalenderBron[] = [
   { label: 'Events', groep: 'Events', color: '#EB4024', googleCalendarId: '96vl7c6jvq0ilvbkk62vh058rp2uc5pj@import.calendar.google.com' },
-  { label: 'Vrij spelen', groep: 'Vrij spelen', color: '#3d998d', googleCalendarId: 'q2tp121lj5fs101js7ph7qq2hgv7iqu1@import.calendar.google.com' },
-  { label: 'Training jeugd', groep: 'Jeugd', color: '#7390c7', googleCalendarId: '1s8ga8r6ua28mb0ld3eol386amag2j54@import.calendar.google.com' },
-  { label: 'Vrij spelen jeugd', groep: 'Jeugd', color: '#0b56e3', googleCalendarId: 'v5i8e94tare1r1ah3r4ssqf944sm064o@import.calendar.google.com' },
-  { label: 'Intraclub', groep: 'Intraclub', color: '#8d548d', googleCalendarId: 'sdjvdn71tmsqcadobrjc541f9oh1hcns@import.calendar.google.com' },
-  { label: 'Training competitie', groep: 'Trainingen', color: '#687582', googleCalendarId: 'jrqfpmov52k09tld4a7g8t2dts@group.calendar.google.com' },
-  { label: 'Training recreanten', groep: 'Trainingen', color: '#BF5FFF', googleCalendarId: '22m1pqspb1tlr688orr685hl6o@group.calendar.google.com' },
+  { label: 'Vrij spelen', groep: 'Vrij spelen', color: '#3d998d', googleCalendarId: 'q2tp121lj5fs101js7ph7qq2hgv7iqu1@import.calendar.google.com', speelmoment: { omschrijving: 'Vrij spel', doelgroep: 'iedereen' } },
+  { label: 'Training jeugd', groep: 'Jeugd', color: '#7390c7', googleCalendarId: '1s8ga8r6ua28mb0ld3eol386amag2j54@import.calendar.google.com', speelmoment: { omschrijving: 'Jeugdtraining', doelgroep: 'jeugd' } },
+  { label: 'Vrij spelen jeugd', groep: 'Jeugd', color: '#0b56e3', googleCalendarId: 'v5i8e94tare1r1ah3r4ssqf944sm064o@import.calendar.google.com', speelmoment: { omschrijving: 'Vrij spel jeugd', doelgroep: 'jeugd' } },
+  { label: 'Intraclub', groep: 'Intraclub', color: '#8d548d', googleCalendarId: 'sdjvdn71tmsqcadobrjc541f9oh1hcns@import.calendar.google.com', speelmoment: { omschrijving: 'Intraclub + vrij spel', doelgroep: 'iedereen' } },
+  { label: 'Training competitie', groep: 'Trainingen', color: '#687582', googleCalendarId: 'jrqfpmov52k09tld4a7g8t2dts@group.calendar.google.com', speelmoment: { omschrijving: 'Competitietraining', doelgroep: 'competitiespelers' } },
+  { label: 'Training recreanten', groep: 'Trainingen', color: '#BF5FFF', googleCalendarId: '22m1pqspb1tlr688orr685hl6o@group.calendar.google.com', speelmoment: { omschrijving: 'Recreantentraining', doelgroep: 'recreanten' } },
   { label: 'Landegem 1H', groep: 'Competitiematchen', color: '#b04949', googleCalendarId: 'a5a6i555m4u1v56ppjl7af372kra8rtn@import.calendar.google.com' },
   { label: 'Landegem 2H', groep: 'Competitiematchen', color: '#bc6032', googleCalendarId: 'h455u0c25j6cfdteg82cr0vk2ol65eue@import.calendar.google.com' },
   { label: 'Landegem 3H', groep: 'Competitiematchen', color: '#c78226', googleCalendarId: '3k48lvi3a4s9970rk87cbfahedcn69u9@import.calendar.google.com' },

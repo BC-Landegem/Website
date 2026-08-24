@@ -190,7 +190,7 @@ Alle knoppen zijn `.stem-baan`-pillen; ze veranderen bij hover alleen van kleur 
 - **Zwart slot:** inkt-950-sectie met veer-50/veer-200-tekst, twee knoppen (primair + omtrek-donker) en de clubfoto in een clip-path-figuur; de draadstaart landt op de foto.
 
 ### Lijsten op de rail
-- **Railrij (speeluren, events):** pl-10, meetpuntbol op de rail-x, hairline-scheiding, `stem-baan`-daglabel in club-700, `stem-cijfer`-uren in inkt-950, omschrijving bold met doelgroep in inkt-500. Hover: rij schuift 2 eenheden naar rechts, bol schaalt 125%.
+- **Railrij (speeluren, events):** pl-10, meetpuntbol op de rail-x, hairline-scheiding, `stem-baan`-daglabel in club-700, `stem-cijfer`-uren in inkt-950, omschrijving bold met doelgroep in inkt-500. Hover: de rij-inhoud schuift 2 eenheden naar rechts; de bol blijft op de draad en schaalt 125%. Sectiekoppen en intro's boven een rail-lijst staan mee op de rail-inspringing (pl-10), zodat de draad links van de letters loopt.
 - **Stille regel (1987):** één railpunt zonder lijst — bol, cijfer, één paragraaf, één baan-link. Voor enkelvoudige feiten op de draad.
 
 ### Navigation
@@ -219,4 +219,4 @@ Iconen zijn altijd inline getekende SVG's (stroke currentColor, stroke-width 2�
 
 ---
 
-*Status van de migratie: alleen de homepage (`src/pages/index.astro`), `Header.astro`, `Footer.astro` en `Layout.astro` leven volledig in De Shuttle. Alle overige pagina's (`/club/*`, `/competitie/`, `/jeugd/`, `/kalender/`, `/intraclub/*`) staan nog in de oude, neutrale opmaak (PageHeader + `prose`, rounded-xl meldingsvakken) en erven voorlopig alleen Header, Footer, het Archivo-font en de kleurtokens. Bij het herwerken van zo'n pagina vervang je die opmaak door de grammatica in dit document; de prose-stijl is geen onderdeel van de wereld.*
+*Status van de migratie: de homepage (`src/pages/index.astro`), de kalender (`src/pages/kalender.astro`), `Header.astro`, `Footer.astro` en `Layout.astro` leven volledig in De Shuttle. De kalender toont hoe een pagina zonder scroll-script de statische rail draagt (bol + korte vaste draad bij de kop) en hoe chroom van derden (FullCalendar) de wereldtokens overneemt: baan-pillen als knoppen, display-maandtitel, club-700 dagkoppen, tabulaire dagcijfers, hairline-raster. Alle overige pagina's (`/club/*`, `/competitie/`, `/jeugd/`, `/intraclub/*`) staan nog in de oude, neutrale opmaak (PageHeader + `prose`, rounded-xl meldingsvakken) en erven voorlopig alleen Header, Footer, het Archivo-font en de kleurtokens. Bij het herwerken van zo'n pagina vervang je die opmaak door de grammatica in dit document; de prose-stijl is geen onderdeel van de wereld.*
