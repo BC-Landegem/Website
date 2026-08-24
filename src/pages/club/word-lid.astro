@@ -47,7 +47,7 @@ const aanbod = [
           </p>
           <p>
             Heb je nog geen racket? Voor je eerste keren
-            {' '}<strong class="text-inkt-950">leen je er een van de club</strong>. Sportschoenen
+            <strong class="text-inkt-950">leen je er een van de club</strong>. Sportschoenen
             volstaan om te beginnen.
           </p>
           <p>
@@ -75,10 +75,10 @@ const aanbod = [
 
         <p class="mt-6 max-w-3xl leading-relaxed text-inkt-700">
           Alles gaat door in <strong class="text-inkt-950">{locatie.naam}</strong>, {locatie.adres},
-          {' '}{locatie.gemeente} —
-          {' '}<a href={locatie.kaart} target="_blank" rel="noopener" class="font-semibold text-club-700 underline hover:text-club-800">bekijk op de kaart</a>.
+          {locatie.gemeente} —
+          <a href={locatie.kaart} target="_blank" rel="noopener" class="font-semibold text-club-700 underline hover:text-club-800">bekijk op de kaart</a>.
           De exacte data, ook wanneer er uitzonderlijk niet gespeeld wordt, vind je
-          {' '}<a href={url('/kalender/')} class="font-semibold text-club-700 underline hover:text-club-800">in de kalender</a>.
+          <a href={url('/kalender/')} class="font-semibold text-club-700 underline hover:text-club-800">in de kalender</a>.
         </p>
       </li>
 
@@ -223,7 +223,7 @@ const aanbod = [
 
       <p class="mt-8 max-w-3xl leading-relaxed text-inkt-700">
         Nog een vraag die hier niet beantwoord wordt? Mail
-        {' '}<a href="mailto:info@bclandegem.be" class="font-semibold text-club-700 underline hover:text-club-800">info@bclandegem.be</a> —
+        <a href="mailto:info@bclandegem.be" class="font-semibold text-club-700 underline hover:text-club-800">info@bclandegem.be</a> —
         we antwoorden graag.
       </p>
 
