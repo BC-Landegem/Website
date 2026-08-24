@@ -13,8 +13,8 @@ import trainingen from '../../data/trainingen.json';
     title="Word lid!"
     intro="BC Landegem is een club voor jong en oud, voor competitiespelers en recreanten. Bij ons staat speelplezier centraal!"
   />
-  <div class="mx-auto max-w-3xl px-4 py-12">
-    <article class="prose prose-neutral">
+  <div class="mx-auto max-w-6xl px-4 py-12">
+    <article class="prose prose-neutral max-w-4xl">
       <p>
         De jeugd kan training volgen op <strong>woensdagavond en zaterdagvoormiddag</strong>. Op
         zaterdag wordt in verschillende groepen gewerkt: de eerste groep is voor de beginnende
@@ -31,7 +31,7 @@ import trainingen from '../../data/trainingen.json';
       <h2>Speelmomenten</h2>
     </article>
 
-    <ul class="mt-6 grid gap-4 sm:grid-cols-2">
+    <ul class="mt-6 grid max-w-4xl gap-4 sm:grid-cols-2">
       {trainingen.momenten.map((moment) => (
         <li class="rounded-xl border border-neutral-200 p-4">
           <p class="text-sm font-semibold uppercase tracking-wide text-club-600">{moment.dag}</p>
@@ -41,7 +41,7 @@ import trainingen from '../../data/trainingen.json';
       ))}
     </ul>
 
-    <article class="prose prose-neutral mt-6">
+    <article class="prose prose-neutral mt-6 max-w-4xl">
       <p>
         Exacte data vind je terug <a href={url('/kalender/')}>via de kalender</a>. Kom gerust eens
         langs voor een proefbeurt — een niet-aangesloten speler kan drie keer komen spelen vooraleer
@@ -49,7 +49,7 @@ import trainingen from '../../data/trainingen.json';
       </p>
     </article>
 
-    <div class="mt-10 rounded-2xl bg-club-500 p-8 text-center">
+    <div class="mt-10 max-w-4xl rounded-2xl bg-club-500 p-8 text-center">
       <h2 class="text-2xl font-bold text-white">Graag lid worden?</h2>
       <p class="mx-auto mt-2 max-w-md text-club-50">
         Schrijf je in via ons online inschrijvingsformulier — je bent zo klaar.
