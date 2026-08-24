@@ -1,11 +1,224 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import PageHeader from '../components/PageHeader.astro';
+
+const tabs = [
+  { key: 'general', label: 'Algemeen', soort: 'ranking' },
+  { key: 'women', label: 'Dames', soort: 'ranking' },
+  { key: 'recreants', label: 'Recreanten', soort: 'ranking' },
+  { key: 'veterans', label: 'Veteranen', soort: 'ranking' },
+  { key: 'speeldagen', label: 'Speeldagen', soort: 'speeldagen' },
+  { key: 'aanwezigheden', label: 'Aanwezigheden', soort: 'aanwezigheden' },
+];
 ---
 
-<Layout title="Intraclub">
-  <PageHeader title="Intraclub" />
-  <div class="mx-auto max-w-6xl px-4 py-12">
-    <p class="text-neutral-600">Deze pagina wordt binnenkort gevuld.</p>
+<Layout
+  title="Intraclub"
+  description="De standen en uitslagen van de intraclubcompetitie van BC Landegem."
+>
+  <PageHeader
+    title="Intraclub"
+    intro="Onze interne competitie: vier spelers per match, elke set een ander duo, het hele seizoen een klassement."
+  />
+  <div class="mx-auto max-w-4xl px-4 py-12">
+    <div
+      id="intra-fout"
+      class="hidden rounded-xl border border-club-200 bg-club-50 p-4 text-club-800"
+    >
+      De standen konden niet geladen worden. Probeer het later opnieuw.
+    </div>
+
+    <div id="intra-laden" class="text-neutral-500">Standen laden…</div>
+
+    <div id="intra-inhoud" class="hidden">
+      <div class="flex flex-wrap items-baseline justify-between gap-2">
+        <h2 class="text-2xl font-bold tracking-tight">
+          Klassement <span id="intra-seizoen" class="text-neutral-400"></span>
+        </h2>
+        <a id="intra-laatste" href="#" class="hidden text-sm font-semibold text-club-600 hover:underline"></a>
+      </div>
+
+      <div class="mt-4 flex flex-wrap gap-2" role="tablist" aria-label="Overzicht">
+        {tabs.map((tab, i) => (
+          <button
+            type="button"
+            role="tab"
+            data-tab={tab.key}
+            data-soort={tab.soort}
+            aria-selected={i === 0 ? 'true' : 'false'}
+            class="rounded-full border border-neutral-300 px-4 py-1.5 text-sm font-semibold transition hover:border-club-500 hover:text-club-600 aria-selected:border-club-500 aria-selected:bg-club-500 aria-selected:text-white"
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      <!-- Klassementen -->
+      <div id="paneel-ranking" class="mt-6 overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead>
+            <tr class="border-b border-neutral-300 text-xs uppercase tracking-wide text-neutral-500">
+              <th class="py-2 pr-3">#</th>
+              <th class="py-2 pr-3">Naam</th>
+              <th class="py-2 pr-3 text-right">Gemiddelde</th>
+              <th class="py-2 text-right">+/−</th>
+            </tr>
+          </thead>
+          <tbody id="intra-tabel"></tbody>
+        </table>
+      </div>
+
+      <!-- Speeldagen -->
+      <div id="paneel-speeldagen" class="mt-6 hidden overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead>
+            <tr class="border-b border-neutral-300 text-xs uppercase tracking-wide text-neutral-500">
+              <th class="py-2 pr-3">Speeldag</th>
+              <th class="py-2 pr-3">Datum</th>
+              <th class="py-2 pr-3 text-right">Spelers</th>
+              <th class="py-2 text-right">Gem. afwezigen</th>
+            </tr>
+          </thead>
+          <tbody id="intra-speeldagen"></tbody>
+        </table>
+      </div>
+
+      <!-- Aanwezigheden -->
+      <div id="paneel-aanwezigheden" class="mt-6 hidden overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead>
+            <tr class="border-b border-neutral-300 text-xs uppercase tracking-wide text-neutral-500">
+              <th class="py-2 pr-3">#</th>
+              <th class="py-2 pr-3">Naam</th>
+              <th class="py-2 pr-3 text-right">Aanwezig</th>
+              <th class="py-2 text-right">Gewonnen sets</th>
+            </tr>
+          </thead>
+          <tbody id="intra-aanwezigheden"></tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </Layout>
+
+<script>
+  import { fetchJson, naam, spelerUrl, speeldagUrl, formatDatum } from '../lib/intra';
+  import type { RankingRij } from '../lib/intra';
+
+  interface Rankings {
+    seasonId: number;
+    [categorie: string]: RankingRij[] | number;
+  }
+  interface Ronde { id: string; number: string; date: string; matches: string; averageAbsent: string }
+  interface Statistiek {
+    id: string; firstName: string; name: string;
+    statistics: { rounds: { present: number }; sets: { won: number } };
+  }
+
+  const fout = document.getElementById('intra-fout')!;
+  const laden = document.getElementById('intra-laden')!;
+  const inhoud = document.getElementById('intra-inhoud')!;
+  const tabs = document.querySelectorAll<HTMLButtonElement>('[data-tab]');
+  const panelen = {
+    ranking: document.getElementById('paneel-ranking')!,
+    speeldagen: document.getElementById('paneel-speeldagen')!,
+    aanwezigheden: document.getElementById('paneel-aanwezigheden')!,
+  };
+
+  const spelerLink = (rij: { id: string; firstName: string; name: string }) =>
+    `<a href="${spelerUrl(rij.id)}" class="hover:text-club-600 hover:underline">${naam(rij)}</a>`;
+
+  function toonRanking(rijen: RankingRij[]) {
+    const tabel = document.getElementById('intra-tabel')!;
+    tabel.innerHTML = rijen
+      .map((rij) => {
+        const diff = rij.difference > 0
+          ? `<span class="text-green-600">▲ ${rij.difference}</span>`
+          : rij.difference < 0
+            ? `<span class="text-club-600">▼ ${Math.abs(rij.difference)}</span>`
+            : '<span class="text-neutral-400">–</span>';
+        return `<tr class="border-b border-neutral-100">
+          <td class="py-2 pr-3 font-semibold">${rij.rank}</td>
+          <td class="py-2 pr-3">${spelerLink(rij)}</td>
+          <td class="py-2 pr-3 text-right tabular-nums">${rij.average.toFixed(2)}</td>
+          <td class="py-2 text-right">${diff}</td>
+        </tr>`;
+      })
+      .join('');
+  }
+
+  function toonSpeeldagen(rondes: Ronde[]) {
+    const tabel = document.getElementById('intra-speeldagen')!;
+    tabel.innerHTML = rondes
+      .slice()
+      .reverse()
+      .map((ronde) => `<tr class="border-b border-neutral-100">
+        <td class="py-2 pr-3 font-semibold"><a href="${speeldagUrl(ronde.id)}" class="text-club-600 hover:underline">Speeldag ${ronde.number}</a></td>
+        <td class="py-2 pr-3">${formatDatum(ronde.date)}</td>
+        <td class="py-2 pr-3 text-right tabular-nums">${parseInt(ronde.matches) * 4}</td>
+        <td class="py-2 text-right tabular-nums">${ronde.averageAbsent}</td>
+      </tr>`)
+      .join('');
+  }
+
+  function toonAanwezigheden(statistieken: Statistiek[]) {
+    const gesorteerd = statistieken.slice().sort((a, b) => {
+      if (a.statistics.rounds.present === b.statistics.rounds.present) {
+        return b.statistics.sets.won - a.statistics.sets.won;
+      }
+      return b.statistics.rounds.present - a.statistics.rounds.present;
+    });
+    const tabel = document.getElementById('intra-aanwezigheden')!;
+    tabel.innerHTML = gesorteerd
+      .map((rij, i) => `<tr class="border-b border-neutral-100">
+        <td class="py-2 pr-3 font-semibold">${i + 1}</td>
+        <td class="py-2 pr-3">${spelerLink(rij)}</td>
+        <td class="py-2 pr-3 text-right tabular-nums">${rij.statistics.rounds.present}</td>
+        <td class="py-2 text-right tabular-nums">${rij.statistics.sets.won}</td>
+      </tr>`)
+      .join('');
+  }
+
+  async function laadData() {
+    try {
+      const [rankings, rondes, statistieken, laatste] = await Promise.all([
+        fetchJson<Rankings>('/rankings'),
+        fetchJson<Ronde[]>('/rounds'),
+        fetchJson<Statistiek[]>('/seasons/latest/statistics'),
+        fetchJson<Ronde | false>('/rounds/latestCalculated'),
+      ]);
+
+      document.getElementById('intra-seizoen')!.textContent = `— seizoen ${rankings.seasonId}`;
+      toonRanking(rankings.general as RankingRij[]);
+      toonSpeeldagen(rondes);
+      toonAanwezigheden(statistieken);
+
+      if (laatste && laatste.id) {
+        const link = document.getElementById('intra-laatste') as HTMLAnchorElement;
+        link.href = speeldagUrl(laatste.id);
+        link.textContent = `Stand na speeldag ${laatste.number} (${formatDatum(laatste.date)}) →`;
+        link.classList.remove('hidden');
+      }
+
+      for (const tab of tabs) {
+        tab.addEventListener('click', () => {
+          for (const andere of tabs) andere.setAttribute('aria-selected', 'false');
+          tab.setAttribute('aria-selected', 'true');
+          for (const paneel of Object.values(panelen)) paneel.classList.add('hidden');
+          panelen[tab.dataset.soort as keyof typeof panelen].classList.remove('hidden');
+          if (tab.dataset.soort === 'ranking') {
+            toonRanking(rankings[tab.dataset.tab!] as RankingRij[]);
+          }
+        });
+      }
+
+      laden.classList.add('hidden');
+      inhoud.classList.remove('hidden');
+    } catch {
+      laden.classList.add('hidden');
+      fout.classList.remove('hidden');
+    }
+  }
+
+  laadData();
+</script>

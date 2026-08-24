@@ -1,0 +1,76 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { url } from '../../lib/url';
+---
+
+<Layout title="Intraclub speeldag" description="De uitslagen van een intraclub-speeldag van BC Landegem.">
+  <div class="border-b border-neutral-200 bg-neutral-50">
+    <div class="mx-auto max-w-6xl px-4 py-10">
+      <p class="text-sm">
+        <a href={url('/intraclub/')} class="font-semibold text-club-600 hover:underline">← Intraclub</a>
+      </p>
+      <h1 id="speeldag-titel" class="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Speeldag</h1>
+      <p id="speeldag-info" class="mt-3 text-lg text-neutral-600"></p>
+    </div>
+  </div>
+
+  <div class="mx-auto max-w-4xl px-4 py-12">
+    <div
+      id="speeldag-fout"
+      class="hidden rounded-xl border border-club-200 bg-club-50 p-4 text-club-800"
+    >
+      De uitslagen konden niet geladen worden. Probeer het later opnieuw.
+    </div>
+    <div id="speeldag-laden" class="text-neutral-500">Uitslagen laden…</div>
+
+    <div id="speeldag-inhoud" class="hidden">
+      <p class="mb-6 text-sm text-neutral-500">
+        Elke match wordt gespeeld door vier spelers die per set in een andere samenstelling dubbelen.
+        Het winnende duo staat in het vet.
+      </p>
+      <div id="speeldag-matchen" class="space-y-4"></div>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  import { fetchJson, formatDatum, renderMatchKaart } from '../../lib/intra';
+  import type { Match } from '../../lib/intra';
+
+  interface Ronde {
+    id?: string;
+    number: string;
+    date: string;
+    averageAbsent: string;
+    matches: Match[];
+  }
+
+  const fout = document.getElementById('speeldag-fout')!;
+  const laden = document.getElementById('speeldag-laden')!;
+
+  async function laadSpeeldag() {
+    const id = new URLSearchParams(location.search).get('id');
+    try {
+      if (!id) throw new Error('geen id');
+      const ronde = await fetchJson<Ronde>(`/rounds/${encodeURIComponent(id)}`);
+      if (!ronde.id) throw new Error('onbekende speeldag');
+
+      document.getElementById('speeldag-titel')!.textContent = `Speeldag ${ronde.number}`;
+      document.title = `Intraclub speeldag ${ronde.number} | BC Landegem`;
+      document.getElementById('speeldag-info')!.textContent =
+        `${formatDatum(ronde.date)} — gemiddelde van de afwezigen: ${ronde.averageAbsent}`;
+
+      document.getElementById('speeldag-matchen')!.innerHTML = ronde.matches
+        .map((match) => renderMatchKaart(match))
+        .join('');
+
+      laden.classList.add('hidden');
+      document.getElementById('speeldag-inhoud')!.classList.remove('hidden');
+    } catch {
+      laden.classList.add('hidden');
+      fout.classList.remove('hidden');
+    }
+  }
+
+  laadSpeeldag();
+</script>

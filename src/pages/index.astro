@@ -63,7 +63,18 @@ import hero from '../assets/hero.jpg';
     </ul>
   </section>
 
-  <!-- Komende events: wordt in fase 4 gevuld vanuit Google Calendar -->
+  <!-- Komende events -->
+  <section id="events-sectie" class="hidden bg-neutral-50">
+    <div class="mx-auto max-w-6xl px-4 py-16">
+      <h2 class="text-3xl font-bold tracking-tight">Binnenkort in de club</h2>
+      <ul id="events-lijst" class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"></ul>
+      <p class="mt-6">
+        <a href={url('/kalender/')} class="font-semibold text-club-600 hover:underline">
+          Bekijk de volledige kalender →
+        </a>
+      </p>
+    </div>
+  </section>
 
   <!-- CTA -->
   <section class="bg-club-500">
@@ -82,3 +93,59 @@ import hero from '../assets/hero.jpg';
     </div>
   </section>
 </Layout>
+
+<script>
+  import { googleCalendarApiKey, bronnen } from '../data/kalender';
+
+  // Toon de eerstvolgende events uit de "Events"-kalender; sectie blijft
+  // verborgen als er niets gepland is of de API onbereikbaar is.
+  const eventsBron = bronnen.find((bron) => bron.label === 'Events')!;
+
+  interface GoogleEvent {
+    summary?: string;
+    location?: string;
+    start: { date?: string; dateTime?: string };
+  }
+
+  async function laadEvents() {
+    const url = new URL(
+      `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(eventsBron.googleCalendarId)}/events`,
+    );
+    url.search = new URLSearchParams({
+      key: googleCalendarApiKey,
+      timeMin: new Date().toISOString(),
+      maxResults: '4',
+      singleEvents: 'true',
+      orderBy: 'startTime',
+    }).toString();
+
+    try {
+      const res = await fetch(url);
+      if (!res.ok) return;
+      const data: { items?: GoogleEvent[] } = await res.json();
+      const events = data.items ?? [];
+      if (!events.length) return;
+
+      const lijst = document.getElementById('events-lijst')!;
+      for (const event of events) {
+        const start = new Date(event.start.dateTime ?? event.start.date!);
+        const datum = start.toLocaleDateString('nl-BE', { weekday: 'short', day: 'numeric', month: 'long' });
+        const uur = event.start.dateTime
+          ? start.toLocaleTimeString('nl-BE', { hour: '2-digit', minute: '2-digit' })
+          : null;
+        const li = document.createElement('li');
+        li.className = 'rounded-xl border border-neutral-200 bg-white p-5';
+        li.innerHTML = `
+          <p class="text-sm font-semibold uppercase tracking-wide text-club-600">${datum}${uur ? ` · ${uur}` : ''}</p>
+          <p class="mt-1 font-bold">${event.summary ?? 'Event'}</p>
+          ${event.location ? `<p class="mt-1 text-sm text-neutral-600">${event.location}</p>` : ''}`;
+        lijst.append(li);
+      }
+      document.getElementById('events-sectie')!.classList.remove('hidden');
+    } catch {
+      // Sectie blijft gewoon verborgen.
+    }
+  }
+
+  laadEvents();
+</script>

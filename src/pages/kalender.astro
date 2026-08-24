@@ -1,11 +1,104 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import PageHeader from '../components/PageHeader.astro';
+import { legende } from '../data/kalender';
 ---
 
-<Layout title="Kalender">
-  <PageHeader title="Kalender" />
+<Layout
+  title="Kalender"
+  description="De kalender van BC Landegem: trainingen, vrij spel, competitiematchen, intraclub en events."
+>
+  <PageHeader
+    title="Kalender"
+    intro="Alle trainingen, speelmomenten, competitiematchen en events op één plek."
+  />
   <div class="mx-auto max-w-6xl px-4 py-12">
-    <p class="text-neutral-600">Deze pagina wordt binnenkort gevuld.</p>
+    <ul class="mb-6 flex flex-wrap gap-x-5 gap-y-2 text-sm text-neutral-600">
+      {legende.map((item) => (
+        <li class="flex items-center gap-2">
+          <span class="h-3 w-3 rounded-full" style={`background: ${item.color}`}></span>
+          {item.label}
+        </li>
+      ))}
+    </ul>
+
+    <div
+      id="kalender-fout"
+      class="mb-6 hidden rounded-xl border border-club-200 bg-club-50 p-4 text-club-800"
+    >
+      De kalender kon niet (volledig) geladen worden. Probeer het later opnieuw.
+    </div>
+
+    <div id="kalender"></div>
   </div>
 </Layout>
+
+<script>
+  import { Calendar } from '@fullcalendar/core';
+  import nlLocale from '@fullcalendar/core/locales/nl';
+  import dayGridPlugin from '@fullcalendar/daygrid';
+  import listPlugin from '@fullcalendar/list';
+  import googleCalendarPlugin from '@fullcalendar/google-calendar';
+  import { googleCalendarApiKey, bronnen } from '../data/kalender';
+
+  const el = document.getElementById('kalender')!;
+  const foutmelding = document.getElementById('kalender-fout')!;
+  const isMobiel = window.matchMedia('(max-width: 640px)').matches;
+
+  const calendar = new Calendar(el, {
+    plugins: [dayGridPlugin, listPlugin, googleCalendarPlugin],
+    locale: nlLocale,
+    initialView: isMobiel ? 'listMonth' : 'dayGridMonth',
+    headerToolbar: {
+      left: 'prev,next today',
+      center: 'title',
+      right: 'dayGridMonth,listMonth',
+    },
+    height: 'auto',
+    googleCalendarApiKey,
+    eventSources: bronnen.map((bron) => ({
+      googleCalendarId: bron.googleCalendarId,
+      backgroundColor: bron.color,
+      borderColor: bron.color,
+    })),
+    eventSourceFailure() {
+      foutmelding.classList.remove('hidden');
+    },
+    // Klik op een event opent de Google Calendar-pagina niet; toon enkel de info.
+    eventClick(info) {
+      info.jsEvent.preventDefault();
+    },
+  });
+
+  calendar.render();
+</script>
+
+<style is:global>
+  #kalender .fc-toolbar-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+  #kalender .fc-button-primary {
+    background: var(--color-club-500);
+    border-color: var(--color-club-500);
+  }
+  #kalender .fc-button-primary:hover {
+    background: var(--color-club-600);
+    border-color: var(--color-club-600);
+  }
+  #kalender .fc-button-primary:not(:disabled).fc-button-active,
+  #kalender .fc-button-primary:not(:disabled):active {
+    background: var(--color-club-700);
+    border-color: var(--color-club-700);
+  }
+  #kalender .fc-button-primary:disabled {
+    background: var(--color-club-300);
+    border-color: var(--color-club-300);
+  }
+  @media (max-width: 640px) {
+    #kalender .fc-toolbar {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+  }
+</style>

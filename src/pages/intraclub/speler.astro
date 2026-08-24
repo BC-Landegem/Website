@@ -1,0 +1,170 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { url } from '../../lib/url';
+---
+
+<Layout title="Intraclub speler" description="Statistieken van een intraclub-speler van BC Landegem.">
+  <div class="border-b border-neutral-200 bg-neutral-50">
+    <div class="mx-auto max-w-6xl px-4 py-10">
+      <p class="text-sm">
+        <a href={url('/intraclub/')} class="font-semibold text-club-600 hover:underline">← Intraclub</a>
+      </p>
+      <h1 id="speler-naam" class="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Speler</h1>
+      <p id="speler-ranking" class="mt-3 text-lg text-neutral-600"></p>
+    </div>
+  </div>
+
+  <div class="mx-auto max-w-4xl px-4 py-12">
+    <div
+      id="speler-fout"
+      class="hidden rounded-xl border border-club-200 bg-club-50 p-4 text-club-800"
+    >
+      De statistieken konden niet geladen worden. Probeer het later opnieuw.
+    </div>
+    <div id="speler-laden" class="text-neutral-500">Statistieken laden…</div>
+
+    <div id="speler-inhoud" class="hidden">
+      <div class="grid grid-cols-[repeat(auto-fit,minmax(11rem,1fr))] gap-3">
+        <div class="rounded-xl border border-neutral-200 p-4" data-stat="aanwezig">
+          <p class="text-xs font-semibold uppercase tracking-wide text-neutral-500">Aanwezig</p>
+          <p class="mt-1 text-2xl font-bold tabular-nums"><span data-waarde></span><span class="text-base font-semibold text-neutral-400">%</span></p>
+          <div class="mt-2 h-1 overflow-hidden rounded-full bg-neutral-100">
+            <div data-meter class="h-full rounded-full bg-club-500" style="width: 0%"></div>
+          </div>
+          <p data-context class="mt-1.5 text-xs text-neutral-500"></p>
+        </div>
+        <div class="rounded-xl border border-neutral-200 p-4" data-stat="sets">
+          <p class="text-xs font-semibold uppercase tracking-wide text-neutral-500">Sets gewonnen</p>
+          <p class="mt-1 text-2xl font-bold tabular-nums"><span data-waarde></span><span class="text-base font-semibold text-neutral-400">%</span></p>
+          <div class="mt-2 h-1 overflow-hidden rounded-full bg-neutral-100">
+            <div data-meter class="h-full rounded-full bg-club-500" style="width: 0%"></div>
+          </div>
+          <p data-context class="mt-1.5 text-xs text-neutral-500"></p>
+        </div>
+        <div class="rounded-xl border border-neutral-200 p-4" data-stat="punten">
+          <p class="text-xs font-semibold uppercase tracking-wide text-neutral-500">Punten gewonnen</p>
+          <p class="mt-1 text-2xl font-bold tabular-nums"><span data-waarde></span><span class="text-base font-semibold text-neutral-400">%</span></p>
+          <div class="mt-2 h-1 overflow-hidden rounded-full bg-neutral-100">
+            <div data-meter class="h-full rounded-full bg-club-500" style="width: 0%"></div>
+          </div>
+          <p data-context class="mt-1.5 text-xs text-neutral-500"></p>
+        </div>
+      </div>
+
+      <section class="mt-10">
+        <h2 class="text-2xl font-bold tracking-tight">Klassementsverloop</h2>
+        <div id="chart-verloop" class="mt-4"></div>
+      </section>
+
+      <section class="mt-10">
+        <h2 class="text-2xl font-bold tracking-tight">Wedstrijden</h2>
+        <p class="mt-1 mb-6 text-sm text-neutral-500">
+          Vier spelers per match, per set een andere samenstelling. Het winnende duo staat in het vet;
+          de meest recente speeldag staat bovenaan.
+        </p>
+        <div id="speler-matchen" class="space-y-6"></div>
+      </section>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  import ApexCharts from 'apexcharts';
+  import { fetchJson, renderMatchKaart } from '../../lib/intra';
+  import type { Match } from '../../lib/intra';
+
+  interface SpelerDetail {
+    id?: string;
+    firstName: string;
+    name: string;
+    matches: Match[];
+    statistics: {
+      points: { won: number; lost: number; total: number };
+      sets: { won: number; lost: number; total: number };
+      rounds: { present: number };
+      rankingHistory: { number: number; rank: number }[];
+    };
+  }
+
+  const fout = document.getElementById('speler-fout')!;
+  const laden = document.getElementById('speler-laden')!;
+
+  const clubRood = '#eb4024';
+
+  function percentage(deel: number, totaal: number): number {
+    return totaal > 0 ? Math.round((deel / totaal) * 100) : 0;
+  }
+
+  function vulStat(stat: string, deel: number, totaal: number, context: string) {
+    const tegel = document.querySelector(`[data-stat="${stat}"]`)!;
+    const procent = percentage(deel, totaal);
+    tegel.querySelector('[data-waarde]')!.textContent = String(procent);
+    (tegel.querySelector('[data-meter]') as HTMLElement).style.width = `${procent}%`;
+    tegel.querySelector('[data-context]')!.textContent = context;
+  }
+
+  async function laadSpeler() {
+    const id = new URLSearchParams(location.search).get('id');
+    try {
+      if (!id) throw new Error('geen id');
+      const speler = await fetchJson<SpelerDetail>(`/players/${encodeURIComponent(id)}`);
+      if (!speler.id) throw new Error('onbekende speler');
+
+      const volledigeNaam = `${speler.firstName} ${speler.name}`;
+      document.getElementById('speler-naam')!.textContent = volledigeNaam;
+      document.title = `${volledigeNaam} — intraclub | BC Landegem`;
+
+      const historiek = speler.statistics.rankingHistory;
+      const huidige = historiek.at(-1);
+      if (huidige) {
+        const beste = Math.min(...historiek.map((rij) => rij.rank));
+        const besteSpeeldag = historiek.slice().reverse().find((rij) => rij.rank === beste)!;
+        document.getElementById('speler-ranking')!.textContent =
+          `Ranking: ${huidige.rank} · Beste: ${beste} (op speeldag ${besteSpeeldag.number})`;
+      }
+
+      const stats = speler.statistics;
+      vulStat('aanwezig', stats.rounds.present, historiek.length, `${stats.rounds.present} van ${historiek.length} speeldagen`);
+      vulStat('sets', stats.sets.won, stats.sets.total, `${stats.sets.won} van ${stats.sets.total} sets`);
+      vulStat('punten', stats.points.won, stats.points.total, `${stats.points.won} van ${stats.points.total} punten`);
+
+      new ApexCharts(document.querySelector('#chart-verloop')!, {
+        series: [{ name: 'Ranking', data: historiek.map((rij) => rij.rank) }],
+        colors: [clubRood],
+        chart: { type: 'line', height: 320, zoom: { enabled: false }, toolbar: { show: false } },
+        markers: { size: 4 },
+        dataLabels: { enabled: false },
+        stroke: { curve: 'straight', width: 3 },
+        grid: { row: { colors: ['#fafafa', 'transparent'], opacity: 0.5 } },
+        xaxis: {
+          categories: historiek.map((rij) => String(rij.number)),
+          title: { text: 'Speeldag', style: { color: '#737373' } },
+        },
+        yaxis: {
+          reversed: true,
+          min: 1,
+          max: Math.max(...historiek.map((rij) => rij.rank)),
+          labels: { formatter: (waarde: number) => waarde.toFixed(0) },
+        },
+        tooltip: { x: { formatter: (waarde: string) => `Speeldag ${waarde}` } },
+      }).render();
+
+      const matchen = speler.matches.slice().reverse();
+      document.getElementById('speler-matchen')!.innerHTML = matchen
+        .map((match) => `
+          <div>
+            <p class="mb-1 text-sm font-semibold text-neutral-500">Speeldag ${match.round?.number ?? ''}</p>
+            ${renderMatchKaart(match, speler.id)}
+          </div>`)
+        .join('');
+
+      laden.classList.add('hidden');
+      document.getElementById('speler-inhoud')!.classList.remove('hidden');
+    } catch {
+      laden.classList.add('hidden');
+      fout.classList.remove('hidden');
+    }
+  }
+
+  laadSpeler();
+</script>

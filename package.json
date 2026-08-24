@@ -10,8 +10,13 @@
     "astro": "astro"
   },
   "dependencies": {
+    "@fullcalendar/core": "^6.1.21",
+    "@fullcalendar/daygrid": "^6.1.21",
+    "@fullcalendar/google-calendar": "^6.1.21",
+    "@fullcalendar/list": "^6.1.21",
     "@tailwindcss/typography": "^0.5.20",
     "@tailwindcss/vite": "^4.1.0",
+    "apexcharts": "^6.10.0",
     "astro": "^7.2.4",
     "tailwindcss": "^4.1.0"
   }
