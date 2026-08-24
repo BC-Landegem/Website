@@ -38,6 +38,9 @@ const base = import.meta.env.BASE_URL;
     <link rel="apple-touch-icon" href={`${base}apple-touch-icon.png`} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Kalenderdata (hero-chip, events, kalenderpagina) komt via fetch van de
+         Google Calendar API; preconnect scheelt een handshake. -->
+    <link rel="preconnect" href="https://www.googleapis.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&display=swap"
       rel="stylesheet"
