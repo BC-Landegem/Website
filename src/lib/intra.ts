@@ -94,12 +94,14 @@ export function renderMatchSets(match: Match, highlightId?: string): string {
       const scoreHtml = gespeeld
         ? `${score.home}–${score.away}`
         : '<span class="text-inkt-950/20">–</span>';
+      // Mobiel: label + score op één lijn, de duo's eronder. Vanaf sm: alles op één rij.
+      // minmax(0,1fr) laat de namen krimpen/afbreken i.p.v. de kaart breder te duwen.
       return `
-        <div class="grid grid-cols-[2.75rem_1fr_auto_1fr] items-center gap-x-2 py-1">
+        <div class="grid grid-cols-[2.75rem_minmax(0,1fr)] items-center gap-x-2 gap-y-0.5 border-b border-inkt-950/5 py-2 last:border-0 sm:grid-cols-[2.75rem_minmax(0,1fr)_auto_minmax(0,1fr)] sm:border-0 sm:py-1">
           <span class="stem-baan text-xs text-inkt-500">${label}</span>
-          <span class="text-right">${duoHtml(thuis, gespeeld && score.home > score.away, highlightId)}</span>
-          <span class="stem-cijfer min-w-14 bg-veer-100 px-2 py-0.5 text-center">${scoreHtml}</span>
-          <span>${duoHtml(uit, gespeeld && score.away > score.home, highlightId)}</span>
+          <span class="stem-cijfer min-w-14 justify-self-start bg-veer-100 px-2 py-0.5 text-center sm:col-start-3 sm:row-start-1 sm:justify-self-auto">${scoreHtml}</span>
+          <span class="col-start-2 hyphens-auto break-words sm:row-start-1 sm:text-right">${duoHtml(thuis, gespeeld && score.home > score.away, highlightId)}</span>
+          <span class="col-start-2 hyphens-auto break-words sm:col-start-4 sm:row-start-1">${duoHtml(uit, gespeeld && score.away > score.home, highlightId)}</span>
         </div>`;
     })
     .join('');
