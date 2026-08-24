@@ -2,96 +2,282 @@
 import Layout from '../layouts/Layout.astro';
 import RailKop from '../components/RailKop.astro';
 import { url } from '../lib/url';
+import trainingen from '../data/trainingen.json';
+
+const { locatie } = trainingen;
+const LUC = 'mailto:vantornhoutluc@skynet.be';
+
+// Wat een ouder wil horen vóór die eerste keer — dezelfde beloftes als op
+// word-lid, hier kort herhaald zodat niemand hoeft door te klikken.
+const drempel = [
+  ['Drie keer gratis meespelen', 'Pas daarna moet je beslissen of je kind lid wordt.'],
+  ['Een racket van de club', 'Voor je eerste keren ligt er een klaar om te lenen.'],
+  ['Sportschoenen volstaan', 'Er is geen clubkledij en geen dresscode.'],
+  ['Shuttles krijg je van ons', 'We spelen met clubshuttles, en die zitten in het lidgeld.'],
+];
 ---
 
 <Layout
   title="Jeugd"
-  description="De jeugdwerking van BC Landegem: trainingen op woensdag en zaterdag, vrij spel, en deelname aan de PBO Jeugdcup."
+  description="De jeugdwerking van BC Landegem: vanaf 8 jaar, vrij spelen op woensdagavond en training op zaterdag in twee groepen. Drie keer gratis proberen, racket van de club."
 >
   <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
     <RailKop
       title="Jeugd"
-      intro="Onze jeugdwerking start elk seizoen opnieuw op de eerste woensdag of zaterdag van september."
+      intro="Vier kinderen, één veld, en ze zijn alle vier aan het spelen. Bij badminton zit er niemand op de bank te wachten tot hij mag invallen."
     />
 
-    <div class="mt-12 max-w-3xl pl-10">
-      <h2 class="stem-display text-3xl text-inkt-950 sm:text-4xl">Jeugdwerking</h2>
-      <div class="mt-5 space-y-4 leading-relaxed text-inkt-700">
-        <p>
-          De jeugd (-18) kan vrij spelen op <strong class="text-inkt-950">woensdagavond van 19u00 tot 20u00</strong>;
-          vanaf 20u00 kunnen ze nog een half uurtje samen met de volwassenen spelen als ze daar zin
-          in hebben.
-        </p>
-        <p>
-          Er wordt training gegeven op <strong class="text-inkt-950">zaterdag vanaf 9u30 in 2 groepen</strong> (9u30
-          tot 11u00 en 11u00 tot 12u30) voor de door de trainers geselecteerde jeugd. Er wordt
-          in verschillende leeftijdsgroepen gewerkt naargelang de opkomst en de ervaring.
-        </p>
-        <p>
-          Omdat wij ons als club engageren om wekelijks jeugdtrainingen te voorzien, verwachten wij
-          dat wie de trainingen wil volgen ook elke week aanwezig is. Kan je een training niet
-          volgen, verwittig dan op voorhand de trainers.
-        </p>
-        <p>
-          Nieuwe jeugdleden (vanaf 8 jaar) en jongeren die vrij willen spelen kunnen dit ook
-          op <strong class="text-inkt-950">maandag van 20u00 tot 21u30</strong> en
-          op <strong class="text-inkt-950">zondag van 19u00 tot 21u00</strong>.
-        </p>
-        <p>
-          Nieuwe jeugdspelers die training willen volgen, worden getest in de loop van de maand
-          september. Zij worden op woensdag en/of zaterdag getest door gedreven jeugdtrainers van
-          onze eigen club en enkele ervaren rotten die al tientallen jaren de jeugd begeleiden.
-        </p>
-        <p>
-          Verdere informatie bij <strong class="text-inkt-950">Luc Van Tornhout</strong>: je kan hem
-          bereiken in sportzaal Oostbroek te Nevele tijdens de trainingsuren
-          (zie <a href={url('/kalender/')} class="font-semibold text-club-700 underline hover:text-club-800">kalender</a>) of
-          per mail via <a href="mailto:vantornhoutluc@skynet.be" class="font-semibold text-club-700 underline hover:text-club-800">vantornhoutluc@skynet.be</a>.
-        </p>
-      </div>
-    </div>
-
-    <div class="mt-16 max-w-3xl pl-10">
-      <h2 class="stem-display text-3xl text-inkt-950 sm:text-4xl">PBO Jeugdcup</h2>
-
-      <h3 class="mt-6 text-lg font-bold text-inkt-950">Wat is de Jeugdcup?</h3>
-      <div class="mt-3 space-y-4 leading-relaxed text-inkt-700">
-        <p>
-          De PBO Jeugdcup is een reeks jeugdtornooien binnen de provincie Oost-Vlaanderen. Het is
-          een open jeugdcircuit voor <strong class="text-inkt-950">alle badmintonners van -9 tot -19 jaar</strong>.
-          De bedoeling van de Jeugdcup is elke jeugdspeler aangesloten bij een Oost-Vlaamse club te
-          laten kennismaken met badminton in tornooivorm. Elke jeugdspeler speelt in de eigen
-          leeftijdscategorie een aantal
-          wedstrijden <strong class="text-inkt-950">tegen leeftijdsgenoten</strong>. Er wordt steeds
-          een <a href="https://www.badminton-pbo.be/jeugd/jeugdcup/pbo-jeugdcuptour-ranking/" target="_blank" rel="noopener" class="font-semibold text-club-700 underline hover:text-club-800">rangschikking</a> opgemaakt,
-          zodat op het einde van het badmintonseizoen een winnaar per reeks kan worden aangeduid.
-        </p>
-        <p>
-          Wil je proeven van tornooien en competitie, aarzel dan zeker niet om in te schrijven voor
-          meerdere Jeugdcups.
-        </p>
-      </div>
-
-      <h3 class="mt-8 text-lg font-bold text-inkt-950">Hoe inschrijven?</h3>
-      <p class="mt-3 leading-relaxed text-inkt-700">
-        Het inschrijven voor tornooien gebeurt <strong class="text-inkt-950">online of via mail</strong>,
-        met de link naar het tornooi die wordt doorgestuurd naar onze jeugd. Je hebt wel een
-        VBL-lidnummer nodig om te kunnen inschrijven. Dit kan je opzoeken op
-        de <a href="https://www.badmintonvlaanderen.be/ranking/find.aspx?rid=139" target="_blank" rel="noopener" class="font-semibold text-club-700 underline hover:text-club-800">site van Badminton Vlaanderen</a> of
-        aanvragen bij <a href="mailto:vantornhoutluc@skynet.be" class="font-semibold text-club-700 underline hover:text-club-800">Luc Van Tornhout</a>.
-      </p>
-
-      <h3 class="mt-8 text-lg font-bold text-inkt-950">Deelname betalend</h3>
-      <p class="mt-3 leading-relaxed text-inkt-700">
-        Voor de deelname aan het tornooi wordt per discipline een inschrijvingsgeld betaald.
-      </p>
-
-      <h3 class="mt-8 text-lg font-bold text-inkt-950">Trainers &amp; vervoer</h3>
-      <p class="mt-3 leading-relaxed text-inkt-700">
-        Er kan door de deelnemers onderling afgesproken worden om met enkele ouders de verplaatsing
-        te doen. Indien mogelijk zal er ook een trainer of begeleider aanwezig zijn die de taak van
-        coach en chauffeur op zich neemt.
+    <div class="mt-10 max-w-3xl pl-10">
+      <p class="text-lg leading-relaxed text-inkt-700">
+        Om te beginnen volstaat het dat je kind eens binnenwandelt op een woensdagavond. Kunnen
+        badmintonnen hoeft niet, materiaal meebrengen ook niet. Hieronder lees je hoe het daarna
+        verdergaat, tot en met een eerste tornooi.
       </p>
     </div>
+
+    <!-- De weg van een jeugdspeler als meetpunten op de rail: geen stappenplan
+         (word-lid heeft er al een), maar de momenten van een seizoen. -->
+    <ol class="relative mt-12">
+      <span class="absolute bottom-12 left-[6px] top-12 w-1 -translate-x-1/2 rounded-full bg-club-500" aria-hidden="true"></span>
+
+      <li class="relative border-b border-inkt-950/10 py-10 pl-10 first:border-t">
+        <span class="absolute left-[6px] top-12 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-club-500 ring-4 ring-veer-50" aria-hidden="true"></span>
+        <p class="stem-baan text-xs text-club-700">Woensdagavond</p>
+        <h2 class="stem-display mt-1 text-3xl text-inkt-950 sm:text-4xl">De eerste keer</h2>
+        <p class="stem-cijfer mt-2 text-2xl text-inkt-950">19u00 – 20u00</p>
+
+        <div class="mt-5 max-w-3xl space-y-4 leading-relaxed text-inkt-700">
+          <p>
+            Op woensdagavond spelen onze jeugdspelers vrij,
+            en <strong class="text-inkt-950">iedereen vanaf 8 jaar mag meedoen</strong>. Je moet je
+            niet vooraf inschrijven en er is geen selectie. Je komt binnen, je doet mee met de
+            opwarming, en daarna sta je te spelen.
+          </p>
+          <p>
+            Om 20u00 komen de volwassenen de zaal in. Wie zin heeft, blijft nog een half uurtje en
+            speelt met hen mee. Veel van onze jeugdspelers blijven daar graag voor hangen: tegen
+            iemand die al jaren badmintont, leer je op een half uur meer dan je zou denken.
+          </p>
+        </div>
+
+        <ul class="mt-6 max-w-3xl space-y-3">
+          {drempel.map(([wat, waarom]) => (
+            <li class="grid grid-cols-[1.25rem_1fr] items-baseline gap-2 leading-relaxed text-inkt-700">
+              <span class="text-club-500" aria-hidden="true">—</span>
+              <span><strong class="text-inkt-950">{wat}.</strong> {waarom}</span>
+            </li>
+          ))}
+        </ul>
+
+        <p class="mt-6 max-w-3xl leading-relaxed text-inkt-700">
+          Blijft je kind spelen, dan kost dat <strong class="text-inkt-950">120 € voor een heel
+          jaar</strong>. Daar zitten de trainingen en alle vrije speelmomenten in, hoe vaak het ook
+          komt.
+          {' '}<a href={url('/club/word-lid/')} class="font-semibold text-club-700 underline hover:text-club-800">Alles over lid worden</a>.
+        </p>
+
+        <p class="mt-4 max-w-3xl leading-relaxed text-inkt-700">
+          Eén ding regel je dan wel best snel: <strong class="text-inkt-950">een eigen
+          racket</strong>. De clubrackets zijn er om te proberen, niet om een heel seizoen mee te
+          trainen. Bestellen kan via de club, dus vraag gerust raad aan de trainers voor je er zelf
+          een gaat kopen.
+        </p>
+      </li>
+
+      <li class="relative border-b border-inkt-950/10 py-10 pl-10">
+        <span class="absolute left-[6px] top-12 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-club-500 ring-4 ring-veer-50" aria-hidden="true"></span>
+        <p class="stem-baan text-xs text-club-700">September</p>
+        <h2 class="stem-display mt-1 text-3xl text-inkt-950 sm:text-4xl">Van woensdag naar zaterdag</h2>
+
+        <div class="mt-5 max-w-3xl space-y-4 leading-relaxed text-inkt-700">
+          <p>
+            De trainers staan op woensdag mee in de zaal, dus ze zien vanzelf wie vooruitgaat. Wie
+            er klaar voor is, krijgt de vraag om er op zaterdag bij te komen trainen. Bij nieuwe
+            spelers gebeurt dat meestal in de loop van september.
+          </p>
+          <p>
+            <strong class="text-inkt-950">Niet iedereen gaat meteen mee naar zaterdag.</strong> Die
+            training is bedoeld voor kinderen die de basisslagen al onder de knie hebben, anders
+            krijg je anderhalf uur niet gericht gevuld. Is je kind nog niet zover, dan speelt het
+            gewoon verder op woensdag. Ook daar staat het elke week op het veld, tegen kinderen van
+            zijn eigen leeftijd, met de trainers erbij. De vraag om op zaterdag mee te trainen kan
+            er later nog altijd komen.
+          </p>
+          <p>
+            Die inschatting maken onze eigen jeugdtrainers, samen met een paar ervaren rotten die
+            hier al tientallen jaren jeugd begeleiden.
+          </p>
+          <p>
+            Het jeugdseizoen begint telkens op
+            de <strong class="text-inkt-950">eerste woensdag of zaterdag van september</strong>. Later
+            instappen kan meestal ook; vraag het gerust.
+          </p>
+        </div>
+      </li>
+
+      <li class="relative border-b border-inkt-950/10 py-10 pl-10">
+        <span class="absolute left-[6px] top-12 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-club-500 ring-4 ring-veer-50" aria-hidden="true"></span>
+        <p class="stem-baan text-xs text-club-700">Zaterdagvoormiddag</p>
+        <h2 class="stem-display mt-1 text-3xl text-inkt-950 sm:text-4xl">Training in groep 1 of 2</h2>
+
+        <div class="mt-5 grid max-w-md gap-3 sm:grid-cols-2">
+          <p class="border-l-4 border-club-500 pl-4">
+            <span class="stem-baan block text-xs text-club-700">Groep 1</span>
+            <span class="stem-cijfer text-2xl text-inkt-950">9u30 – 11u00</span>
+          </p>
+          <p class="border-l-4 border-club-500 pl-4">
+            <span class="stem-baan block text-xs text-club-700">Groep 2</span>
+            <span class="stem-cijfer text-2xl text-inkt-950">11u00 – 12u30</span>
+          </p>
+        </div>
+
+        <div class="mt-5 max-w-3xl space-y-4 leading-relaxed text-inkt-700">
+          <p>
+            Op zaterdagvoormiddag wordt er anderhalf uur gericht getraind, in twee groepen. In
+            {' '}<strong class="text-inkt-950">groep 1</strong> kom je toe; wie goed leert slaan,
+            schuift door naar <strong class="text-inkt-950">groep 2</strong>. Binnen elke groep
+            splitsen de trainers nog op naar leeftijd en ervaring, naargelang wie er die zaterdag
+            is. Zo staat niemand tegenover een tegenstander die veel te sterk of veel te zwak is.
+          </p>
+          <p>
+            Er staan elke zaterdag trainers klaar, ook als er maar een handvol kinderen opdaagt.
+            Daarom rekenen we erop dat je kind <strong class="text-inkt-950">er elke week bij
+            is</strong>. Lukt het een keer niet, laat het dan vooraf even weten aan de trainers.
+            Daar maakt niemand een probleem van.
+          </p>
+        </div>
+      </li>
+
+      <li class="relative border-b border-inkt-950/10 py-10 pl-10">
+        <span class="absolute left-[6px] top-12 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-club-500 ring-4 ring-veer-50" aria-hidden="true"></span>
+        <p class="stem-baan text-xs text-club-700">Het hele jaar</p>
+        <h2 class="stem-display mt-1 text-3xl text-inkt-950 sm:text-4xl">Meer dan die ene training</h2>
+
+        <div class="mt-5 max-w-3xl space-y-4 leading-relaxed text-inkt-700">
+          <p>
+            Jeugdleden die vaker willen spelen, zijn ook welkom
+            op <strong class="text-inkt-950">maandag van 20u00 tot 21u30</strong> en
+            op <strong class="text-inkt-950">zondag van 19u00 tot 21u00</strong>. Dat is vrij spelen
+            tussen de volwassenen.
+          </p>
+          <p>
+            Elk seizoen is er daarnaast een <strong class="text-inkt-950">jeugdweekend</strong>, en
+            wie graag eens een tornooi speelt, kan meedoen aan
+            de <strong class="text-inkt-950">PBO Jeugdcup</strong>: een provinciaal circuit tegen
+            leeftijdsgenoten uit heel Oost-Vlaanderen. Meedoen is vrijblijvend. Wie het doet, merkt
+            op zo'n dag pas goed hoeveel hij er in een jaar op vooruitgegaan is.
+          </p>
+          <p>
+            Eén van die tornooien organiseren we zelf. Het volgende staat op
+            {' '}<strong class="text-inkt-950">zondag 14 maart 2027</strong>: dan spelen de
+            jeugdploegen van heel de provincie bij ons, en kan je kind een tornooi meemaken zonder
+            zich te moeten verplaatsen.
+          </p>
+          <p>
+            Onderaan deze pagina leggen we uit
+            {' '}<a href="#jeugdcup" class="font-semibold text-club-700 underline hover:text-club-800">hoe de Jeugdcup werkt</a>.
+          </p>
+        </div>
+      </li>
+    </ol>
+
+    <!-- Vertrouwen: een ouder die een kind afzet, wil weten wie er staat. -->
+    <section class="mt-14 max-w-3xl pl-10">
+      <h2 class="stem-display text-2xl text-inkt-950 sm:text-3xl">Bij wie je terechtkan</h2>
+      <div class="mt-4 space-y-4 leading-relaxed text-inkt-700">
+        <p>
+          De jeugd wordt begeleid door trainers uit de club zelf. Je ziet ze elke week aan de
+          zaalrand staan en je mag ze altijd aanspreken.
+          {' '}<strong class="text-inkt-950">Luc Van Tornhout</strong> is onze
+          jeugdverantwoordelijke en je vaste aanspreekpunt. Je vindt hem tijdens de trainingsuren in
+          {' '}{locatie.naam} (zie
+          de <a href={url('/kalender/')} class="font-semibold text-club-700 underline hover:text-club-800">kalender</a>),
+          of je mailt hem op <a href={LUC} class="font-semibold text-club-700 underline hover:text-club-800">vantornhoutluc@skynet.be</a>.
+        </p>
+        <p>
+          Hoe we met elkaar omgaan, staat zwart op wit in
+          onze <a href={url('/club/gedragscode/')} class="font-semibold text-club-700 underline hover:text-club-800">gedragscode</a>. Zit
+          je met een vraag die je liever niet bij de trainer legt, of loopt er toch iets fout, dan
+          kan je terecht bij
+          ons <a href={url('/club/aanspreekpunt-integriteit/')} class="font-semibold text-club-700 underline hover:text-club-800">Aanspreekpunt Integriteit</a>.
+        </p>
+      </div>
+    </section>
+  </div>
+
+  <!-- De rode band als scharnier: hierboven het verhaal, hieronder het naslagwerk -->
+  <section class="border-y-8 border-club-700 bg-club-500 text-white">
+    <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-6 px-4 py-12">
+      <div class="flex-[1_1_26rem]">
+        <h2 class="stem-display text-3xl sm:text-4xl">Spring eens binnen op woensdag</h2>
+        <p class="mt-2 max-w-xl text-xl font-bold text-white">
+          Vanaf 19u00 in {locatie.naam}, {locatie.gemeente}. Laat vooraf even iets weten, dan vangt
+          iemand je kind op en ligt er een racket klaar.
+        </p>
+      </div>
+      <div class="flex flex-col items-start gap-4">
+        <a
+          href={LUC}
+          class="stem-baan inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm text-club-600 transition-colors hover:bg-club-50"
+        >
+          Mail Luc
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 12h16m0 0l-6-6m6 6l-6 6" />
+          </svg>
+        </a>
+        <!-- Kleine tekst op de rode band is inkt-950 (kleine-letter-regel) -->
+        <a
+          href={url('/club/word-lid/')}
+          class="stem-baan inline-flex items-center gap-2 text-xs text-inkt-950 transition-colors hover:underline"
+        >
+          Of schrijf je meteen in
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
+    <section id="jeugdcup" class="max-w-3xl pl-10">
+      <p class="stem-baan text-xs text-club-700">Praktisch</p>
+      <h2 class="stem-display mt-1 text-3xl text-inkt-950 sm:text-4xl">PBO Jeugdcup</h2>
+
+      <p class="mt-5 leading-relaxed text-inkt-700">
+        De PBO Jeugdcup is een reeks open jeugdtornooien in Oost-Vlaanderen, voor
+        {' '}<strong class="text-inkt-950">alle badmintonners van -9 tot -19 jaar</strong>. Iedereen
+        speelt in zijn eigen leeftijdscategorie,
+        dus <strong class="text-inkt-950">tegen leeftijdsgenoten</strong>. Over het seizoen heen
+        wordt er een <a href="https://www.badminton-pbo.be/jeugd/jeugdcup/pbo-jeugdcuptour-ranking/" target="_blank" rel="noopener" class="font-semibold text-club-700 underline hover:text-club-800">rangschikking</a> bijgehouden,
+        met per reeks een winnaar op het einde.
+      </p>
+
+      <h3 class="mt-8 text-lg font-bold text-inkt-950">Wij organiseren er zelf een</h3>
+      <p class="mt-3 leading-relaxed text-inkt-700">
+        BC Landegem neemt elk seizoen een van de tornooien uit het circuit voor zijn rekening. Het
+        volgende gaat door op <strong class="text-inkt-950">zondag 14 maart 2027</strong>. Voor onze
+        eigen jeugd is dat de makkelijkste eerste keer: eigen zaal, bekende gezichten, geen
+        verplaatsing. Meestal kunnen we die dag ook wat helpende handen gebruiken.
+      </p>
+
+      <h3 class="mt-8 text-lg font-bold text-inkt-950">Hoe schrijf je in?</h3>
+      <p class="mt-3 leading-relaxed text-inkt-700">
+        Voor elk tornooi sturen we <strong class="text-inkt-950">de link door naar onze
+        jeugd</strong>. Inschrijven doe je zelf, online of per mail. Je hebt daarvoor een
+        VBL-lidnummer nodig: dat zoek je op via
+        de <a href="https://www.badmintonvlaanderen.be/ranking/find.aspx?rid=139" target="_blank" rel="noopener" class="font-semibold text-club-700 underline hover:text-club-800">site van Badminton Vlaanderen</a>,
+        of je vraagt het aan <a href={LUC} class="font-semibold text-club-700 underline hover:text-club-800">Luc</a>.
+        Per discipline waarin je speelt, betaal je inschrijvingsgeld.
+      </p>
+
+      <h3 class="mt-8 text-lg font-bold text-inkt-950">Vervoer en begeleiding</h3>
+      <p class="mt-3 leading-relaxed text-inkt-700">
+        De verplaatsing regelen de ouders onderling: een paar spreken af en rijden samen. Waar het
+        lukt, gaat er ook een trainer of begeleider mee, die dan zowel coach als chauffeur is.
+      </p>
+
+      <p class="mt-10 leading-relaxed text-inkt-700">
+        Staat je vraag hier niet bij? Mail Luc
+        op {' '}<a href={LUC} class="font-semibold text-club-700 underline hover:text-club-800">vantornhoutluc@skynet.be</a>.
+      </p>
+    </section>
   </div>
 </Layout>
