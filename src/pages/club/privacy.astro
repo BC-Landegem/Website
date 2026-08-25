@@ -9,11 +9,16 @@ import RailKop from '../../components/RailKop.astro';
 >
   <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
     <RailKop
-      title="Privacyverklaring"
+      {/* PRIVACYVERKLARING past op geen enkele telefoon op één regel; het
+          zachte afbreekstreepje legt de breuk op de naad van de samenstelling
+          in plaats van midden in een lettergreep. */}
+      title={'Privacy\u00ADverklaring'}
       intro="BC Landegem hecht veel waarde aan je privacy en de bescherming van je persoonsgegevens."
     />
 
-    <article class="privacy-tekst mt-12 max-w-3xl pl-10 leading-relaxed text-inkt-700">
+    {/* break-words: lange woorden en e-mailadressen (@skynet.be) duwden de
+        pagina op een telefoon anders zijwaarts open. */}
+    <article class="privacy-tekst mt-12 max-w-3xl break-words pl-10 leading-relaxed text-inkt-700">
       <h2>Algemeen</h2>
       <p>
         In deze privacyverklaring willen we heldere en transparante informatie geven over hoe wij
@@ -290,6 +295,9 @@ import RailKop from '../../components/RailKop.astro';
     letter-spacing: -0.02em;
     line-height: 0.95;
     text-wrap: balance;
+    /* PERSOONSGEGEVENS in kapitaal is breder dan een smalle telefoonkolom;
+       breken mag (de article erft break-words), liefst met een koppelteken. */
+    hyphens: auto;
     font-size: 1.5rem;
     margin-top: 3rem;
     color: var(--color-inkt-950);
