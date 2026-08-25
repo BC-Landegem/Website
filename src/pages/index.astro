@@ -63,20 +63,20 @@ const kaarten = [
 
 <Layout>
   <div id="pagina" class="relative">
-    <!-- Hero: de shuttle lanceert vanuit het kurkpunt -->
+    {/* Hero: de shuttle lanceert vanuit het kurkpunt */}
     <section class="@container relative isolate flex min-h-[88vh] items-center overflow-hidden">
-      <!-- Natuurlijke aspectverhouding (geen max-h): zo blijft het kurkpunt exact op
+      {/* Natuurlijke aspectverhouding (geen max-h): zo blijft het kurkpunt exact op
            breedte/18 van de linkeronderhoek en valt het samen met de Word-lid-bol.
-           Op lage viewports knipt overflow-hidden enkel de top van de krans af. -->
+           Op lage viewports knipt overflow-hidden enkel de top van de krans af. */}
       <svg
         class="absolute bottom-0 left-0 -z-10 h-auto w-[max(100%,75rem)]"
         viewBox="0 0 1440 780"
         aria-hidden="true"
       >
-        <!-- Skirtbogen van de verenkrans -->
+        {/* Skirtbogen van de verenkrans */}
         <circle cx={KURK.x} cy={KURK.y} r="300" fill="none" stroke="var(--color-inkt-950)" stroke-opacity="0.08" stroke-width="1.5" stroke-dasharray="3 10" />
         <circle cx={KURK.x} cy={KURK.y} r="440" fill="none" stroke="var(--color-inkt-950)" stroke-opacity="0.06" stroke-width="1.5" stroke-dasharray="3 14" />
-        <!-- Gevulde veren -->
+        {/* Gevulde veren */}
         {veren.map((veer) => (
           <path
             d={`M ${KURK.x} ${KURK.y} L ${veer.a.x} ${veer.a.y} L ${veer.b.x} ${veer.b.y} Z`}
@@ -84,14 +84,14 @@ const kaarten = [
             opacity={veer.opacity}
           />
         ))}
-        <!-- Stralen -->
+        {/* Stralen */}
         {stralen.map((s) => (
           <line x1={KURK.x} y1={KURK.y} x2={s.x} y2={s.y} stroke="var(--color-inkt-950)" stroke-opacity="0.1" stroke-width="1.5" />
         ))}
       </svg>
 
-      <!-- De shuttle op het hangmoment, neus in vliegrichting. Eigen SVG los van de
-           verenkrans, zodat hij op elke viewporthoogte zichtbaar blijft (draad-anker). -->
+      {/* De shuttle op het hangmoment, neus in vliegrichting. Eigen SVG los van de
+           verenkrans, zodat hij op elke viewporthoogte zichtbaar blijft (draad-anker). */}
       <svg
         id="shuttle-glyph"
         class="absolute right-[5%] top-16 w-16 overflow-visible sm:top-20 sm:w-24"
@@ -105,7 +105,7 @@ const kaarten = [
         </g></g>
       </svg>
 
-      <!-- Het kurkpunt is de primaire actie: Word lid! zit op de kurk -->
+      {/* Het kurkpunt is de primaire actie: Word lid! zit op de kurk */}
       <a
         id="kurk-cta"
         href={url('/club/word-lid/')}
@@ -134,8 +134,8 @@ const kaarten = [
               Bekijk de kalender
             </a>
           </div>
-          <!-- Ruimte vooraf gereserveerd (invisible i.p.v. hidden) zodat de hero
-               niet verspringt wanneer de kalenderdata binnenkomt. -->
+          {/* Ruimte vooraf gereserveerd (invisible i.p.v. hidden) zodat de hero
+               niet verspringt wanneer de kalenderdata binnenkomt. */}
           <div id="volgend-moment" class="invisible mt-8 min-h-[4.5rem] max-w-xl text-sm text-inkt-700">
             <p class="flex items-center gap-3">
               <span class="inline-block h-3 w-3 rounded-full bg-club-500" aria-hidden="true"></span>
@@ -147,9 +147,9 @@ const kaarten = [
       </div>
     </section>
 
-    <!-- De rode band rond de kurk. Anker voor de draad: op smalle schermen
+    {/* De rode band rond de kurk. Anker voor de draad: op smalle schermen
          verspringt hij ván de rechtermarge náár de rail ín deze band, waar rood
-         op rood onzichtbaar is (zie lib/draad.ts). -->
+         op rood onzichtbaar is (zie lib/draad.ts). */}
     <section id="rode-band" class="border-y-8 border-club-700 bg-club-500 text-white">
       <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-6 px-4 py-12">
         <div class="flex-[1_1_28rem]">
@@ -165,7 +165,7 @@ const kaarten = [
           >
             Zo begin je
           </a>
-          <!-- Kleine tekst op de rode band is inkt-950 (kleine-letter-regel) -->
+          {/* Kleine tekst op de rode band is inkt-950 (kleine-letter-regel) */}
           <a
             href={url('/folder/bc-landegem-folder-2026.pdf')}
             class="stem-baan inline-flex items-center gap-2 text-xs text-inkt-950 transition-colors hover:underline"
@@ -179,9 +179,9 @@ const kaarten = [
       </div>
     </section>
 
-    <!-- Intra top-10: het interne klassement als meetpunt op de draad.
+    {/* Intra top-10: het interne klassement als meetpunt op de draad.
          Live uit de intra-API; skeletrijen reserveren de ruimte zodat de
-         pagina niet verspringt. Onbereikbaar? Dan klapt de sectie dicht. -->
+         pagina niet verspringt. Onbereikbaar? Dan klapt de sectie dicht. */}
     <section id="intra-sectie">
       <div class="mx-auto max-w-6xl px-4 py-20">
         <div class="grid gap-y-10 md:grid-cols-12 md:gap-x-12">
@@ -201,7 +201,7 @@ const kaarten = [
               <Pijl class="h-4 w-4 transition-transform duration-300" />
             </a>
           </div>
-          <!-- Op mobiel dezelfde rail-inspringing als de rest, zodat de draad links van de nummers loopt -->
+          {/* Op mobiel dezelfde rail-inspringing als de rest, zodat de draad links van de nummers loopt */}
           <ol id="intra-top10" class="self-start pl-10 md:col-span-7 md:pl-0">
             {Array.from({ length: 10 }).map(() => (
               <li class="skelet grid min-h-12 grid-cols-[2.5rem_1fr_auto] items-center gap-x-3 border-b border-inkt-950/10 py-2.5 first:border-t" aria-hidden="true">
@@ -215,9 +215,9 @@ const kaarten = [
       </div>
     </section>
 
-    <!-- Wanneer we spelen: vijf speelmomenten als meetpunten op de draad -->
+    {/* Wanneer we spelen: vijf speelmomenten als meetpunten op de draad */}
     <section class="mx-auto max-w-6xl px-4 py-20">
-      <!-- Kop op de rail-inspringing, zodat de draad links van de letters loopt -->
+      {/* Kop op de rail-inspringing, zodat de draad links van de letters loopt */}
       <h2 class="stem-display pl-10 text-4xl text-inkt-950 sm:text-5xl">Wanneer we spelen</h2>
       <p class="mt-3 max-w-xl pl-10 text-inkt-700">
         Alle trainingen en speelmomenten gaan door in {trainingen.locatie.naam}, {trainingen.locatie.gemeente}.
@@ -225,7 +225,7 @@ const kaarten = [
       <ol id="speeluren-lijst" class="relative mt-12">
         {trainingen.momenten.map((moment) => (
           <li class="vlucht group relative border-b border-inkt-950/10 py-6 pl-10 first:border-t">
-            <!-- De bol blijft op de draad (schaalt enkel); alleen de inhoud schuift op hover -->
+            {/* De bol blijft op de draad (schaalt enkel); alleen de inhoud schuift op hover */}
             <span class="absolute left-[6px] top-8 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-club-500 ring-4 ring-veer-50 transition-transform duration-300 group-hover:scale-125" aria-hidden="true"></span>
             <div class="transition-transform duration-300 [transition-timing-function:var(--ease-lancering)] group-hover:translate-x-2 sm:grid sm:grid-cols-[8rem_16rem_1fr] sm:items-baseline sm:gap-6">
               <p class="stem-baan text-xs text-club-700">{moment.dag}</p>
@@ -241,8 +241,8 @@ const kaarten = [
       </ol>
     </section>
 
-    <!-- Komende events: skeletrijen reserveren de ruimte zodat de pagina niet
-         verspringt; zonder data klapt de sectie dicht. -->
+    {/* Komende events: skeletrijen reserveren de ruimte zodat de pagina niet
+         verspringt; zonder data klapt de sectie dicht. */}
     <section id="events-sectie" class="border-y border-inkt-950/10">
       <div class="mx-auto max-w-6xl px-4 py-20">
         <h2 class="stem-display pl-10 text-4xl text-inkt-950">Binnenkort in de club</h2>
@@ -265,7 +265,7 @@ const kaarten = [
       </div>
     </section>
 
-    <!-- Drie veren aan de draad: jeugd, recreatief, competitie -->
+    {/* Drie veren aan de draad: jeugd, recreatief, competitie */}
     <section class="mx-auto max-w-6xl px-4 py-24">
       <h2 class="sr-only">Wat de club te bieden heeft</h2>
       <div class="grid grid-cols-12 gap-y-5">
@@ -286,7 +286,7 @@ const kaarten = [
       </div>
     </section>
 
-    <!-- Sinds 1987: één stille regel op de draad -->
+    {/* Sinds 1987: één stille regel op de draad */}
     <section class="mx-auto max-w-6xl px-4 pb-24">
       <div class="relative pl-10">
         <span id="punt-1987" class="absolute left-[6px] top-2 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-club-500 ring-4 ring-veer-50" aria-hidden="true"></span>
@@ -301,9 +301,9 @@ const kaarten = [
       </div>
     </section>
 
-    <!-- Slot: de leren dop -->
+    {/* Slot: de leren dop */}
     <section id="slot-sectie" class="relative overflow-hidden bg-inkt-950 text-veer-50">
-      <!-- Staart van de vluchtdraad: landt op de foto, achter de tekst -->
+      {/* Staart van de vluchtdraad: landt op de foto, achter de tekst */}
       <svg id="draad-staart-svg" class="pointer-events-none absolute inset-0 h-full w-full" aria-hidden="true">
         <path id="draad-staart" fill="none" stroke="var(--color-club-500)" stroke-width="4" stroke-linecap="round" />
       </svg>
@@ -342,16 +342,16 @@ const kaarten = [
       </div>
     </section>
 
-    <!-- De vluchtdraad: één doorlopende rode lijn van kurk tot slot, getekend met de
-         scroll. Hij loopt achter de inhoud en duikt onder de rode band door. -->
+    {/* De vluchtdraad: één doorlopende rode lijn van kurk tot slot, getekend met de
+         scroll. Hij loopt achter de inhoud en duikt onder de rode band door. */}
     <svg id="draad" class="pointer-events-none absolute inset-0 -z-[1] h-full w-full" aria-hidden="true">
       <path id="draad-kern" fill="none" stroke="var(--color-club-500)" stroke-width="4" stroke-linecap="round" />
     </svg>
   </div>
 </Layout>
 
-<!-- Zonder JS komt er nooit data: verberg dan de gereserveerde blokken,
-     zodat er geen eeuwig pulserende skeletten staan. -->
+{/* Zonder JS komt er nooit data: verberg dan de gereserveerde blokken,
+     zodat er geen eeuwig pulserende skeletten staan. */}
 <style is:global>
   html:not(.js) #volgend-moment,
   html:not(.js) #intra-sectie,

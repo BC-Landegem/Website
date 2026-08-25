@@ -52,8 +52,8 @@ const swRegistratie = registratieSjabloon
     <link rel="icon" type="image/png" sizes="32x32" href={url('/favicon-32x32.png')} />
     <link rel="icon" type="image/png" sizes="16x16" href={url('/favicon-16x16.png')} />
     <link rel="apple-touch-icon" href={url('/apple-touch-icon.png')} />
-    <!-- Progressive web app: installeerbaar op het beginscherm, met een service
-         worker die de schil offline houdt. Zie src/data/pwa.ts. -->
+    {/* Progressive web app: installeerbaar op het beginscherm, met een service
+         worker die de schil offline houdt. Zie src/data/pwa.ts. */}
     <link rel="manifest" href={url('/manifest.webmanifest')} />
     <meta name="theme-color" content={THEMA_KLEUR} />
     <meta name="mobile-web-app-capable" content="yes" />
@@ -62,15 +62,15 @@ const swRegistratie = registratieSjabloon
     <meta name="apple-mobile-web-app-title" content={APP_KORTE_NAAM} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <!-- Kalenderdata (hero-chip, events, kalenderpagina) komt via fetch van de
-         Google Calendar API; preconnect scheelt een handshake. -->
+    {/* Kalenderdata (hero-chip, events, kalenderpagina) komt via fetch van de
+         Google Calendar API; preconnect scheelt een handshake. */}
     <link rel="preconnect" href="https://www.googleapis.com" crossorigin />
-    <!-- De intraclub-API staat op het oude domein en praat HTTP/1.1: de TLS-
+    {/* De intraclub-API staat op het oude domein en praat HTTP/1.1: de TLS-
          handshake kost er 150–450 ms, en die stond vóór dit hint volledig op
          het kritieke pad van de standen (de homepage-top-10 en /intraclub/).
          crossorigin, want een CORS-fetch gebruikt de anonieme socketpool — zonder
          dat attribuut warmt de preconnect de verkeerde verbinding op. Bij de
-         domeinswitch naar bclandegem.be wordt dit same-origin en dus overbodig. -->
+         domeinswitch naar bclandegem.be wordt dit same-origin en dus overbodig. */}
     <link rel="preconnect" href="https://www.bclandegem.be" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&display=swap"
@@ -81,7 +81,7 @@ const swRegistratie = registratieSjabloon
     {import.meta.env.PROD && <script is:inline set:html={swRegistratie} />}
   </head>
   <body class="flex min-h-screen flex-col bg-veer-50 text-inkt-950 antialiased">
-    <!--
+    {/*
       DESIGN CONTRACT — De Shuttle (seed fc2b4f50, code-led)
       THESIS: De site is opgebouwd uit de anatomie van de shuttle — kurk, rode
       band, verenkrans, vluchtbaan — en weigert de standaard clubsite van
@@ -100,7 +100,7 @@ const swRegistratie = registratieSjabloon
       FINISH: unreviewed and undocumented is unfinished; this build ends with
       the finish review, the verdict, DESIGN.md, and every shipping raster
       carrying its provenance.
-    -->
+    */}
     <Header />
     <div class="flex-1">
       <slot />

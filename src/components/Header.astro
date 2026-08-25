@@ -30,7 +30,7 @@ const isActive = (href: string) => currentPath.startsWith(url(href).replace(/\/$
 
     <input type="checkbox" id="nav-toggle" class="peer sr-only" aria-label="Menu openen of sluiten" />
 
-    <!-- Hamburger (mobiel) -->
+    {/* Hamburger (mobiel) */}
     <label
       for="nav-toggle"
       class="cursor-pointer rounded p-2 hover:bg-veer-100 peer-checked:[&_.icon-open]:hidden peer-checked:[&_.icon-close]:block md:hidden"
@@ -43,7 +43,7 @@ const isActive = (href: string) => currentPath.startsWith(url(href).replace(/\/$
       </svg>
     </label>
 
-    <!-- Navigatie -->
+    {/* Navigatie */}
     <nav
       class="absolute inset-x-0 top-full hidden max-h-[calc(100vh-4rem)] overflow-y-auto border-b border-inkt-950/10 bg-veer-50 shadow-lg peer-checked:block md:static md:block md:max-h-none md:overflow-visible md:border-0 md:bg-transparent md:shadow-none"
     >
@@ -60,7 +60,7 @@ const isActive = (href: string) => currentPath.startsWith(url(href).replace(/\/$
           </a>
         </li>
 
-        <!-- Competitie met ploegen-dropdown: spelers springen zo rechtstreeks naar hun ploeg -->
+        {/* Competitie met ploegen-dropdown: spelers springen zo rechtstreeks naar hun ploeg */}
         <li class="group relative">
           <a
             href={url('/competitie/')}
@@ -84,7 +84,7 @@ const isActive = (href: string) => currentPath.startsWith(url(href).replace(/\/$
             Competitie
           </a>
 
-          <!-- Desktop: hoverpaneel met de ploegen per reeks -->
+          {/* Desktop: hoverpaneel met de ploegen per reeks */}
           <div
             class="hidden md:invisible md:absolute md:left-0 md:top-full md:block md:border md:border-inkt-950/10 md:bg-veer-50 md:opacity-0 md:shadow-lg md:transition md:group-hover:visible md:group-hover:opacity-100 md:group-focus-within:visible md:group-focus-within:opacity-100"
           >
@@ -117,7 +117,7 @@ const isActive = (href: string) => currentPath.startsWith(url(href).replace(/\/$
             </a>
           </div>
 
-          <!-- Mobiel: compacte ploeg-pillen onder de link -->
+          {/* Mobiel: compacte ploeg-pillen onder de link */}
           <ul class="flex flex-wrap gap-2 px-3 pb-2 pl-6 md:hidden">
             {teams.ploegen.map((ploeg) => (
               <li>
@@ -148,7 +148,7 @@ const isActive = (href: string) => currentPath.startsWith(url(href).replace(/\/$
           </li>
         ))}
 
-        <!-- Club met submenu -->
+        {/* Club met submenu */}
         <li class="group relative">
           <a
             href={url('/club/over-de-club/')}
