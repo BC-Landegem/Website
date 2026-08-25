@@ -125,7 +125,7 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
     >
       <p class="mt-4 max-w-2xl text-sm text-inkt-500">
         Alle namen, uitslagen en cijfers hieronder komen van {datumTekst}: {aantal} spelers,
-        {' '}{banen.length} banen. Verzet gerust wat je wil, aan de echte stand verandert er niets.
+         {banen.length} banen. Verzet gerust wat je wil, aan de echte stand verandert er niets.
       </p>
     </RailKop>
 
@@ -280,7 +280,7 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
           Deelt het aantal aanwezigen niet door vier, dan schuiven de laatste namen samen in een
           <strong class="font-bold text-inkt-700">restbaan</strong>. Dat is de enige baan waar de
           sterkste en de zwakste van de zaal samen op kunnen staan. Op {datumTekst} was dat baan
-          {' '}{restbaanNummer}. Blijven er minder dan vier over, dan spelen die niet mee. Zij krijgen
+           {restbaanNummer}. Blijven er minder dan vier over, dan spelen die niet mee. Zij krijgen
           hetzelfde cijfer als wie er die avond niet was, dus kost het hen ook niets.
         </p>
       </section>
@@ -499,7 +499,7 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
             </div>
             <p id="stand-som" class="mt-1 text-sm text-inkt-500">
               ({komma(start.vorigGemiddelde)} × {speeldagenGespeeld} + {komma(startCijfer)}) ÷ {speeldagenGespeeld + 1}
-              {' '}— het gemiddelde van je basispunt en al je {speeldagenGespeeld} speeldagcijfers.
+               — het gemiddelde van je basispunt en al je {speeldagenGespeeld} speeldagcijfers.
             </p>
           </div>
         </div>
@@ -509,7 +509,7 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
           <p class="mt-2 text-sm text-inkt-700">
             Dan krijg je geen nul, maar het gemiddelde van alle verliezende duo's van die avond.
             Op {datumTekst} was dat
-            {' '}<strong class="stem-cijfer font-bold text-inkt-950">{komma(afwezig)}</strong>, terwijl de
+             <strong class="stem-cijfer font-bold text-inkt-950">{komma(afwezig)}</strong>, terwijl de
             top van de stand rond {komma(spelers[0].gemiddelde, 1)} zit. Een keer overslaan is dus geen
             drama, maar wie vaak ontbreekt zakt langzaam weg.
           </p>
@@ -541,7 +541,7 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
             <li>
               <strong class="font-bold">De code.</strong> De loting, de puntenberekening en de hele
               clubapplicatie staan open op
-              {' '}<a href="https://github.com/BC-Landegem/Intraclub" class="text-club-700 underline hover:text-club-800" rel="noopener">GitHub</a>.
+               <a href="https://github.com/BC-Landegem/Intraclub" class="text-club-700 underline hover:text-club-800" rel="noopener">GitHub</a>.
               Wat hierboven staat, komt daaruit.
             </li>
           </ul>

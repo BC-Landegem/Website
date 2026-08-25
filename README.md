@@ -42,6 +42,7 @@ src/
   sw/           Broncode van de service worker en het opruimscript
 public/         Wordt onaangeraakt gekopieerd (logo, iconen, favicons)
 scripts/        Onderhoudsscripts die je met de hand draait — zie hieronder
+.claude/        Projectconfiguratie voor Claude Code — zie "De README bijhouden"
 ```
 
 ## Inhoud aanpassen
@@ -118,14 +119,30 @@ workflows triggert.
 - **Interne links altijd via `url()`** uit `src/lib/url.ts`. Een hardgecodeerde
   `/kalender/` werkt lokaal en breekt op Pages, waar alles onder `/Website/`
   hangt.
-- **`compressHTML: false` in `astro.config.mjs` is opzet, geen slordigheid.** De
-  compressie slikt spaties op waar een tekstregel na een tag begint en plakt zo
-  woorden aan elkaar. Kost ~0,5 kB gzip per pagina; dat is het waard.
 - **`public/icons/` is gegenereerde uitvoer die tóch in git staat.** Bewerk de
   PNG's niet met de hand — pas het logo of de kleuren aan en draai
   `genereer-iconen.mjs` opnieuw.
 - **Service workers houden vast.** Test je de PWA lokaal, ruim dan af en toe je
   registratie op in DevTools → Application; anders debug je een oude cache.
+
+## De README bijhouden
+
+Dit bestand raakt achterop zodra iemand de data, de scripts of de config wijzigt
+zonder hier te kijken. `.claude/hooks/readme-actueel.mjs` vangt dat op: het draait
+als Stop-hook van Claude Code en meldt het wanneer een bewaakt bestand wijzigde
+terwijl README.md ongemoeid bleef.
+
+Bewaakt worden `src/data/`, `scripts/`, `.github/workflows/`, `astro.config.mjs`,
+`package.json`, `src/lib/url.ts`, `src/lib/intra.ts` en `src/styles/global.css`.
+Bewust niet: `src/pages/` en `src/components/` (de README somt geen pagina's op),
+en de twee gegenereerde bestanden `media.json` en `intraclub-voorbeeld.json`.
+
+Los van Claude Code draaien kan ook:
+
+```bash
+node .claude/hooks/readme-actueel.mjs                  # kijkt naar git status
+node .claude/hooks/readme-actueel.mjs src/data/x.json  # kijkt naar deze paden
+```
 
 ## Verder lezen
 
