@@ -39,6 +39,8 @@
 }
 
 html {
+  /* De header is sticky (~4rem): anchors mogen er niet onder landen */
+  scroll-padding-top: 5rem;
   caret-color: var(--color-club-500);
   scrollbar-color: var(--color-inkt-500) var(--color-veer-100);
 }

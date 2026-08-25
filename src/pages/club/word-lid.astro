@@ -27,7 +27,21 @@ const aanbod = [
     <RailKop
       title="Word lid!"
       intro="Bij BC Landegem begint iedereen op dezelfde manier. Je komt drie keer gratis meespelen. Pas daarna beslis je of je lid wordt."
-    />
+    >
+      <!-- Wie de drie proefbeurten al achter zich heeft, kent het verhaal en
+           wil enkel nog naar stap 4. Stille link: de rail blijft de opbouw. -->
+      <p class="mt-4">
+        <a
+          href="#inschrijven"
+          class="stem-baan inline-flex items-center gap-2 text-xs text-club-700 transition-colors hover:text-club-800 hover:underline"
+        >
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7" />
+          </svg>
+          Al drie keer meegespeeld? Naar het inschrijvingsformulier
+        </a>
+      </p>
+    </RailKop>
 
     <!-- Vier stappen als meetpunten op de rail; het vierde meetpunt is de rode
          band onderaan, die de inschrijfactie draagt. -->
@@ -177,14 +191,14 @@ const aanbod = [
           Midden in het seizoen starten kan vaak ook, al hangt het af van leeftijd en groep.
           Vraag het gerust
           aan <a href="mailto:vantornhoutluc@skynet.be" class="font-semibold text-club-700 underline hover:text-club-800">Luc Van Tornhout</a>,
-          of lees eerst <a href={url('/jeugd/')} class="font-semibold text-club-700 underline hover:text-club-800">alles over onze jeugdwerking</a>.
+          of lees <a href={url('/jeugd/')} class="font-semibold text-club-700 underline hover:text-club-800">alles over onze jeugdwerking</a>.
         </p>
       </div>
     </section>
   </div>
 
   <!-- Stap 4: de rode band draagt de inschrijfactie -->
-  <section class="border-y-8 border-club-700 bg-club-500 text-white">
+  <section id="inschrijven" class="border-y-8 border-club-700 bg-club-500 text-white">
     <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-6 px-4 py-12">
       <div class="flex-[1_1_24rem]">
         <!-- Kleine tekst op de rode band is inkt-950 (kleine-letter-regel) -->

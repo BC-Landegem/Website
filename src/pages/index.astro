@@ -392,9 +392,19 @@ const kaarten = [
   //   zodat de pagina niet verspringt; enkel zonder enige data klapt een blok
   //   alsnog dicht — de vaste uren staan in "Wanneer we spelen". —
 
-  // — Hero-chip: alle speelmomenten van de eerstvolgende speeldag. Tijden
+  // "Landegem 1H, 2H en 4H" — de clubnaam één keer, de rest kort.
+  function ploegOpsomming(ploegen: string[]): string {
+    const korte = [ploegen[0], ...ploegen.slice(1).map((ploeg) => ploeg.replace('Landegem ', ''))];
+    return korte.length > 1 ? `${korte.slice(0, -1).join(', ')} en ${korte[korte.length - 1]}` : korte[0];
+  }
+
+  // — Hero-chip: alles wat er op de eerstvolgende speeldag in de zaal gebeurt.
+  //   De dag komt van het eerste speelmoment; thuismatchen (gebundeld per
+  //   beginuur, zoals in "Binnenkort in de club") en wat er die dag op de
+  //   Events-kalender staat horen erbij — wie langskomt, komt het tegen. Tijden
   //   komen uit de kalender, teksten uit de vaste labels per bron
-  //   (kalendertitels zijn interne jargon). Thuismatchen tellen ook mee. —
+  //   (kalendertitels zijn interne jargon; events dragen wél een leesbare
+  //   titel). —
   function toonSpeelmomenten(items: KalenderItem[]) {
     const chip = document.getElementById('volgend-moment');
     const chipDag = document.getElementById('volgend-moment-dag');
@@ -416,22 +426,76 @@ const kaarten = [
           ? 'morgen'
           : eerste.start.toLocaleDateString('nl-BE', { weekday: 'long' });
 
-    for (const item of momenten.filter((moment) => dagKey(moment.start) === key)) {
-      const { omschrijving, doelgroep } = item.bron.speelmoment ?? {
-        omschrijving: `Thuismatch ${item.bron.label}`,
-        doelgroep: 'supporters welkom',
-      };
-      const bezig = item.start <= NU && item.einde !== null && NU < item.einde;
-      // De groep (jeugd zaterdag: groep 1 en 2) moet overal zichtbaar zijn.
-      const groep = groepUitTitel(item.event.summary);
+    // Bij een gelijk beginuur: eerst wat je zelf komt doen, dan de matchen, dan
+    // wat er die dag óók nog gebeurt.
+    const rang = (item: KalenderItem) => (item.bron.speelmoment ? 0 : isThuismatch(item) ? 1 : 2);
+    const vanDeDag = items
+      .filter(
+        (item) =>
+          dagKey(item.start) === key &&
+          (item.bron.speelmoment || isThuismatch(item) || item.bron.label === 'Events'),
+      )
+      .sort((a, b) => a.start.getTime() - b.start.getTime() || rang(a) - rang(b));
+
+    interface Rij {
+      uur: string;
+      tekst: string;
+      doelgroep: string;
+      staart: string;
+      /** Gezet op matchrijen: de ploegen die samen thuisspelen. */
+      ploegen?: string[];
+    }
+    const rijen: Rij[] = [];
+    const matchRijen = new Map<number, Rij>();
+    for (const item of vanDeDag) {
+      // Een event van een hele dag heeft geen zinnig uur om te tonen.
+      const uur = !item.event.start.dateTime
+        ? 'hele dag'
+        : item.einde
+          ? `${uurTekst(item.start)} – ${uurTekst(item.einde)}`
+          : uurTekst(item.start);
+      const staart = item.start <= NU && item.einde !== null && NU < item.einde ? ' — nu bezig' : '';
+      if (item.bron.speelmoment) {
+        // De groep (jeugd zaterdag: groep 1 en 2) moet overal zichtbaar zijn.
+        const groep = groepUitTitel(item.event.summary);
+        const { omschrijving, doelgroep } = item.bron.speelmoment;
+        rijen.push({ uur, tekst: `${omschrijving}${groep ? ` ${groep}` : ''}`, doelgroep, staart });
+      } else if (isThuismatch(item)) {
+        // Ploegen die samen beginnen delen één regel; anders zet een
+        // competitieweekend hier vijf bijna-identieke regels neer.
+        const samen = matchRijen.get(item.start.getTime());
+        if (samen) {
+          samen.ploegen!.push(item.bron.label);
+          continue;
+        }
+        // "vanaf": de Badminton Vlaanderen-import zet er blokken van één uur
+        // op, terwijl een matchdag uren duurt — zoals in "Binnenkort".
+        const rij: Rij = {
+          uur: `vanaf ${uurTekst(item.start)}`,
+          tekst: '',
+          doelgroep: 'supporters welkom',
+          staart,
+          ploegen: [item.bron.label],
+        };
+        matchRijen.set(item.start.getTime(), rij);
+        rijen.push(rij);
+      } else {
+        rijen.push({ uur, tekst: item.event.summary ?? 'Event', doelgroep: 'event', staart });
+      }
+    }
+
+    for (const rij of rijen) {
       const li = document.createElement('li');
       const uur = document.createElement('strong');
       uur.className = 'stem-cijfer text-inkt-950';
-      uur.textContent = item.einde ? `${uurTekst(item.start)} – ${uurTekst(item.einde)}` : uurTekst(item.start);
-      li.append(uur, ` · ${omschrijving}${groep ? ` ${groep}` : ''}${bezig ? ' — nu bezig' : ''} `);
+      uur.textContent = rij.uur;
+      const tekst = rij.ploegen
+        ? `${rij.ploegen.length > 1 ? 'Thuismatchen' : 'Thuismatch'} — ${ploegOpsomming(rij.ploegen)}`
+        : rij.tekst;
+      li.append(uur, ` · ${tekst}${rij.staart} `);
       const dg = document.createElement('span');
       dg.className = 'text-inkt-500';
-      dg.textContent = `(${doelgroep})`;
+      dg.textContent = `(${rij.doelgroep})`;
       li.append(dg);
       chipLijst.append(li);
     }
@@ -478,9 +542,7 @@ const kaarten = [
       matchdagen.set(key, [...(matchdagen.get(key) ?? []), item]);
     }
     for (const matchen of matchdagen.values()) {
-      const ploegen = matchen.map((match) => match.bron.label);
-      const korte = [ploegen[0], ...ploegen.slice(1).map((ploeg) => ploeg.replace('Landegem ', ''))];
-      const opsomming = korte.length > 1 ? `${korte.slice(0, -1).join(', ')} en ${korte[korte.length - 1]}` : korte[0];
+      const opsomming = ploegOpsomming(matchen.map((match) => match.bron.label));
       rijen.push({
         start: matchen[0].start,
         wanneer: `${datumTekst(matchen[0].start)} · vanaf ${uurTekst(matchen[0].start)}`,
