@@ -1,6 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import RailKop from '../../components/RailKop.astro';
+import RailHeading from '../../components/RailHeading.astro';
 import { url } from '../../lib/url';
 import trainingen from '../../data/trainingen.json';
 
@@ -9,17 +9,17 @@ const { locatie } = trainingen;
 // Wie je waarvoor aanspreekt. Bewust kort: één algemeen adres dat altijd werkt,
 // en twee mensen die een eigen rol dragen en die elders op de site al met naam
 // en adres staan (/jeugd/ en /club/aanspreekpunt-integriteit/).
-const wie = [
+const contacts = [
   {
-    kop: 'Lid worden, speeluren en al de rest',
-    tekst: 'Mails naar dit adres komen bij het bestuur terecht. Wil je eens komen meespelen, of heb je een praktische vraag over de club, dan is dit de juiste plek.',
+    heading: 'Lid worden, speeluren en al de rest',
+    text: 'Mails naar dit adres komen bij het bestuur terecht. Wil je eens komen meespelen, of heb je een praktische vraag over de club, dan is dit de juiste plek.',
     mail: 'info@bclandegem.be',
   },
   {
-    kop: 'De jeugdwerking',
-    tekst: 'Vragen over de trainingen, de groepen, of over een kind dat midden in het seizoen wil beginnen, gaan naar jeugdverantwoordelijke Luc Van Tornhout.',
+    heading: 'De jeugdwerking',
+    text: 'Vragen over de trainingen, de groepen, of over een kind dat midden in het seizoen wil beginnen, gaan naar jeugdverantwoordelijke Luc Van Tornhout.',
     mail: 'vantornhoutluc@skynet.be',
-    naam: 'Luc Van Tornhout',
+    person: 'Luc Van Tornhout',
   },
 ];
 ---
@@ -29,7 +29,7 @@ const wie = [
   description="Contactgegevens van Badmintonclub Landegem: waar we spelen in Nevele (Deinze), en bij wie je met welke vraag terechtkan."
 >
   <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
-    <RailKop
+    <RailHeading
       title="Contact"
       intro="In de zaal heb je het snelst een antwoord: op elk speelmoment staat er iemand van de club. Kan je niet langskomen, mail ons dan gerust."
     />
@@ -64,13 +64,13 @@ const wie = [
     <section class="mt-16 pl-10">
       <h2 class="stem-display text-3xl text-inkt-950 sm:text-4xl">Bij wie je terechtkan</h2>
       <ul class="mt-6 max-w-3xl">
-        {wie.map((item) => (
+        {contacts.map((item) => (
           <li class="border-b border-inkt-950/10 py-6 first:border-t">
-            <h3 class="font-bold text-inkt-950">{item.kop}</h3>
-            <p class="mt-2 leading-relaxed text-inkt-700">{item.tekst}</p>
+            <h3 class="font-bold text-inkt-950">{item.heading}</h3>
+            <p class="mt-2 leading-relaxed text-inkt-700">{item.text}</p>
             <p class="mt-3">
               <a href={`mailto:${item.mail}`} class="stem-baan text-sm font-semibold text-club-700 underline hover:text-club-800">
-                {item.naam ? `${item.naam} — ${item.mail}` : item.mail}
+                {item.person ? `${item.person} — ${item.mail}` : item.mail}
               </a>
             </p>
           </li>

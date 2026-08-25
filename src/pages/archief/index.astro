@@ -1,25 +1,25 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import RailKop from '../../components/RailKop.astro';
-import ArchiefZoek from '../../components/ArchiefZoek.astro';
+import RailHeading from '../../components/RailHeading.astro';
+import ArchiveSearch from '../../components/ArchiveSearch.astro';
 import { url } from '../../lib/url';
-import { alleArtikels, perJaar, GROEPEN, vanGroep } from '../../lib/archief';
+import { allArticles, byYear, GROUPS, inGroup } from '../../lib/archive';
 
-const artikels = await alleArtikels();
-const jaren = await perJaar();
-const eerste = artikels[artikels.length - 1];
-const laatste = artikels[0];
+const articles = await allArticles();
+const years = await byYear();
+const first = articles[articles.length - 1];
+const last = articles[0];
 
-const groepen = await Promise.all(
-  GROEPEN.map(async (g) => ({ ...g, aantal: (await vanGroep(g.sleutel)).length })),
+const groups = await Promise.all(
+  GROUPS.map(async (g) => ({ ...g, count: (await inGroup(g.key)).length })),
 );
 
-const schrijvers = new Set(artikels.map((a) => a.data.auteur).filter(Boolean)).size;
-const zonderOnderwerp = artikels.filter((a) => !a.data.groep).length;
+const writers = new Set(articles.map((a) => a.data.auteur).filter(Boolean)).size;
+const withoutTopic = articles.filter((a) => !a.data.groep).length;
 
 // Grootste jaar bepaalt de schaal van de staafjes in de jaartijdlijn.
-const piek = Math.max(...[...jaren.values()].map((v) => v.length));
-const jaarLijst = [...jaren.entries()];
+const peak = Math.max(...[...years.values()].map((v) => v.length));
+const yearList = [...years.entries()];
 ---
 
 <Layout
@@ -28,47 +28,47 @@ const jaarLijst = [...jaren.entries()];
 >
   <div class="bg-veer-100">
     <div class="mx-auto max-w-5xl px-4 py-14 sm:py-16">
-      <RailKop
+      <RailHeading
         title="Archief"
         accent="kurk"
         intro="Alles wat er tussen 2009 en 2025 op de oude clubsite verscheen, bewaard zoals het geschreven werd."
       >
         <p class="mt-3 max-w-2xl text-sm text-inkt-500">
-          {artikels.length} artikels van {schrijvers} schrijvers, met de reacties die er destijds onder
+          {articles.length} artikels van {writers} schrijvers, met de reacties die er destijds onder
           stonden. De club bestaat sinds 1987 — voor de jaren daarvóór is er geen archief, wel <a
             href={url('/club/over-de-club/')}
             class="font-semibold underline hover:text-kurk-600">het verhaal van Herman</a
           >.
         </p>
 
-        <ArchiefZoek />
-      </RailKop>
+        <ArchiveSearch />
+      </RailHeading>
 
       {/* ---------------------------------------------------------- groepen */}
       <section class="mt-16 pl-10" aria-labelledby="kop-groepen">
         <h2 id="kop-groepen" class="stem-baan text-xs text-inkt-500">Per onderwerp</h2>
         <ul class="mt-4 grid gap-px border border-inkt-950/10 bg-inkt-950/10 sm:grid-cols-2">
-          {groepen.map((g, i) => (
+          {groups.map((g, i) => (
             // Bij een oneven aantal zou de laatste tegel een lege cel naast zich
             // laten; die laat je dan de volle breedte nemen.
-            <li class:list={['bg-veer-100', i === groepen.length - 1 && groepen.length % 2 === 1 && 'sm:col-span-2']}>
+            <li class:list={['bg-veer-100', i === groups.length - 1 && groups.length % 2 === 1 && 'sm:col-span-2']}>
               <a
-                href={url(`/archief/${g.sleutel}/`)}
+                href={url(`/archief/${g.key}/`)}
                 class="group flex h-full items-baseline justify-between gap-4 p-5 transition-colors hover:bg-veer-50"
               >
                 <span>
                   <span class="stem-display block text-xl text-inkt-950 group-hover:text-kurk-600">
                     {g.label}
                   </span>
-                  <span class="mt-1 block text-sm text-inkt-500">{g.uitleg}</span>
+                  <span class="mt-1 block text-sm text-inkt-500">{g.description}</span>
                 </span>
-                <span class="stem-cijfer shrink-0 text-lg text-kurk-600">{g.aantal}</span>
+                <span class="stem-cijfer shrink-0 text-lg text-kurk-600">{g.count}</span>
               </a>
             </li>
           ))}
         </ul>
         <p class="mt-4 text-sm text-inkt-500">
-          De {zonderOnderwerp} oudste artikels hebben geen onderwerp: die dateren van vóór de club
+          De {withoutTopic} oudste artikels hebben geen onderwerp: die dateren van vóór de club
           categorieën gebruikte. Ze staan wel bij hun jaar.
         </p>
       </section>
@@ -77,23 +77,23 @@ const jaarLijst = [...jaren.entries()];
       <section class="mt-16 pl-10" aria-labelledby="kop-jaren">
         <h2 id="kop-jaren" class="stem-baan text-xs text-inkt-500">Per jaar</h2>
         <ol class="mt-4 border-t border-inkt-950/10">
-          {jaarLijst.map(([jaar, lijst]) => (
+          {yearList.map(([year, list]) => (
             <li class="border-b border-inkt-950/10">
               <a
-                href={url(`/archief/${jaar}/`)}
+                href={url(`/archief/${year}/`)}
                 class="group flex items-center gap-4 py-3 transition-colors hover:text-kurk-600"
               >
                 <span class="stem-cijfer w-14 shrink-0 text-lg text-inkt-950 group-hover:text-kurk-600">
-                  {jaar}
+                  {year}
                 </span>
                 <span class="relative h-2 flex-1 bg-inkt-950/5">
                   <span
                     class="absolute inset-y-0 left-0 bg-kurk-400 transition-colors group-hover:bg-kurk-600"
-                    style={`width: ${Math.max(2, Math.round((lijst.length / piek) * 100))}%`}
+                    style={`width: ${Math.max(2, Math.round((list.length / peak) * 100))}%`}
                   />
                 </span>
                 <span class="stem-cijfer w-10 shrink-0 text-right text-sm text-inkt-500">
-                  {lijst.length}
+                  {list.length}
                 </span>
               </a>
             </li>

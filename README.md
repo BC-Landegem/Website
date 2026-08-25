@@ -52,6 +52,33 @@ scripts/        Onderhoudsscripts die je met de hand draait — zie hieronder
 .claude/        Projectconfiguratie voor Claude Code — zie "De README bijhouden"
 ```
 
+## Taal in de code
+
+**Code is Engels, tekst is Nederlands.** Dat scheelt het half-Engelse mengsel
+waar deze codebase mee begon (`coverUrl(url, breedte, hoogte)`).
+
+Engels: variabelen, functies, types, componentnamen, props en bestandsnamen van
+code (`src/lib/`, `src/components/`, `src/sw/`, `scripts/`).
+
+Nederlands blijft alles wat naar buiten of naar de inhoud wijst, want dat is
+geen code:
+
+- **Alle zichtbare tekst** op de site, plus commentaar en de documentatie
+  hiernaast — die zijn geschreven, niet geprogrammeerd.
+- **Routes en URL's** (`/archief/`, `/club/word-lid/`): ze staan in zoekmachines
+  en in links van bezoekers.
+- **Sleutels van data**: de velden in `src/data/*.json` en `*.ts`, en de
+  frontmatter van het archief (`titel`, `datum`, `urlnaam`, `auteur`). Ze staan
+  hierboven in "Inhoud aanpassen" beschreven voor wie geen ontwikkelaar is.
+- **Opmaaktokens**: CSS-klassen en -variabelen (`.stem-display`,
+  `--color-inkt-950`, zie DESIGN.md), DOM-id's en `data-*`-attributen.
+- **Clubjargon zonder vertaling**: `intraclub`, `speeldag`, `recreatief` en de
+  reeksnamen. Wat wél een gewone vertaling heeft, gebruikt die:
+  `Speler` → `Player`, `Baan` → `Court`, `ploeg` → `team`.
+
+Op de grens (bv. `speeldagUrl`) wint de kant die het duidelijkst is: een
+Nederlandse domeinterm in een Engelse naam is beter dan een verzonnen vertaling.
+
 ## Inhoud aanpassen
 
 Bijna alles wat verandert aan de club verandert in `src/data/` — geen componenten
@@ -113,7 +140,7 @@ De databasedump staat in `scraped/` en blijft **buiten git** (zie `.gitignore`):
 bevat de wachtwoordhashes van 74 ledenaccounts, plus e-mailadressen en IP-adressen
 uit de reacties. Alleen de uitvoer van de conversie hoort in de repo, nooit de bron.
 
-`scripts/archief-beelden.mjs` leest die dump, zoekt elke `<img>` en elke link naar
+`scripts/archive-images.mjs` leest die dump, zoekt elke `<img>` en elke link naar
 een beeld of document in de oude artikels op, en haalt op wat nog bestaat. Resultaat:
 de bestanden in `public/archief/beelden/` en een manifest in
 `src/data/archief-beelden.json` dat per bron-URL vastlegt welk bestand het werd — of
@@ -170,7 +197,7 @@ het aanzette — zonder de parameter wordt `public/kleurlab.js` niet eens
 opgehaald.
 
 Is er een winnaar, dan plak je het blok uit "Kopieer CSS" in het `@theme`-blok
-van `src/styles/global.css`. Daarna mag het lab eruit: `KleurLab.astro`,
+van `src/styles/global.css`. Daarna mag het lab eruit: `ColorLab.astro`,
 `public/kleurlab.js` en de import in `Layout.astro`.
 
 De vier contrastregels in het paneel volgen de twee-roden-regel uit DESIGN.md:
@@ -185,21 +212,21 @@ Handmatig te draaien, geen onderdeel van de build. Elk script legt in zijn kop
 uit waarom het bestaat en wanneer je het opnieuw draait.
 
 ```bash
-node scripts/genereer-iconen.mjs   # PWA-iconen uit het logo — na een logo- of kleurwijziging
+node scripts/generate-icons.mjs   # PWA-iconen uit het logo — na een logo- of kleurwijziging
 node scripts/scrape-media.mjs      # media.json lokaal bijwerken (doet de workflow 's nachts ook)
 node scripts/intra-snapshot.mjs    # nieuw voorbeeld voor /intraclub/zo-werkt-het/
-node scripts/archief-beelden.mjs   # beelden uit de oude Joomla-artikels redden — zie Databronnen
-node scripts/archief-conversie.mjs # die artikels omzetten naar src/content/archief/ (--dry om te proefdraaien)
+node scripts/archive-images.mjs   # beelden uit de oude Joomla-artikels redden — zie Databronnen
+node scripts/archive-convert.mjs # die artikels omzetten naar src/content/archief/ (--dry om te proefdraaien)
 ```
 
-`archief-beelden.mjs` is idempotent: wat al in `public/archief/beelden/` staat wordt
+`archive-images.mjs` is idempotent: wat al in `public/archief/beelden/` staat wordt
 overgeslagen, dus opnieuw draaien pikt alleen op wat nog ontbreekt. Het heeft de
 SQL-dump nodig en stopt met een foutmelding als die er niet is.
 
-`archief-conversie.mjs` is dat **niet**: het gooit `src/content/archief/` weg en
+`archive-convert.mjs` is dat **niet**: het gooit `src/content/archief/` weg en
 schrijft alles opnieuw. Draai eerst met `--dry`. Het leunt op `turndown`
 (devDependency, draait alleen hier — komt nooit in de browser) en op het manifest
-van `archief-beelden.mjs`, dus draai dat eerst. Onderaan zijn uitvoer staat een
+van `archive-images.mjs`, dus draai dat eerst. Onderaan zijn uitvoer staat een
 eindcontrole die klaagt over alles wat nog naar Joomla ruikt: overgebleven
 plugintags, smileycodes, `<span>`-restanten, beelden buiten `/archief/beelden/`.
 Blijft die stil, dan is de conversie schoon.
@@ -224,10 +251,10 @@ workflows triggert.
   hangt.
 - **`public/icons/` is gegenereerde uitvoer die tóch in git staat.** Bewerk de
   PNG's niet met de hand — pas het logo of de kleuren aan en draai
-  `genereer-iconen.mjs` opnieuw.
+  `generate-icons.mjs` opnieuw.
 - **`src/content/archief/` is na de eerste conversie de bron van waarheid.**
   De 837 markdownbestanden zijn ooit uit de dump gegenereerd, maar
-  `archief-conversie.mjs` opnieuw draaien **wist de map en schrijft alles over** —
+  `archive-convert.mjs` opnieuw draaien **wist de map en schrijft alles over** —
   handmatige correcties in een artikel zijn dan weg. Verbeter een typo in het
   `.md`-bestand, niet in het script.
 - **`public/archief/beelden/` ziet er gegenereerd uit, maar is onvervangbaar.**

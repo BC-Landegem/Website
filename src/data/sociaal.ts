@@ -1,4 +1,4 @@
-// De sociale kanalen van de club, zoals ze onderaan elke pagina verschijnen.
+// De sociale channels van de club, zoals ze onderaan elke pagina verschijnen.
 //
 // Bewust géén ingebedde tijdlijn van Facebook of Instagram: die vraagt een
 // token en een server (de site is statisch), sleept trackingcookies mee en
@@ -8,17 +8,17 @@
 // Een leeg blok is een leeg blok: staat er niets in deze lijst, dan verdwijnt
 // de hele sectie uit de footer. Kanaal toevoegen = één regel hieronder.
 
-export type SociaalIcoon = 'facebook' | 'instagram';
+export type SocialIcon = 'facebook' | 'instagram';
 
-export interface SociaalKanaal {
+export interface SocialChannel {
   /** Naam zoals hij in de tooltip en voor schermlezers gebruikt wordt. */
   naam: string;
   /** Volledige URL van het profiel of de pagina. */
   url: string;
-  icoon: SociaalIcoon;
+  icoon: SocialIcon;
 }
 
-export const kanalen: SociaalKanaal[] = [
+export const channels: SocialChannel[] = [
   // { naam: 'BC Landegem op Facebook', url: 'https://www.facebook.com/…', icoon: 'facebook' },
   // { naam: 'BC Landegem op Instagram', url: 'https://www.instagram.com/…', icoon: 'instagram' },
 ];

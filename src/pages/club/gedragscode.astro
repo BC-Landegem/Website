@@ -1,22 +1,22 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import RailKop from '../../components/RailKop.astro';
+import RailHeading from '../../components/RailHeading.astro';
 import { url } from '../../lib/url';
 
 // De kern: wat iedereen onthoudt, ook wie de rest niet uitleest.
-const kern = [
-  { woord: 'Plezant', lijn: 'Iedereen moet met goesting naar de zaal komen.' },
-  { woord: 'Veilig', lijn: 'Op het veld, in de kleedkamer en ernaast.' },
-  { woord: 'Respect', lijn: 'Voor elkaar, voor de tegenstander, voor de vrijwilliger.' },
-  { woord: 'Samen', lijn: 'We zetten samen op en we ruimen samen op.' },
+const core = [
+  { word: 'Plezant', line: 'Iedereen moet met goesting naar de zaal komen.' },
+  { word: 'Veilig', line: 'Op het veld, in de kleedkamer en ernaast.' },
+  { word: 'Respect', line: 'Voor elkaar, voor de tegenstander, voor de vrijwilliger.' },
+  { word: 'Samen', line: 'We zetten samen op en we ruimen samen op.' },
 ];
 
 // Wederkerig: leden zien ook wat ze van trainers en bestuur mogen verwachten.
-const secties = [
+const sections = [
   {
-    titel: 'Algemeen',
-    onder: 'Voor iedereen in en rond de club',
-    regels: [
+    title: 'Algemeen',
+    lead: 'Voor iedereen in en rond de club',
+    rules: [
       'We houden het voor iedereen plezant, veilig en respectvol.',
       'We respecteren spelers, trainers, tegenstanders en vrijwilligers.',
       'We respecteren beginners, gevorderden en competitiespelers evenveel.',
@@ -26,8 +26,8 @@ const secties = [
     ],
   },
   {
-    titel: 'Spelers',
-    regels: [
+    title: 'Spelers',
+    rules: [
       'We spelen sportief en respecteren de regels.',
       'We komen op tijd en melden afwezigheden vooraf.',
       'We helpen mee met het opzetten en opruimen van het materiaal.',
@@ -35,15 +35,15 @@ const secties = [
       'We warmen op met de opwarmshuttles, niet met nieuwe shuttles.',
       'We gooien kapotte veren in de bakken die daarvoor klaarstaan.',
     ],
-    subtitel: 'Op de vrijspelavonden',
-    subregels: [
+    subtitle: 'Op de vrijspelavonden',
+    subrules: [
       'We starten met dubbelwedstrijden; enkels spelen we wanneer er terreinen vrijkomen.',
       'Na een match gaan we terug naar de kant, zodat vier anderen kunnen spelen.',
     ],
   },
   {
-    titel: 'Ouders',
-    regels: [
+    title: 'Ouders',
+    rules: [
       'We moedigen aan, we coachen niet vanaf de zijlijn — dat is de taak van de trainer.',
       'We brengen en halen onze kinderen op tijd.',
       'We melden afwezigheid vooraf aan de trainer.',
@@ -52,8 +52,8 @@ const secties = [
     ],
   },
   {
-    titel: 'Trainers',
-    regels: [
+    title: 'Trainers',
+    rules: [
       'We geven duidelijke, veilige en gestructureerde trainingen.',
       'We tonen voorbeeldgedrag in taal, houding en sportiviteit.',
       'We houden rekening met het niveau, de leeftijd en de fysieke grenzen van spelers.',
@@ -63,8 +63,8 @@ const secties = [
     ],
   },
   {
-    titel: 'Bestuurders',
-    regels: [
+    title: 'Bestuurders',
+    rules: [
       'We nemen beslissingen in het belang van de club en haar leden.',
       'We communiceren helder over afspraken, lidgeld, planning en clubwerking.',
       'We zorgen voor kwaliteitsvol materiaal en een veilige sportomgeving.',
@@ -75,7 +75,7 @@ const secties = [
   },
 ];
 
-const ongewenst = [
+const unwanted = [
   'Pesten, intimidatie of uitsluiting',
   'Verbale of fysieke agressie',
   'Discriminatie',
@@ -90,17 +90,17 @@ const ongewenst = [
   description="De gedragscode van BC Landegem: wat we van elkaar mogen verwachten, op en naast het veld."
 >
   <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
-    <RailKop
+    <RailHeading
       title="Gedragscode"
       intro="Wat we van elkaar mogen verwachten, op en naast het veld. Voor spelers, ouders, trainers en bestuur — in beide richtingen."
     />
 
     {/* De kern: vier woorden die de rest samenvatten */}
     <ul class="mt-12 grid gap-px border border-inkt-950/10 bg-inkt-950/10 sm:grid-cols-2 xl:grid-cols-4">
-      {kern.map((k) => (
+      {core.map((k) => (
         <li class="bg-veer-50 px-6 py-8">
-          <p class="stem-display text-3xl text-club-700">{k.woord}</p>
-          <p class="mt-3 text-sm leading-relaxed text-inkt-700">{k.lijn}</p>
+          <p class="stem-display text-3xl text-club-700">{k.word}</p>
+          <p class="mt-3 text-sm leading-relaxed text-inkt-700">{k.line}</p>
         </li>
       ))}
     </ul>
@@ -173,30 +173,30 @@ const ongewenst = [
     {/* Statische rail, dezelfde grammatica als de speelmomenten op Word lid */}
     <div class="relative mt-8">
       <span class="absolute bottom-6 left-[6px] top-6 w-1 -translate-x-1/2 rounded-full bg-club-500" aria-hidden="true"></span>
-      {secties.map((sectie) => (
+      {sections.map((section) => (
         <section class="relative border-b border-inkt-950/10 py-8 pl-10 first:border-t md:grid md:grid-cols-[16rem_1fr] md:gap-8">
           <span class="absolute left-[6px] top-10 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-club-500 ring-4 ring-veer-50" aria-hidden="true"></span>
           <div>
-            <h3 class="stem-display text-2xl text-inkt-950">{sectie.titel}</h3>
-            {sectie.onder && <p class="mt-1 text-sm text-inkt-500">{sectie.onder}</p>}
+            <h3 class="stem-display text-2xl text-inkt-950">{section.title}</h3>
+            {section.lead && <p class="mt-1 text-sm text-inkt-500">{section.lead}</p>}
           </div>
           <div class="mt-4 md:mt-0">
             <ul class="space-y-2 leading-relaxed text-inkt-700">
-              {sectie.regels.map((regel) => (
+              {section.rules.map((rule) => (
                 <li class="grid grid-cols-[1.25rem_1fr] items-baseline">
                   <span class="text-club-500" aria-hidden="true">—</span>
-                  <span>{regel}</span>
+                  <span>{rule}</span>
                 </li>
               ))}
             </ul>
-            {sectie.subtitel && (
+            {section.subtitle && (
               <>
-                <p class="stem-baan mt-6 text-xs text-club-700">{sectie.subtitel}</p>
+                <p class="stem-baan mt-6 text-xs text-club-700">{section.subtitle}</p>
                 <ul class="mt-2 space-y-2 leading-relaxed text-inkt-700">
-                  {sectie.subregels?.map((regel) => (
+                  {section.subrules?.map((rule) => (
                     <li class="grid grid-cols-[1.25rem_1fr] items-baseline">
                       <span class="text-club-500" aria-hidden="true">—</span>
-                      <span>{regel}</span>
+                      <span>{rule}</span>
                     </li>
                   ))}
                 </ul>
@@ -212,7 +212,7 @@ const ongewenst = [
       <h2 class="stem-display text-2xl text-inkt-950 sm:text-3xl">Ongewenst gedrag</h2>
       <p class="mt-3 font-bold text-inkt-950">BC Landegem tolereert niet:</p>
       <ul class="mt-3 grid gap-2 leading-relaxed text-inkt-700 sm:grid-flow-col sm:grid-rows-3">
-        {ongewenst.map((item) => (
+        {unwanted.map((item) => (
           <li class="grid grid-cols-[1.25rem_1fr] items-baseline">
             <span class="text-club-700" aria-hidden="true">—</span>
             <span>{item}</span>

@@ -27,44 +27,44 @@
  * en kan er niet op filteren.
  */
 
-const VERSIE = '__VERSIE__';
+const VERSION = '__VERSION__';
 const BASE = '__BASE__';
-const SCHIL = /* __SCHIL__ */ [];
+const SHELL = /* __SHELL__ */ [];
 
 // De schil- en assetcaches horen bij één build en worden bij elke nieuwe
 // versie weggegooid. De datacache overleeft dat bewust: anders sta je na een
 // nachtelijke media-sync met lege handen in de zaal.
-const SCHIL_CACHE = `bcl-schil-${VERSIE}`;
-const ASSET_CACHE = `bcl-assets-${VERSIE}`;
+const SHELL_CACHE = `bcl-schil-${VERSION}`;
+const ASSET_CACHE = `bcl-assets-${VERSION}`;
 const DATA_CACHE = 'bcl-data';
-const HUIDIG = [SCHIL_CACHE, ASSET_CACHE, DATA_CACHE];
+const CURRENT = [SHELL_CACHE, ASSET_CACHE, DATA_CACHE];
 
-const NAVIGATIE_TIMEOUT = 5000;
+const NAVIGATION_TIMEOUT = 5000;
 const DATA_TIMEOUT = 4000;
 // Ruim boven de handvol sleutels die we echt gebruiken (de kalenderbronnen en
 // de intraclub). De grens bestaat alleen omdat deze cache de versiewissel
 // overleeft en dus anders nooit iets kwijtraakt.
 const DATA_MAX = 32;
 
-const ASSET_EXTENSIES = /\.(?:css|js|mjs|woff2?|png|jpe?g|webp|avif|gif|svg|ico)$/;
+const ASSET_EXTENSIONS = /\.(?:css|js|mjs|woff2?|png|jpe?g|webp|avif|gif|svg|ico)$/;
 const FONT_HOSTS = ['fonts.googleapis.com', 'fonts.gstatic.com'];
 // Verwijzingen naar gehashte bundels. De HTML noemt ze met hun volledige pad,
 // een module verwijst naar zijn chunks met een relatieve import
 // (`from"./kalender.CRV8d0q3.js"`). Alles ligt plat in _astro/, dus levert de
 // bestandsnaam in beide gevallen het pad op — vandaar de capture group. BASE is
 // een pad zonder regex-tekens en mag er zo in.
-const ASSET_VERWIJZING = new RegExp(`(?:${BASE}_astro/|\\./)([\\w.-]+\\.(?:css|js))`, 'g');
+const ASSET_REFERENCE = new RegExp(`(?:${BASE}_astro/|\\./)([\\w.-]+\\.(?:css|js))`, 'g');
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     (async () => {
-      const cache = await caches.open(SCHIL_CACHE);
+      const cache = await caches.open(SHELL_CACHE);
       // Eén voor één, niet met addAll: een enkel pad dat 404't mag de hele
       // installatie niet onderuithalen.
       await Promise.all(
-        SCHIL.map((pad) => cache.add(new Request(pad, { cache: 'reload' })).catch(() => {})),
+        SHELL.map((path) => cache.add(new Request(path, { cache: 'reload' })).catch(() => {})),
       );
-      await precachAssets(cache);
+      await precacheAssets(cache);
       await self.skipWaiting();
     })(),
   );
@@ -85,33 +85,33 @@ self.addEventListener('install', (event) => {
  * module verwijst op haar beurt naar chunks die in geen enkele HTML staan:
  * HTML → entry → chunk. Drie ronden dekt dat en maakt een cyclus onschadelijk.
  */
-async function precachAssets(schilCache) {
+async function precacheAssets(shellCache) {
   const assetCache = await caches.open(ASSET_CACHE);
-  const gedaan = new Set();
-  let bronnen = await Promise.all(
-    SCHIL.filter((pad) => pad.endsWith('/')).map((pad) => schilCache.match(pad)),
+  const done = new Set();
+  let sources = await Promise.all(
+    SHELL.filter((path) => path.endsWith('/')).map((path) => shellCache.match(path)),
   );
 
-  for (let ronde = 0; ronde < 3 && bronnen.length; ronde++) {
-    const nieuw = new Set();
-    for (const bron of bronnen) {
-      if (!bron) continue;
-      const tekst = await bron.text().catch(() => '');
-      for (const [, bestand] of tekst.matchAll(ASSET_VERWIJZING)) {
-        const naam = `${BASE}_astro/${bestand}`;
-        if (gedaan.has(naam)) continue;
-        gedaan.add(naam);
-        nieuw.add(naam);
+  for (let round = 0; round < 3 && sources.length; round++) {
+    const fresh = new Set();
+    for (const source of sources) {
+      if (!source) continue;
+      const text = await source.text().catch(() => '');
+      for (const [, file] of text.matchAll(ASSET_REFERENCE)) {
+        const name = `${BASE}_astro/${file}`;
+        if (done.has(name)) continue;
+        done.add(name);
+        fresh.add(name);
       }
     }
     // Alleen JS lezen we opnieuw: daar staan de verwijzingen naar verdere
     // chunks. De CSS die Tailwind uitspuwt bevat geen @import.
-    bronnen = (
+    sources = (
       await Promise.all(
-        [...nieuw].map((naam) =>
+        [...fresh].map((name) =>
           assetCache
-            .add(new Request(naam, { cache: 'reload' }))
-            .then(() => (naam.endsWith('.js') ? assetCache.match(naam) : null))
+            .add(new Request(name, { cache: 'reload' }))
+            .then(() => (name.endsWith('.js') ? assetCache.match(name) : null))
             .catch(() => null),
         ),
       )
@@ -122,9 +122,9 @@ async function precachAssets(schilCache) {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     (async () => {
-      const namen = await caches.keys();
+      const names = await caches.keys();
       await Promise.all(
-        namen.filter((naam) => naam.startsWith('bcl-') && !HUIDIG.includes(naam)).map((naam) => caches.delete(naam)),
+        names.filter((name) => name.startsWith('bcl-') && !CURRENT.includes(name)).map((name) => caches.delete(name)),
       );
       await self.clients.claim();
     })(),
@@ -132,34 +132,34 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  const verzoek = event.request;
-  if (verzoek.method !== 'GET') return;
+  const request = event.request;
+  if (request.method !== 'GET') return;
 
-  const doel = new URL(verzoek.url);
+  const target = new URL(request.url);
   // Alleen http(s): schema's als chrome-extension: horen hier niet thuis.
-  if (doel.protocol !== 'https:' && doel.protocol !== 'http:') return;
+  if (target.protocol !== 'https:' && target.protocol !== 'http:') return;
 
-  if (verzoek.mode === 'navigate') {
-    event.respondWith(navigatie(event, verzoek));
-  } else if (isData(doel)) {
-    event.respondWith(data(event, verzoek, doel));
-  } else if (isStatisch(doel)) {
-    event.respondWith(cacheEerst(event, verzoek));
+  if (request.mode === 'navigate') {
+    event.respondWith(navigate(event, request));
+  } else if (isData(target)) {
+    event.respondWith(data(event, request, target));
+  } else if (isStatic(target)) {
+    event.respondWith(cacheFirst(event, request));
   }
   // De rest (o.a. de foto's van het Google-CDN) laten we ongemoeid: die
   // regelt de browsercache prima en ze zouden onze opslag opblazen.
 });
 
 /** De twee live bronnen: Google Calendar en de intraclub-API. */
-function isData(doel) {
-  if (doel.hostname === 'www.googleapis.com' && doel.pathname.startsWith('/calendar/v3/')) return true;
-  return doel.pathname.startsWith('/intra-app/api/');
+function isData(target) {
+  if (target.hostname === 'www.googleapis.com' && target.pathname.startsWith('/calendar/v3/')) return true;
+  return target.pathname.startsWith('/intra-app/api/');
 }
 
-function isStatisch(doel) {
-  if (FONT_HOSTS.includes(doel.hostname)) return true;
-  if (doel.origin !== self.location.origin) return false;
-  return doel.pathname.startsWith(`${BASE}_astro/`) || ASSET_EXTENSIES.test(doel.pathname);
+function isStatic(target) {
+  if (FONT_HOSTS.includes(target.hostname)) return true;
+  if (target.origin !== self.location.origin) return false;
+  return target.pathname.startsWith(`${BASE}_astro/`) || ASSET_EXTENSIONS.test(target.pathname);
 }
 
 /**
@@ -168,21 +168,21 @@ function isStatisch(doel) {
  * eigen sleutel en raakt de cache nooit. De API-key gaat er meteen mee uit — die
  * hoort niet in een cachesleutel thuis.
  */
-function dataSleutel(doel) {
-  const sleutel = new URL(doel);
-  for (const param of ['key', 'timeMin', 'timeMax']) sleutel.searchParams.delete(param);
-  return new Request(sleutel.toString());
+function dataKey(target) {
+  const key = new URL(target);
+  for (const param of ['key', 'timeMin', 'timeMax']) key.searchParams.delete(param);
+  return new Request(key.toString());
 }
 
 /** Cachesleutel voor HTML: zonder querystring, want die stuurt alleen de client-side render (?id=...). */
-function paginaSleutel(doel) {
-  return new Request(doel.origin + doel.pathname);
+function pageKey(target) {
+  return new Request(target.origin + target.pathname);
 }
 
-function metTimeout(belofte, ms) {
+function withTimeout(promise, ms) {
   return new Promise((resolve, reject) => {
-    const teller = setTimeout(() => reject(new Error('time-out')), ms);
-    belofte.then(resolve, reject).finally(() => clearTimeout(teller));
+    const timer = setTimeout(() => reject(new Error('time-out')), ms);
+    promise.then(resolve, reject).finally(() => clearTimeout(timer));
   });
 }
 
@@ -197,45 +197,45 @@ function metTimeout(belofte, ms) {
  * De .clone() moet in de eerste microtask na de fetch gebeuren, vóór de body
  * naar de pagina gaat — vandaar dat deze .then als eerste op de belofte hangt.
  */
-function bewaar(event, netwerk, cache, sleutel, daarna) {
+function store(event, network, cache, key, after) {
   event.waitUntil(
-    netwerk
-      .then(async (antwoord) => {
-        if (!antwoord.ok) return;
-        await cache.put(sleutel, antwoord.clone());
-        if (daarna) await daarna();
+    network
+      .then(async (response) => {
+        if (!response.ok) return;
+        await cache.put(key, response.clone());
+        if (after) await after();
       })
       .catch(() => {}),
   );
 }
 
-async function navigatie(event, verzoek) {
-  const cache = await caches.open(SCHIL_CACHE);
-  const sleutel = paginaSleutel(new URL(verzoek.url));
-  const netwerk = fetch(verzoek);
-  bewaar(event, netwerk, cache, sleutel);
+async function navigate(event, request) {
+  const cache = await caches.open(SHELL_CACHE);
+  const key = pageKey(new URL(request.url));
+  const network = fetch(request);
+  store(event, network, cache, key);
 
   try {
-    return await metTimeout(netwerk, NAVIGATIE_TIMEOUT);
+    return await withTimeout(network, NAVIGATION_TIMEOUT);
   } catch {
-    return (await cache.match(sleutel)) ?? (await cache.match(`${BASE}offline/`)) ?? Response.error();
+    return (await cache.match(key)) ?? (await cache.match(`${BASE}offline/`)) ?? Response.error();
   }
 }
 
-async function data(event, verzoek, doel) {
+async function data(event, request, target) {
   const cache = await caches.open(DATA_CACHE);
-  const sleutel = dataSleutel(doel);
-  const netwerk = fetch(verzoek);
-  bewaar(event, netwerk, cache, sleutel, () => beperkData(cache));
+  const key = dataKey(target);
+  const network = fetch(request);
+  store(event, network, cache, key, () => trimData(cache));
 
-  const gecacht = await cache.match(sleutel);
+  const cached = await cache.match(key);
   // Niets in de cache: dan maar wachten op het netwerk, hoe traag ook.
-  if (!gecacht) return netwerk;
+  if (!cached) return network;
 
   try {
-    return await metTimeout(netwerk, DATA_TIMEOUT);
+    return await withTimeout(network, DATA_TIMEOUT);
   } catch {
-    return gecacht;
+    return cached;
   }
 }
 
@@ -244,11 +244,11 @@ async function data(event, verzoek, doel) {
  * waarin ze erin kwamen, en een put op een bestaande sleutel houdt zijn plaats
  * — dus staat het oudste vooraan.
  */
-async function beperkData(cache) {
-  const sleutels = await cache.keys();
-  const teveel = sleutels.length - DATA_MAX;
-  if (teveel <= 0) return;
-  await Promise.all(sleutels.slice(0, teveel).map((sleutel) => cache.delete(sleutel)));
+async function trimData(cache) {
+  const keys = await cache.keys();
+  const excess = keys.length - DATA_MAX;
+  if (excess <= 0) return;
+  await Promise.all(keys.slice(0, excess).map((key) => cache.delete(key)));
 }
 
 /**
@@ -264,14 +264,14 @@ async function beperkData(cache) {
  * <link>, want dan hangt het laden van de stylesheet zélf van een CORS-header
  * af. Same-origin responsen worden nooit opaque, dus daar verandert niets.
  */
-async function cacheEerst(event, verzoek) {
+async function cacheFirst(event, request) {
   const cache = await caches.open(ASSET_CACHE);
-  const gecacht = await cache.match(verzoek);
-  if (gecacht) return gecacht;
+  const cached = await cache.match(request);
+  if (cached) return cached;
 
-  const antwoord = await fetch(verzoek);
-  if (antwoord.ok || antwoord.type === 'opaque') {
-    event.waitUntil(cache.put(verzoek, antwoord.clone()));
+  const response = await fetch(request);
+  if (response.ok || response.type === 'opaque') {
+    event.waitUntil(cache.put(request, response.clone()));
   }
-  return antwoord;
+  return response;
 }

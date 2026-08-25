@@ -1,24 +1,24 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import RailKop from '../../components/RailKop.astro';
+import RailHeading from '../../components/RailHeading.astro';
 import { url } from '../../lib/url';
-import { zichtbareAlbums, fotodata, maandNaam, fotoOpBreedte, fotoGroot } from '../../lib/media';
+import { visibleAlbums, photoData, monthName, photoAtWidth, largePhoto } from '../../lib/media';
 
 export function getStaticPaths() {
-  return zichtbareAlbums.map((album) => ({ params: { album: album.slug }, props: { album } }));
+  return visibleAlbums.map((album) => ({ params: { album: album.slug }, props: { album } }));
 }
 
 const { album } = Astro.props;
-const { fotos } = fotodata[album.slug];
+const { fotos } = photoData[album.slug];
 ---
 
 <Layout
   title={album.titel}
-  description={`Foto's van ${album.titel} (${maandNaam(album.datum)}) — Badmintonclub Landegem.`}
+  description={`Foto's van ${album.titel} (${monthName(album.datum)}) — Badmintonclub Landegem.`}
   noReferrer
 >
   <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
-    <RailKop title={album.titel} intro={`${maandNaam(album.datum)} · ${fotos.length} foto's`} />
+    <RailHeading title={album.titel} intro={`${monthName(album.datum)} · ${fotos.length} foto's`} />
 
     <div class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4 pl-10">
       <a
@@ -45,18 +45,18 @@ const { fotos } = fotodata[album.slug];
 
     <div id="galerij" class="mt-10 columns-2 gap-3 pl-10 sm:columns-3 lg:columns-4">
       {fotos.map((f, i) => {
-        const groot = fotoGroot(f);
+        const large = largePhoto(f);
         return (
           <a
-            href={groot.src}
+            href={large.src}
             target="_blank"
             rel="noreferrer"
-            data-pswp-width={groot.b}
-            data-pswp-height={groot.h}
+            data-pswp-width={large.b}
+            data-pswp-height={large.h}
             class="mb-3 block break-inside-avoid transition-transform duration-300 hover:-translate-y-1"
           >
             <img
-              src={fotoOpBreedte(f.url, 600)}
+              src={photoAtWidth(f.url, 600)}
               width={f.b}
               height={f.h}
               alt={`Foto ${i + 1} van ${fotos.length} — ${album.titel}`}

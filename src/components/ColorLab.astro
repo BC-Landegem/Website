@@ -12,22 +12,22 @@
  */
 import { url } from '../lib/url';
 
-const padLab = url('/kleurlab.js');
+const labPath = url('/kleurlab.js');
 ---
 
-<script is:inline define:vars={{ padLab }}>
+<script is:inline define:vars={{ labPath }}>
   (function () {
     try {
       var params = new URLSearchParams(location.search);
-      var uitUrl = params.has('kleurlab');
-      if (uitUrl) localStorage.setItem('kleurlab:aan', '1');
+      var fromUrl = params.has('kleurlab');
+      if (fromUrl) localStorage.setItem('kleurlab:aan', '1');
       if (localStorage.getItem('kleurlab:aan') !== '1') return;
       // Bij een gedeelde link rekent het paneel de ramp zelf opnieuw uit; de
       // opgeslagen css hoort dan bij een andere toestand en zetten we niet.
       var css = localStorage.getItem('kleurlab:css');
       if (css && !params.get('kleurlab')) document.documentElement.style.cssText += css;
       var script = document.createElement('script');
-      script.src = padLab;
+      script.src = labPath;
       document.head.appendChild(script);
     } catch (e) {}
   })();

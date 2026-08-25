@@ -12,7 +12,7 @@
  * "Huidig" is dus geen benadering maar de echte huisstijl.
  *
  * Wordt alleen geladen wanneer het lab aanstaat (?kleurlab in de URL, of eerder
- * geactiveerd); zie src/components/KleurLab.astro.
+ * geactiveerd); zie src/components/ColorLab.astro.
  */
 (function () {
   'use strict';

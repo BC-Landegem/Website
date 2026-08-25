@@ -12,7 +12,7 @@ import { url } from '../lib/url';
  * en zodra één pagina dat attribuut heeft slaat Pagefind alle pagina's zonder
  * over. De navigatie en footer van de site blijven zo uit de resultaten.
  */
-const pagefindPad = url('/pagefind/pagefind.js');
+const pagefindPath = url('/pagefind/pagefind.js');
 ---
 
 <search class="mt-10">
@@ -47,22 +47,22 @@ const pagefindPad = url('/pagefind/pagefind.js');
   }
 </style>
 
-<script is:inline define:vars={{ pagefindPad }}>
+<script is:inline define:vars={{ pagefindPath }}>
   (() => {
-    const veld = document.getElementById('archief-zoek');
-    const lijst = document.getElementById('archief-zoek-resultaten');
+    const field = document.getElementById('archief-zoek');
+    const list = document.getElementById('archief-zoek-resultaten');
     const status = document.getElementById('archief-zoek-status');
-    const bezig = document.getElementById('archief-zoek-bezig');
-    if (!veld) return;
+    const busy = document.getElementById('archief-zoek-bezig');
+    if (!field) return;
 
     let pagefind = null;
-    let laden = null;
-    let teller = 0;
+    let loading = null;
+    let counter = 0;
 
     // Pas laden bij de eerste toetsaanslag: de index is een paar honderd kB en
     // wie alleen bladert heeft hem niet nodig.
-    const zorgVoorIndex = () => {
-      laden ??= import(/* @vite-ignore */ pagefindPad)
+    const ensureIndex = () => {
+      loading ??= import(/* @vite-ignore */ pagefindPath)
         .then(async (m) => {
           await m.init();
           pagefind = m;
@@ -70,68 +70,68 @@ const pagefindPad = url('/pagefind/pagefind.js');
         .catch(() => {
           pagefind = false;
         });
-      return laden;
+      return loading;
     };
 
-    const leeg = () => {
-      lijst.replaceChildren();
+    const clear = () => {
+      list.replaceChildren();
       status.textContent = '';
     };
 
-    const toon = (resultaten, vraag) => {
-      lijst.replaceChildren();
-      if (!resultaten.length) {
-        status.textContent = `Niets gevonden voor "${vraag}".`;
+    const render = (results, query) => {
+      list.replaceChildren();
+      if (!results.length) {
+        status.textContent = `Niets gevonden voor "${query}".`;
         return;
       }
-      status.textContent = `${resultaten.length === 40 ? '40+' : resultaten.length} resultaten voor "${vraag}".`;
-      for (const r of resultaten) {
+      status.textContent = `${results.length === 40 ? '40+' : results.length} resultaten voor "${query}".`;
+      for (const r of results) {
         const li = document.createElement('li');
         const a = document.createElement('a');
         a.href = r.url;
         a.className = 'group block border-l-2 border-kurk-300 pl-4 hover:border-kurk-600';
-        const titel = document.createElement('span');
-        titel.className = 'stem-display block text-lg text-inkt-950 group-hover:text-kurk-600';
-        titel.textContent = r.meta?.title || 'Zonder titel';
+        const title = document.createElement('span');
+        title.className = 'stem-display block text-lg text-inkt-950 group-hover:text-kurk-600';
+        title.textContent = r.meta?.title || 'Zonder titel';
         const meta = document.createElement('span');
         meta.className = 'stem-baan mt-1 block text-[0.65rem] text-inkt-500';
         meta.textContent = [r.meta?.datum, r.meta?.auteur].filter(Boolean).join(' · ');
-        const uittreksel = document.createElement('p');
-        uittreksel.className = 'mt-1 text-sm text-inkt-700';
+        const excerpt = document.createElement('p');
+        excerpt.className = 'mt-1 text-sm text-inkt-700';
         // Pagefind levert het uittreksel met <mark> rond de treffers; dat is
         // zijn eigen opmaak, geen invoer van de bezoeker.
-        uittreksel.innerHTML = r.excerpt;
-        a.append(titel, meta, uittreksel);
+        excerpt.innerHTML = r.excerpt;
+        a.append(title, meta, excerpt);
         li.append(a);
-        lijst.append(li);
+        list.append(li);
       }
     };
 
-    let wacht;
-    veld.addEventListener('input', () => {
-      clearTimeout(wacht);
-      const vraag = veld.value.trim();
-      if (vraag.length < 2) {
-        leeg();
+    let debounce;
+    field.addEventListener('input', () => {
+      clearTimeout(debounce);
+      const query = field.value.trim();
+      if (query.length < 2) {
+        clear();
         return;
       }
-      wacht = setTimeout(async () => {
-        const beurt = ++teller;
-        bezig.hidden = false;
-        await zorgVoorIndex();
-        if (beurt !== teller) return;
+      debounce = setTimeout(async () => {
+        const turn = ++counter;
+        busy.hidden = false;
+        await ensureIndex();
+        if (turn !== counter) return;
         if (!pagefind) {
-          bezig.hidden = true;
+          busy.hidden = true;
           status.textContent =
             'Zoeken werkt pas in een echte build — de index wordt na het bouwen aangemaakt.';
           return;
         }
-        const zoek = await pagefind.search(vraag);
-        if (beurt !== teller) return;
-        const data = await Promise.all(zoek.results.slice(0, 40).map((r) => r.data()));
-        if (beurt !== teller) return;
-        bezig.hidden = true;
-        toon(data, vraag);
+        const search = await pagefind.search(query);
+        if (turn !== counter) return;
+        const data = await Promise.all(search.results.slice(0, 40).map((r) => r.data()));
+        if (turn !== counter) return;
+        busy.hidden = true;
+        render(data, query);
       }, 180);
     });
   })();

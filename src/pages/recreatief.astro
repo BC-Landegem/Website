@@ -1,6 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import RailKop from '../components/RailKop.astro';
+import RailHeading from '../components/RailHeading.astro';
 import { url } from '../lib/url';
 import trainingen from '../data/trainingen.json';
 
@@ -9,12 +9,12 @@ const { locatie, lidgeld } = trainingen;
 // De speelmomenten waar een volwassen recreant terechtkan. Komt uit dezelfde
 // bron als de homepage en /club/word-lid/: jeugduren en de zaterdagtraining
 // vallen er vanzelf uit.
-const vrijSpel = trainingen.momenten.filter((moment) =>
-  moment.doelgroep.toLowerCase().includes('recreanten'),
+const freePlay = trainingen.momenten.filter((session) =>
+  session.doelgroep.toLowerCase().includes('recreanten'),
 );
 
 // De twee tarieven zonder competitie: wie recreatief speelt, kiest hiertussen.
-const recreantTarieven = lidgeld.tarieven.filter((tarief) => tarief.detail.startsWith('Volwassenen'));
+const recreationalRates = lidgeld.tarieven.filter((rate) => rate.detail.startsWith('Volwassenen'));
 ---
 
 <Layout
@@ -22,7 +22,7 @@ const recreantTarieven = lidgeld.tarieven.filter((tarief) => tarief.detail.start
   description="Badminton voor volwassenen in Nevele (Deinze): vrij spel op maandag, woensdag en zondag, intraclub, een lessenreeks van vijf avonden en drie keer gratis meespelen."
 >
   <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
-    <RailKop
+    <RailHeading
       title="Recreatief badminton"
       intro="De meeste van onze leden spelen gewoon voor hun plezier. Geen selectie, geen vaste ploegjes, geen niveau dat je eerst moet halen. Je komt binnen, je speelt, en je gaat met een rood hoofd naar huis."
     />
@@ -44,17 +44,17 @@ const recreantTarieven = lidgeld.tarieven.filter((tarief) => tarief.detail.start
         speelt met wie er is: de dubbels worden ter plaatse samengesteld.
       </p>
       <ol class="relative mt-8">
-        {vrijSpel.map((moment, i) => (
+        {freePlay.map((session, i) => (
           <li class="group relative border-b border-inkt-950/10 py-5 pl-10 first:border-t">
             {/* De statische draad in stukken per rij: van bolmiddelpunt tot bolmiddelpunt, zodat
                  er boven de eerste en onder de laatste bol geen staart blijft hangen — ook niet
                  wanneer de rijen op mobiel uitklappen. 2.1875rem = top-7 plus een halve bol. */}
-            {vrijSpel.length > 1 && (
+            {freePlay.length > 1 && (
               <span
                 class:list={[
                   'absolute left-[6px] w-1 -translate-x-1/2 bg-club-500',
                   i === 0 ? 'top-[2.1875rem]' : 'top-0',
-                  i === vrijSpel.length - 1 ? 'h-[2.1875rem]' : '-bottom-px',
+                  i === freePlay.length - 1 ? 'h-[2.1875rem]' : '-bottom-px',
                 ]}
                 aria-hidden="true"
               ></span>
@@ -62,12 +62,12 @@ const recreantTarieven = lidgeld.tarieven.filter((tarief) => tarief.detail.start
             {/* De bol blijft op de draad (schaalt enkel); alleen de inhoud schuift op hover */}
             <span class="absolute left-[6px] top-7 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-club-500 ring-4 ring-veer-50 transition-transform duration-300 group-hover:scale-125" aria-hidden="true"></span>
             <div class="transition-transform duration-300 [transition-timing-function:var(--ease-lancering)] group-hover:translate-x-2 sm:grid sm:grid-cols-[7rem_13rem_1fr] sm:items-baseline sm:gap-6">
-              <p class="stem-baan text-xs text-club-700">{moment.dag}</p>
-              <p class="stem-cijfer mt-1 text-2xl text-inkt-950 sm:mt-0">{moment.uren}</p>
+              <p class="stem-baan text-xs text-club-700">{session.dag}</p>
+              <p class="stem-cijfer mt-1 text-2xl text-inkt-950 sm:mt-0">{session.uren}</p>
               <div class="mt-1 sm:mt-0">
-                <p class="font-bold">{moment.omschrijving}</p>
-                <p class="text-sm text-inkt-500">{moment.doelgroep}</p>
-                {moment.opmerking && <p class="text-sm text-inkt-500">{moment.opmerking}</p>}
+                <p class="font-bold">{session.omschrijving}</p>
+                <p class="text-sm text-inkt-500">{session.doelgroep}</p>
+                {session.opmerking && <p class="text-sm text-inkt-500">{session.opmerking}</p>}
               </div>
             </div>
           </li>
@@ -148,12 +148,12 @@ const recreantTarieven = lidgeld.tarieven.filter((tarief) => tarief.detail.start
         je wil spelen. De clubshuttles zitten er in beide gevallen bij.
       </p>
       <ul class="mt-6 max-w-3xl">
-        {recreantTarieven.map((tarief) => (
+        {recreationalRates.map((rate) => (
           <li class="grid grid-cols-[5rem_1fr] items-baseline gap-4 border-b border-inkt-950/10 py-4 first:border-t">
-            <span class="stem-cijfer text-2xl text-club-700">{tarief.prijs}</span>
+            <span class="stem-cijfer text-2xl text-club-700">{rate.prijs}</span>
             <span>
-              <span class="block font-bold text-inkt-950">{tarief.titel}</span>
-              <span class="block text-sm text-inkt-500">{tarief.detail}</span>
+              <span class="block font-bold text-inkt-950">{rate.titel}</span>
+              <span class="block text-sm text-inkt-500">{rate.detail}</span>
             </span>
           </li>
         ))}

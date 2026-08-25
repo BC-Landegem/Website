@@ -1,15 +1,15 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { url } from '../lib/url';
-import { bronnen, categorieen } from '../data/kalender';
+import { sources, categories } from '../data/kalender';
 
 // Voor "In je eigen agenda": bronnen gegroepeerd per categorie, plus de
 // statische links voor de eerste bron zodat de knoppen ook zonder JS werken.
-const agendaGroepen = Object.entries(categorieen).map(([key, categorie]) => ({
+const agendaGroups = Object.entries(categories).map(([key, categorie]) => ({
   label: categorie.label,
-  bronnen: bronnen.filter((bron) => bron.categorie === key),
+  sources: sources.filter((source) => source.categorie === key),
 }));
-const eersteBron = agendaGroepen[0].bronnen[0];
+const firstSource = agendaGroups[0].sources[0];
 const icsUrl = (id: string) => `https://calendar.google.com/calendar/ical/${encodeURIComponent(id)}/public/basic.ics`;
 const googleUrl = (id: string) => `https://calendar.google.com/calendar/render?cid=${encodeURIComponent(id)}`;
 ---
@@ -35,7 +35,7 @@ const googleUrl = (id: string) => `https://calendar.google.com/calendar/render?c
       </p>
       {/* Kleur zegt wát je er kan doen; de titel draagt de details */}
       <ul class="mt-8 flex flex-wrap gap-x-6 gap-y-2">
-        {Object.values(categorieen).map((categorie) => (
+        {Object.values(categories).map((categorie) => (
           <li class="flex items-center gap-2 text-sm text-inkt-700">
             <span class="h-3 w-3 rounded-full" style={`background: ${categorie.kleur}`}></span>
             {categorie.label}
@@ -111,17 +111,17 @@ const googleUrl = (id: string) => `https://calendar.google.com/calendar/render?c
           id="agenda-bron"
           class="max-w-full rounded-full border-2 border-inkt-950 bg-white px-4 py-2.5 text-sm font-semibold text-inkt-950"
         >
-          {agendaGroepen.map((groep) => (
-            <optgroup label={groep.label}>
-              {groep.bronnen.map((bron) => (
-                <option value={bron.googleCalendarId}>{bron.label}</option>
+          {agendaGroups.map((group) => (
+            <optgroup label={group.label}>
+              {group.sources.map((source) => (
+                <option value={source.googleCalendarId}>{source.label}</option>
               ))}
             </optgroup>
           ))}
         </select>
         <a
           id="agenda-google"
-          href={googleUrl(eersteBron.googleCalendarId)}
+          href={googleUrl(firstSource.googleCalendarId)}
           target="_blank"
           rel="noopener"
           class="stem-baan group inline-flex items-center gap-2 rounded-full border-2 border-inkt-950 px-5 py-2.5 text-xs text-inkt-950 transition-colors hover:border-club-600 hover:text-club-600"
@@ -133,7 +133,7 @@ const googleUrl = (id: string) => `https://calendar.google.com/calendar/render?c
         </a>
         <a
           id="agenda-ical"
-          href={icsUrl(eersteBron.googleCalendarId).replace('https://', 'webcal://')}
+          href={icsUrl(firstSource.googleCalendarId).replace('https://', 'webcal://')}
           class="stem-baan group inline-flex items-center gap-2 rounded-full border-2 border-inkt-950 px-5 py-2.5 text-xs text-inkt-950 transition-colors hover:border-club-600 hover:text-club-600"
         >
           Apple / Outlook
@@ -165,26 +165,26 @@ const googleUrl = (id: string) => `https://calendar.google.com/calendar/render?c
   import dayGridPlugin from '@fullcalendar/daygrid';
   import listPlugin from '@fullcalendar/list';
   import googleCalendarPlugin from '@fullcalendar/google-calendar';
-  import { googleCalendarApiKey, bronnen, categorieen, groepUitTitel } from '../data/kalender';
+  import { googleCalendarApiKey, sources, categories, groupFromTitle } from '../data/kalender';
 
   const el = document.getElementById('kalender')!;
   const wrap = document.getElementById('kalender-wrap')!;
-  const laden = document.getElementById('kalender-laden')!;
-  const foutmelding = document.getElementById('kalender-fout')!;
-  const paneel = document.getElementById('kalender-detail')!;
-  const paneelBand = document.getElementById('kalender-detail-band')!;
-  const paneelSoort = document.getElementById('kalender-detail-soort')!;
-  const paneelDag = document.getElementById('kalender-detail-dag')!;
-  const paneelUren = document.getElementById('kalender-detail-uren')!;
-  const paneelTitel = document.getElementById('kalender-detail-titel')!;
-  const paneelPlaats = document.getElementById('kalender-detail-plaats')!;
-  const paneelBeschrijving = document.getElementById('kalender-detail-beschrijving')!;
-  const paneelTekst = document.getElementById('kalender-detail-tekst')!;
-  const sluitKnop = document.getElementById('kalender-detail-sluit')!;
+  const loading = document.getElementById('kalender-laden')!;
+  const errorMessage = document.getElementById('kalender-fout')!;
+  const panel = document.getElementById('kalender-detail')!;
+  const panelRibbon = document.getElementById('kalender-detail-band')!;
+  const panelKind = document.getElementById('kalender-detail-soort')!;
+  const panelDay = document.getElementById('kalender-detail-dag')!;
+  const panelHours = document.getElementById('kalender-detail-uren')!;
+  const panelTitle = document.getElementById('kalender-detail-titel')!;
+  const panelPlace = document.getElementById('kalender-detail-plaats')!;
+  const panelDescription = document.getElementById('kalender-detail-beschrijving')!;
+  const panelText = document.getElementById('kalender-detail-tekst')!;
+  const closeButton = document.getElementById('kalender-detail-sluit')!;
   // Eén bron voor 'smal scherm': de lijstweergave bij het laden, en per keer
   // opnieuw gelezen wanneer het detailpaneel een blad moet worden.
-  const smalScherm = window.matchMedia('(max-width: 640px)');
-  const isMobiel = smalScherm.matches;
+  const narrowScreen = window.matchMedia('(max-width: 640px)');
+  const isMobile = narrowScreen.matches;
 
   // — Detailpaneel: klik of Enter op een activiteit toont uur, plaats en
   //   beschrijving in de wereld zelf; de Google Calendar-pagina blijft dicht. —
@@ -194,39 +194,39 @@ const googleUrl = (id: string) => `https://calendar.google.com/calendar/render?c
   // kolombreedtes van die tabel dichtklappen zodra de rij zélf focus krijgt
   // (blur herstelt het meteen) — dus is daar de titelcel het bedienbare
   // element, niet de rij. In de maandweergave blijft dat het blokje zelf.
-  const bedienbaar = (el: HTMLElement): HTMLElement =>
+  const operable = (el: HTMLElement): HTMLElement =>
     el.querySelector<HTMLElement>('.fc-list-event-title') ?? el;
 
-  const uur = (d: Date) => `${d.getHours()}u${String(d.getMinutes()).padStart(2, '0')}`;
-  const datumOpties: Intl.DateTimeFormatOptions = { weekday: 'long', day: 'numeric', month: 'long' };
+  const time = (d: Date) => `${d.getHours()}u${String(d.getMinutes()).padStart(2, '0')}`;
+  const dateOptions: Intl.DateTimeFormatOptions = { weekday: 'long', day: 'numeric', month: 'long' };
 
-  function dagTekst(event: EventApi): string {
+  function dayText(event: EventApi): string {
     const start = event.start;
     if (!start) return '';
-    const dag = start.toLocaleDateString('nl-BE', datumOpties);
-    if (!event.allDay || !event.end) return dag;
+    const day = start.toLocaleDateString('nl-BE', dateOptions);
+    if (!event.allDay || !event.end) return day;
     // Bij een activiteit over meerdere dagen is de einddatum exclusief.
-    const laatste = new Date(event.end.getTime() - 86400000);
-    if (laatste.toDateString() === start.toDateString()) return dag;
-    return `${dag} – ${laatste.toLocaleDateString('nl-BE', datumOpties)}`;
+    const last = new Date(event.end.getTime() - 86400000);
+    if (last.toDateString() === start.toDateString()) return day;
+    return `${day} – ${last.toLocaleDateString('nl-BE', dateOptions)}`;
   }
 
-  function urenTekst(event: EventApi): string {
+  function hoursText(event: EventApi): string {
     if (!event.start) return '';
     if (event.allDay) return 'Hele dag';
-    return event.end ? `${uur(event.start)} – ${uur(event.end)}` : `vanaf ${uur(event.start)}`;
+    return event.end ? `${time(event.start)} – ${time(event.end)}` : `vanaf ${time(event.start)}`;
   }
 
   // Google Calendar levert beschrijvingen als HTML. De tags gaan eruit, maar de
   // entiteiten (&nbsp;, &amp;, &#39;) moeten terug naar echte tekens en de
   // regeleindes blijven staan — anders leest een aankondiging als één blok met
   // "&nbsp;" ertussen.
-  function alsTekst(html: string): string {
-    const metRegels = html
+  function asText(html: string): string {
+    const withBreaks = html
       .replace(/<br\s*\/?>/gi, '\n')
       .replace(/<\/(p|div|li|ul|ol|h[1-6])>/gi, '\n');
-    const tekst = new DOMParser().parseFromString(metRegels, 'text/html').body.textContent ?? '';
-    return tekst
+    const text = new DOMParser().parseFromString(withBreaks, 'text/html').body.textContent ?? '';
+    return text
       .replace(/\u00a0/g, ' ')
       .replace(/[^\S\n]+/g, ' ')
       .replace(/ ?\n ?/g, '\n')
@@ -236,92 +236,92 @@ const googleUrl = (id: string) => `https://calendar.google.com/calendar/render?c
 
   // Een inschrijflink of e-mailadres in de beschrijving hoort klikbaar te zijn;
   // de rest blijft tekst (geen vreemde HTML via innerHTML in de pagina).
-  const linkPatroon = /(?:https?:\/\/|www\.)\S+[^\s.,;:!?)"']|[\w.+-]+@[\w-]+\.[\w.-]+/gi;
+  const linkPattern = /(?:https?:\/\/|www\.)\S+[^\s.,;:!?)"']|[\w.+-]+@[\w-]+\.[\w.-]+/gi;
 
-  function vulBeschrijving(tekst: string) {
-    paneelBeschrijving.textContent = '';
-    let gelezen = 0;
-    for (const match of tekst.matchAll(linkPatroon)) {
-      const vondst = match[0];
+  function fillDescription(text: string) {
+    panelDescription.textContent = '';
+    let consumed = 0;
+    for (const match of text.matchAll(linkPattern)) {
+      const found = match[0];
       const start = match.index ?? 0;
-      if (start > gelezen) paneelBeschrijving.append(tekst.slice(gelezen, start));
+      if (start > consumed) panelDescription.append(text.slice(consumed, start));
       const link = document.createElement('a');
-      const mail = !/^(?:https?:|www\.)/i.test(vondst);
-      link.textContent = vondst;
-      link.href = mail ? `mailto:${vondst}` : vondst.startsWith('www.') ? `https://${vondst}` : vondst;
+      const mail = !/^(?:https?:|www\.)/i.test(found);
+      link.textContent = found;
+      link.href = mail ? `mailto:${found}` : found.startsWith('www.') ? `https://${found}` : found;
       link.className = 'font-semibold text-club-700 underline underline-offset-2 hover:text-club-800';
       if (!mail) {
         link.target = '_blank';
         link.rel = 'noopener';
       }
-      paneelBeschrijving.append(link);
-      gelezen = start + vondst.length;
+      panelDescription.append(link);
+      consumed = start + found.length;
     }
-    paneelBeschrijving.append(tekst.slice(gelezen));
+    panelDescription.append(text.slice(consumed));
   }
 
   // Onder 640px is er geen ruimte naast de lijst: het paneel wordt een blad
   // onderaan de viewport, zodat het nooit half buiten beeld openklapt.
-  function plaatsPaneel(eventEl: HTMLElement) {
-    const blad = smalScherm.matches;
-    paneel.classList.toggle('kalender-detail--blad', blad);
-    if (blad) {
-      paneel.style.left = '';
-      paneel.style.top = '';
+  function positionPanel(eventEl: HTMLElement) {
+    const sheet = narrowScreen.matches;
+    panel.classList.toggle('kalender-detail--blad', sheet);
+    if (sheet) {
+      panel.style.left = '';
+      panel.style.top = '';
       return;
     }
     const rect = eventEl.getBoundingClientRect();
     const wrect = wrap.getBoundingClientRect();
-    const hoogte = paneel.offsetHeight;
-    const kop = (document.querySelector('header')?.getBoundingClientRect().height ?? 0) + 8;
-    const onder = rect.bottom + 8;
-    const boven = rect.top - 8 - hoogte;
+    const height = panel.offsetHeight;
+    const header = (document.querySelector('header')?.getBoundingClientRect().height ?? 0) + 8;
+    const below = rect.bottom + 8;
+    const above = rect.top - 8 - height;
     // Standaard onder de activiteit; alleen omklappen als het daar niet past
     // én er boven wél plaats is onder de sticky header.
-    const top = onder + hoogte <= window.innerHeight || boven < kop ? onder : boven;
-    paneel.style.left = `${Math.max(0, Math.min(rect.left - wrect.left, wrap.clientWidth - paneel.offsetWidth))}px`;
-    paneel.style.top = `${top - wrect.top}px`;
+    const top = below + height <= window.innerHeight || above < header ? below : above;
+    panel.style.left = `${Math.max(0, Math.min(rect.left - wrect.left, wrap.clientWidth - panel.offsetWidth))}px`;
+    panel.style.top = `${top - wrect.top}px`;
   }
 
   function openDetail(event: EventApi, eventEl: HTMLElement) {
-    const plaats = (event.extendedProps.location as string | undefined) ?? '';
-    const beschrijving = alsTekst((event.extendedProps.description as string | undefined) ?? '');
-    const soort =
-      categorieen[event.extendedProps.categorie as keyof typeof categorieen] ?? categorieen.event;
+    const place = (event.extendedProps.location as string | undefined) ?? '';
+    const description = asText((event.extendedProps.description as string | undefined) ?? '');
+    const kind =
+      categories[event.extendedProps.categorie as keyof typeof categories] ?? categories.event;
 
-    paneelSoort.textContent = soort.label;
-    paneelBand.style.background = soort.kleur;
-    paneelBand.style.color = soort.tekst;
-    paneelDag.textContent = dagTekst(event);
-    paneelUren.textContent = urenTekst(event);
-    paneelTitel.textContent = event.title;
-    paneelPlaats.textContent = plaats.toLowerCase() === 'onbekend' ? '' : plaats;
-    paneelPlaats.classList.toggle('hidden', !paneelPlaats.textContent);
-    vulBeschrijving(beschrijving);
-    paneelTekst.classList.toggle('hidden', !beschrijving);
-    paneelBeschrijving.scrollTop = 0;
+    panelKind.textContent = kind.label;
+    panelRibbon.style.background = kind.kleur;
+    panelRibbon.style.color = kind.tekst;
+    panelDay.textContent = dayText(event);
+    panelHours.textContent = hoursText(event);
+    panelTitle.textContent = event.title;
+    panelPlace.textContent = place.toLowerCase() === 'onbekend' ? '' : place;
+    panelPlace.classList.toggle('hidden', !panelPlace.textContent);
+    fillDescription(description);
+    panelText.classList.toggle('hidden', !description);
+    panelDescription.scrollTop = 0;
 
-    paneel.classList.remove('hidden');
-    plaatsPaneel(eventEl);
+    panel.classList.remove('hidden');
+    positionPanel(eventEl);
 
     trigger = eventEl;
-    paneel.focus({ preventScroll: true });
+    panel.focus({ preventScroll: true });
   }
 
-  function sluitDetail() {
-    if (paneel.classList.contains('hidden')) return;
-    paneel.classList.add('hidden');
+  function closeDetail() {
+    if (panel.classList.contains('hidden')) return;
+    panel.classList.add('hidden');
     trigger?.focus({ preventScroll: true });
     trigger = null;
   }
 
-  sluitKnop.addEventListener('click', sluitDetail);
+  closeButton.addEventListener('click', closeDetail);
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') sluitDetail();
+    if (e.key === 'Escape') closeDetail();
   });
   document.addEventListener('click', (e) => {
-    const doel = e.target as HTMLElement;
-    if (!paneel.contains(doel) && !doel.closest('.fc-event')) sluitDetail();
+    const target = e.target as HTMLElement;
+    if (!panel.contains(target) && !target.closest('.fc-event')) closeDetail();
   });
 
   // — In je eigen agenda: de knoppen volgen de gekozen bron; kopiëren geeft
@@ -329,21 +329,21 @@ const googleUrl = (id: string) => `https://calendar.google.com/calendar/render?c
   const agendaSelect = document.getElementById('agenda-bron') as HTMLSelectElement;
   const agendaGoogle = document.getElementById('agenda-google') as HTMLAnchorElement;
   const agendaIcal = document.getElementById('agenda-ical') as HTMLAnchorElement;
-  const agendaKopieer = document.getElementById('agenda-kopieer')!;
+  const agendaCopy = document.getElementById('agenda-kopieer')!;
   const agendaStatus = document.getElementById('agenda-status')!;
 
   const agendaIcsUrl = (id: string) => `https://calendar.google.com/calendar/ical/${encodeURIComponent(id)}/public/basic.ics`;
 
-  function vernieuwAgendaLinks() {
+  function refreshAgendaLinks() {
     const id = agendaSelect.value;
     agendaGoogle.href = `https://calendar.google.com/calendar/render?cid=${encodeURIComponent(id)}`;
     agendaIcal.href = agendaIcsUrl(id).replace('https://', 'webcal://');
   }
-  agendaSelect.addEventListener('change', vernieuwAgendaLinks);
-  vernieuwAgendaLinks();
+  agendaSelect.addEventListener('change', refreshAgendaLinks);
+  refreshAgendaLinks();
 
-  let kopieerTimer: number | undefined;
-  agendaKopieer.addEventListener('click', async () => {
+  let copyTimer: number | undefined;
+  agendaCopy.addEventListener('click', async () => {
     const url = agendaIcsUrl(agendaSelect.value);
     try {
       await navigator.clipboard.writeText(url);
@@ -352,8 +352,8 @@ const googleUrl = (id: string) => `https://calendar.google.com/calendar/render?c
       // Kopiëren kan geblokkeerd zijn; toon dan de link zelf om over te nemen.
       agendaStatus.textContent = url;
     }
-    clearTimeout(kopieerTimer);
-    kopieerTimer = window.setTimeout(() => {
+    clearTimeout(copyTimer);
+    copyTimer = window.setTimeout(() => {
       agendaStatus.textContent = '';
     }, 8000);
   });
@@ -361,23 +361,23 @@ const googleUrl = (id: string) => `https://calendar.google.com/calendar/render?c
   // — Mobiel: bij het openen meteen naar vandaag scrollen. De maandlijst
   //   begint anders bij de eerste dag van de maand, ver boven het
   //   eerstvolgende speelmoment. Eén keer, meteen na de eerste lading. —
-  let naarVandaagGescrold = false;
-  function scrolNaarVandaag() {
-    if (!isMobiel || naarVandaagGescrold) return;
-    const nu = new Date();
-    const vandaagIso = `${nu.getFullYear()}-${String(nu.getMonth() + 1).padStart(2, '0')}-${String(nu.getDate()).padStart(2, '0')}`;
-    const dagen = [...el.querySelectorAll<HTMLElement>('.fc-list-day')];
-    const doel = dagen.find((dag) => (dag.dataset.date ?? '') >= vandaagIso);
-    if (!doel) return;
-    naarVandaagGescrold = true;
-    const hoogteChroom = (document.querySelector('header')?.getBoundingClientRect().height ?? 0) + 8;
-    window.scrollTo({ top: doel.getBoundingClientRect().top + window.scrollY - hoogteChroom });
+  let scrolledToToday = false;
+  function scrollToToday() {
+    if (!isMobile || scrolledToToday) return;
+    const now = new Date();
+    const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const days = [...el.querySelectorAll<HTMLElement>('.fc-list-day')];
+    const target = days.find((day) => (day.dataset.date ?? '') >= todayIso);
+    if (!target) return;
+    scrolledToToday = true;
+    const chromeHeight = (document.querySelector('header')?.getBoundingClientRect().height ?? 0) + 8;
+    window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY - chromeHeight });
   }
 
   const calendar = new Calendar(el, {
     plugins: [dayGridPlugin, listPlugin, googleCalendarPlugin],
     locale: nlLocale,
-    initialView: isMobiel ? 'listMonth' : 'dayGridMonth',
+    initialView: isMobile ? 'listMonth' : 'dayGridMonth',
     headerToolbar: {
       left: 'prev,next today',
       center: 'title',
@@ -386,52 +386,52 @@ const googleUrl = (id: string) => `https://calendar.google.com/calendar/render?c
     height: 'auto',
     dayMaxEvents: true,
     googleCalendarApiKey,
-    eventSources: bronnen.map((bron) => ({
-      googleCalendarId: bron.googleCalendarId,
-      backgroundColor: categorieen[bron.categorie].kleur,
-      borderColor: categorieen[bron.categorie].kleur,
-      textColor: categorieen[bron.categorie].tekst,
+    eventSources: sources.map((source) => ({
+      googleCalendarId: source.googleCalendarId,
+      backgroundColor: categories[source.categorie].kleur,
+      borderColor: categories[source.categorie].kleur,
+      textColor: categories[source.categorie].tekst,
       eventDataTransform(data: Record<string, unknown>) {
         // De categorie reist mee: het detailpaneel draagt dezelfde kleur als
         // het blokje op de kalender en de legende bovenaan.
-        data.extendedProps = { ...((data.extendedProps as object | undefined) ?? {}), categorie: bron.categorie };
+        data.extendedProps = { ...((data.extendedProps as object | undefined) ?? {}), categorie: source.categorie };
         // Nooit naar de Google Calendar-pagina navigeren (ook niet via
         // middelklik of "open in nieuw tabblad"); details tonen we zelf.
         delete data.url;
         // Kalendertitels zijn interne jargon; bronnen met een speelmoment
         // krijgen dezelfde vaste tekst als de hero-chip op de homepage.
         // De groep (jeugd zaterdag: groep 1 en 2) blijft wel zichtbaar.
-        if (bron.speelmoment) {
-          const groep = groepUitTitel(data.title as string | undefined);
-          data.title = `${bron.speelmoment.omschrijving}${groep ? ` ${groep}` : ''} (${bron.speelmoment.doelgroep})`;
+        if (source.speelmoment) {
+          const group = groupFromTitle(data.title as string | undefined);
+          data.title = `${source.speelmoment.omschrijving}${group ? ` ${group}` : ''} (${source.speelmoment.doelgroep})`;
         }
         return data;
       },
     })),
-    loading(bezig) {
-      laden.classList.toggle('hidden', !bezig);
-      laden.classList.toggle('flex', bezig);
-      if (!bezig) requestAnimationFrame(scrolNaarVandaag);
+    loading(busy) {
+      loading.classList.toggle('hidden', !busy);
+      loading.classList.toggle('flex', busy);
+      if (!busy) requestAnimationFrame(scrollToToday);
     },
     eventSourceFailure() {
-      foutmelding.classList.remove('hidden');
+      errorMessage.classList.remove('hidden');
     },
     eventDidMount(arg) {
       // Zonder url is het element geen link meer; maak het zelf bedienbaar.
-      const knop = bedienbaar(arg.el);
-      knop.setAttribute('role', 'button');
-      if (!knop.hasAttribute('tabindex')) knop.tabIndex = 0;
+      const button = operable(arg.el);
+      button.setAttribute('role', 'button');
+      if (!button.hasAttribute('tabindex')) button.tabIndex = 0;
       arg.el.title = arg.event.title;
-      knop.addEventListener('keydown', (e) => {
+      button.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          openDetail(arg.event, knop);
+          openDetail(arg.event, button);
         }
       });
     },
     eventClick(info) {
       info.jsEvent.preventDefault();
-      openDetail(info.event, bedienbaar(info.el));
+      openDetail(info.event, operable(info.el));
     },
   });
 

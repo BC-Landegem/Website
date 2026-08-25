@@ -4,7 +4,7 @@ import { glob } from 'astro/loaders';
 /**
  * Het archief van de oude Joomla-site: 837 artikels uit 2009–2025.
  *
- * De bestanden zijn ooit gegenereerd door `scripts/archief-conversie.mjs`, maar
+ * De bestanden zijn ooit gegenereerd door `scripts/archive-convert.mjs`, maar
  * zijn sindsdien de bron van waarheid — opnieuw converteren wist ze. Zie README.
  */
 const archief = defineCollection({

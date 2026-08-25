@@ -5,22 +5,22 @@
 // De naam van dit bestand doet niet ter zake voor de domeinswitch naar
 // bclandegem.be, waar vandaag al workers van de oude site staan: register() op
 // dezelfde scope vervangt de bestaande registratie hoe die worker ook heet, en
-// src/sw/registratie.js meldt de rest af. Zie PRODUCT.md.
+// src/sw/registration.js meldt de rest af. Zie PRODUCT.md.
 import type { APIRoute } from 'astro';
-import sjabloon from '../sw/service-worker.js?raw';
-import { SCHIL_ASSETS, SCHIL_PADEN } from '../data/pwa';
+import template from '../sw/service-worker.js?raw';
+import { SHELL_ASSETS, SHELL_PATHS } from '../data/pwa';
 import { url } from '../lib/url';
 
 export const GET: APIRoute = () => {
-  const schil = [...SCHIL_PADEN, ...SCHIL_ASSETS].map((pad) => url(pad));
+  const shell = [...SHELL_PATHS, ...SHELL_ASSETS].map((path) => url(path));
   // Buildtijdstip als cacheversie: elke deploy levert nieuwe, gehashte assets
   // op, dus mag de oude schil- en assetcache dan weg.
-  const versie = new Date().toISOString();
+  const version = new Date().toISOString();
 
-  const code = sjabloon
-    .replace('__VERSIE__', versie)
+  const code = template
+    .replace('__VERSION__', version)
     .replace('__BASE__', url('/'))
-    .replace('/* __SCHIL__ */ []', JSON.stringify(schil));
+    .replace('/* __SHELL__ */ []', JSON.stringify(shell));
 
   return new Response(code, {
     // Alleen het content-type: dit endpoint wordt bij de statische build naar

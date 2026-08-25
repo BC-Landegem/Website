@@ -9,7 +9,7 @@
 // Album toevoegen = hier één blok toevoegen; album (of losse foto) verwijderen
 // van de site = uit het Google Photos-album halen of hier de regel schrappen.
 
-export type MediaCategorie = 'jeugd' | 'competitie' | 'intraclub' | 'club';
+export type MediaCategory = 'jeugd' | 'competitie' | 'intraclub' | 'club';
 
 export interface MediaAlbum {
   /** URL-deel op de site, bv. 'pbo-jeugdcup-2026' -> /media/pbo-jeugdcup-2026/ */
@@ -18,7 +18,7 @@ export interface MediaAlbum {
   titel: string;
   /** Jaar en maand van het event, 'JJJJ-MM' — bepaalt ook de volgorde. Enkel 'JJJJ' mag als de maand onbekend is. */
   datum: string;
-  categorie: MediaCategorie;
+  categorie: MediaCategory;
   /** Publieke share-link van het Google Photos-album. */
   share: string;
 }

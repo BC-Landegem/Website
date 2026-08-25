@@ -21,7 +21,7 @@ const mainItems = [
   { label: "Foto's", href: '/media/' },
 ];
 
-const reeksen = ['Heren', 'Gemengd', 'Dames'];
+const divisions = ['Heren', 'Gemengd', 'Dames'];
 
 const currentPath = Astro.url.pathname;
 const isActive = (href: string) => currentPath.startsWith(url(href).replace(/\/$/, ''));
@@ -100,19 +100,19 @@ const isActive = (href: string) => currentPath.startsWith(url(href).replace(/\/$
             class="hidden lg:invisible lg:absolute lg:left-0 lg:top-full lg:block lg:border lg:border-inkt-950/10 lg:bg-veer-50 lg:opacity-0 lg:shadow-lg lg:transition lg:group-hover:visible lg:group-hover:opacity-100 lg:group-focus-within:visible lg:group-focus-within:opacity-100"
           >
             <div class="flex gap-8 px-5 py-4">
-              {reeksen.map((reeks) => (
+              {divisions.map((division) => (
                 <div>
-                  <span class="stem-baan block text-xs text-inkt-500">{reeks}</span>
+                  <span class="stem-baan block text-xs text-inkt-500">{division}</span>
                   <ul class="mt-2 space-y-0.5">
-                    {teams.ploegen.filter((p) => p.type === reeks).map((ploeg) => (
+                    {teams.ploegen.filter((p) => p.type === division).map((team) => (
                       <li>
                         <a
-                          href={ploeg.url}
+                          href={team.url}
                           target="_blank"
                           rel="noopener"
                           class="block whitespace-nowrap py-1 text-sm font-medium hover:text-club-600"
                         >
-                          {ploeg.naam}
+                          {team.naam}
                         </a>
                       </li>
                     ))}
@@ -130,15 +130,15 @@ const isActive = (href: string) => currentPath.startsWith(url(href).replace(/\/$
 
           {/* Mobiel: compacte ploeg-pillen onder de link */}
           <ul class="flex flex-wrap gap-2 px-3 pb-2 pl-6 lg:hidden">
-            {teams.ploegen.map((ploeg) => (
+            {teams.ploegen.map((team) => (
               <li>
                 <a
-                  href={ploeg.url}
+                  href={team.url}
                   target="_blank"
                   rel="noopener"
                   class="stem-baan block rounded-full border border-inkt-950/30 px-3 py-1.5 text-xs text-inkt-950 transition-colors hover:border-club-600 hover:text-club-600"
                 >
-                  {ploeg.naam.replace('Landegem ', '')}
+                  {team.naam.replace('Landegem ', '')}
                 </a>
               </li>
             ))}

@@ -2,7 +2,7 @@
 // Vangnet van de service worker: verschijnt wanneer je een pagina opvraagt die
 // nog niet in de cache zit en er geen verbinding is.
 import Layout from '../layouts/Layout.astro';
-import RailKop from '../components/RailKop.astro';
+import RailHeading from '../components/RailHeading.astro';
 import { url } from '../lib/url';
 ---
 
@@ -12,7 +12,7 @@ import { url } from '../lib/url';
   noindex
 >
   <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
-    <RailKop
+    <RailHeading
       title="Geen verbinding"
       intro="Deze pagina staat nog niet in de cache en je toestel krijgt er op dit moment niet bij."
     />

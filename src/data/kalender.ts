@@ -7,14 +7,14 @@ export const googleCalendarApiKey = 'AIzaSyDnzhbVO9JCyQqot348j_yt9pSUYfiMHY4';
  * ploeg zijn bewust weg: kleur zegt wát je er kan doen (spelen, trainen,
  * kijken, meemaken), de titel draagt de details.
  */
-export type KalenderCategorie = 'spelen' | 'training' | 'match' | 'event';
+export type CalendarCategory = 'spelen' | 'training' | 'match' | 'event';
 
 /**
  * Wereldkleuren per categorie (De Shuttle): kurk = zelf spelen, inkt =
  * trainingen en matchen, clubrood = de events. `tekst` is de tekstkleur op
  * gevulde eventblokken (contrast ≥ 4.5:1).
  */
-export const categorieen: Record<KalenderCategorie, { label: string; kleur: string; tekst: string }> = {
+export const categories: Record<CalendarCategory, { label: string; kleur: string; tekst: string }> = {
   spelen: { label: 'Vrij spel & intraclub', kleur: '#a97438', tekst: '#1b1410' }, // kurk-600 / inkt-950
   training: { label: 'Trainingen', kleur: '#6b5c50', tekst: '#ffffff' }, // inkt-500
   match: { label: 'Competitiematchen', kleur: '#1b1410', tekst: '#faf7f1' }, // inkt-950 / veer-50
@@ -29,15 +29,15 @@ export const categorieen: Record<KalenderCategorie, { label: string; kleur: stri
  * overal op de site zichtbaar blijven, ook al vervangen we de rest van de
  * interne titel door de vaste omschrijving.
  */
-export function groepUitTitel(titel: string | undefined): string | null {
-  const match = titel?.match(/groep\s*(\d+)/i);
+export function groupFromTitle(title: string | undefined): string | null {
+  const match = title?.match(/groep\s*(\d+)/i);
   return match ? `groep ${match[1]}` : null;
 }
 
-export interface KalenderBron {
+export interface CalendarSource {
   label: string;
   googleCalendarId: string;
-  categorie: KalenderCategorie;
+  categorie: CalendarCategory;
   /**
    * Vaste weergavetekst voor deze bron. Enkel bronnen met dit veld tellen als
    * speelmoment (hero-chip op de homepage) én krijgen op de kalender een
@@ -48,7 +48,7 @@ export interface KalenderBron {
   speelmoment?: { omschrijving: string; doelgroep: string };
 }
 
-export const bronnen: KalenderBron[] = [
+export const sources: CalendarSource[] = [
   { label: 'Events', categorie: 'event', googleCalendarId: '96vl7c6jvq0ilvbkk62vh058rp2uc5pj@import.calendar.google.com' },
   { label: 'Vrij spelen', categorie: 'spelen', googleCalendarId: 'q2tp121lj5fs101js7ph7qq2hgv7iqu1@import.calendar.google.com', speelmoment: { omschrijving: 'Vrij spel', doelgroep: 'iedereen' } },
   { label: 'Training jeugd', categorie: 'training', googleCalendarId: '1s8ga8r6ua28mb0ld3eol386amag2j54@import.calendar.google.com', speelmoment: { omschrijving: 'Jeugdtraining', doelgroep: 'jeugd' } },

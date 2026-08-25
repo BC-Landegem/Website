@@ -17,50 +17,50 @@
 (function () {
   if (!('serviceWorker' in navigator)) return;
 
-  var SW_PAD = '__SW_PAD__';
+  var SW_PATH = '__SW_PATH__';
   var BASE = '__BASE__';
-  var ONS_SCRIPT = new URL(SW_PAD, location.origin).href;
+  var OUR_SCRIPT = new URL(SW_PATH, location.origin).href;
 
   addEventListener('load', function () {
-    navigator.serviceWorker.register(SW_PAD).then(ruimOp, ruimOp);
+    navigator.serviceWorker.register(SW_PATH).then(cleanUp, cleanUp);
   });
 
   // Onze eigen registratie kan tijdens een update nog een oude active worker
   // hebben, dus kijken we naar alle drie de fases voor we iets afmelden.
-  function isOnze(registratie) {
-    return ['active', 'installing', 'waiting'].some(function (fase) {
-      return registratie[fase] && registratie[fase].scriptURL === ONS_SCRIPT;
+  function isOurs(registration) {
+    return ['active', 'installing', 'waiting'].some(function (phase) {
+      return registration[phase] && registration[phase].scriptURL === OUR_SCRIPT;
     });
   }
 
-  function ruimOp() {
+  function cleanUp() {
     if (!navigator.serviceWorker.getRegistrations) return;
     navigator.serviceWorker
       .getRegistrations()
-      .then(function (registraties) {
-        var vreemd = registraties.filter(function (registratie) {
-          if (isOnze(registratie)) return false;
-          var scope = new URL(registratie.scope).pathname;
+      .then(function (registrations) {
+        var foreign = registrations.filter(function (registration) {
+          if (isOurs(registration)) return false;
+          var scope = new URL(registration.scope).pathname;
           return BASE.indexOf(scope) === 0;
         });
-        if (!vreemd.length) return;
+        if (!foreign.length) return;
         return Promise.all(
-          vreemd.map(function (registratie) {
-            return registratie.unregister().catch(function () {});
+          foreign.map(function (registration) {
+            return registration.unregister().catch(function () {});
           }),
-        ).then(wisVreemdeCaches);
+        ).then(clearForeignCaches);
       })
       .catch(function () {});
   }
 
-  function wisVreemdeCaches() {
+  function clearForeignCaches() {
     if (!self.caches || !caches.keys) return;
     return caches
       .keys()
-      .then(function (namen) {
+      .then(function (names) {
         return Promise.all(
-          namen.map(function (naam) {
-            return naam.indexOf('bcl-') === 0 ? null : caches.delete(naam).catch(function () {});
+          names.map(function (name) {
+            return name.indexOf('bcl-') === 0 ? null : caches.delete(name).catch(function () {});
           }),
         );
       })

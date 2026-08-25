@@ -1,8 +1,8 @@
 ---
 import { Image } from 'astro:assets';
 import Layout from '../../layouts/Layout.astro';
-import RailKop from '../../components/RailKop.astro';
-import portret from '../../assets/api.jpg';
+import RailHeading from '../../components/RailHeading.astro';
+import portrait from '../../assets/api.jpg';
 ---
 
 <Layout
@@ -10,7 +10,7 @@ import portret from '../../assets/api.jpg';
   description="Bij het Aanspreekpunt Integriteit (API) van BC Landegem kan je terecht met vragen, vermoedens of klachten over grensoverschrijdend gedrag."
 >
   <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
-    <RailKop
+    <RailHeading
       {/* Zacht afbreekstreepje: op de smalste toestellen breekt AANSPREEKPUNT
           zo op de naad van de samenstelling af. */}
       title={'Aanspreek\u00ADpunt Integriteit'}
@@ -21,7 +21,7 @@ import portret from '../../assets/api.jpg';
       {/* Echte foto in een veerblad-snit, zoals de clubfoto op de homepage */}
       <figure class="mx-auto w-56 sm:float-right sm:ml-8 sm:mb-4" style="clip-path: polygon(0 6%, 100% 0, 100% 94%, 0 100%)">
         <Image
-          src={portret}
+          src={portrait}
           alt="Lieselot Van Haute, Aanspreekpunt Integriteit van BC Landegem"
           width={300}
           class="w-full"

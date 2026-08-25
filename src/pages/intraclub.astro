@@ -1,16 +1,16 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import ArchiefLink from '../components/ArchiefLink.astro';
-import RailKop from '../components/RailKop.astro';
+import ArchiveLink from '../components/ArchiveLink.astro';
+import RailHeading from '../components/RailHeading.astro';
 import { url } from '../lib/url';
 
 const tabs = [
-  { key: 'general', label: 'Algemeen', soort: 'ranking' },
-  { key: 'women', label: 'Dames', soort: 'ranking' },
-  { key: 'recreants', label: 'Recreanten', soort: 'ranking' },
-  { key: 'veterans', label: 'Veteranen', soort: 'ranking' },
-  { key: 'speeldagen', label: 'Speeldagen', soort: 'speeldagen' },
-  { key: 'aanwezigheden', label: 'Aanwezigheden', soort: 'aanwezigheden' },
+  { key: 'general', label: 'Algemeen', kind: 'ranking' },
+  { key: 'women', label: 'Dames', kind: 'ranking' },
+  { key: 'recreants', label: 'Recreanten', kind: 'ranking' },
+  { key: 'veterans', label: 'Veteranen', kind: 'ranking' },
+  { key: 'speeldagen', label: 'Speeldagen', kind: 'speeldagen' },
+  { key: 'aanwezigheden', label: 'Aanwezigheden', kind: 'aanwezigheden' },
 ];
 ---
 
@@ -19,7 +19,7 @@ const tabs = [
   description="De standen en uitslagen van de intraclubcompetitie van BC Landegem."
 >
   <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
-    <RailKop
+    <RailHeading
       title="Intraclub"
       intro="Onze interne competitie: vier spelers per match, elke set een ander duo, het hele seizoen een klassement."
     >
@@ -32,7 +32,7 @@ const tabs = [
           <path stroke-linecap="round" stroke-linejoin="round" d="M4 12h16m0 0l-6-6m6 6l-6 6" />
         </svg>
       </a>
-    </RailKop>
+    </RailHeading>
 
     <div
       id="intra-fout"
@@ -64,7 +64,7 @@ const tabs = [
             type="button"
             role="tab"
             data-tab={tab.key}
-            data-soort={tab.soort}
+            data-soort={tab.kind}
             aria-selected={i === 0 ? 'true' : 'false'}
             class="stem-baan rounded-full border-2 border-inkt-950/20 px-4 py-1.5 text-xs text-inkt-700 transition-colors hover:border-club-600 hover:text-club-600 aria-selected:border-club-600 aria-selected:bg-club-600 aria-selected:text-white"
           >
@@ -120,30 +120,30 @@ const tabs = [
     </div>
   
     <div class="pl-10">
-      <ArchiefLink groep="intraclub" />
+      <ArchiveLink group="intraclub" />
     </div>
   </div>
 </Layout>
 
 <script>
-  import { fetchJson, naam, spelerUrl, speeldagUrl, formatDatum, laatsteBerekend } from '../lib/intra';
-  import type { RankingRij, Rankings, Ronde } from '../lib/intra';
+  import { fetchJson, fullName, playerUrl, speeldagUrl, formatDate, latestCalculatedRound } from '../lib/intra';
+  import type { RankingRow, Rankings, Round } from '../lib/intra';
 
-  interface Statistiek {
+  interface PlayerStats {
     id: string; firstName: string; name: string;
     statistics: { rounds: { present: number }; sets: { won: number } };
   }
 
-  const fout = document.getElementById('intra-fout')!;
-  const laden = document.getElementById('intra-laden')!;
-  const inhoud = document.getElementById('intra-inhoud')!;
+  const error = document.getElementById('intra-fout')!;
+  const loading = document.getElementById('intra-laden')!;
+  const content = document.getElementById('intra-inhoud')!;
   const tabs = document.querySelectorAll<HTMLButtonElement>('[data-tab]');
-  const panelen = {
+  const panels = {
     ranking: document.getElementById('paneel-ranking')!,
     speeldagen: document.getElementById('paneel-speeldagen')!,
     aanwezigheden: document.getElementById('paneel-aanwezigheden')!,
   };
-  const tabellen = {
+  const tables = {
     ranking: document.getElementById('intra-tabel')!,
     speeldagen: document.getElementById('intra-speeldagen')!,
     aanwezigheden: document.getElementById('intra-aanwezigheden')!,
@@ -164,82 +164,82 @@ const tabs = [
    * de rest. /rounds/latestCalculated is helemaal weg: /rounds geeft de laatste
    * speeldag ook, en is tien keer kleiner.
    */
-  const beloftes = new Map<string, Promise<unknown>>();
-  function eenmalig<T>(pad: string): Promise<T> {
-    let belofte = beloftes.get(pad) as Promise<T> | undefined;
-    if (!belofte) {
-      belofte = fetchJson<T>(pad);
-      beloftes.set(pad, belofte);
+  const promises = new Map<string, Promise<unknown>>();
+  function once<T>(path: string): Promise<T> {
+    let promise = promises.get(path) as Promise<T> | undefined;
+    if (!promise) {
+      promise = fetchJson<T>(path);
+      promises.set(path, promise);
     }
-    return belofte;
+    return promise;
   }
 
-  const spelerLink = (rij: { id: string; firstName: string; name: string }) =>
-    `<a href="${spelerUrl(rij.id)}" class="font-medium hover:text-club-600 hover:underline">${naam(rij)}</a>`;
+  const playerLink = (row: { id: string; firstName: string; name: string }) =>
+    `<a href="${playerUrl(row.id)}" class="font-medium hover:text-club-600 hover:underline">${fullName(row)}</a>`;
 
   // Richting zit in het teken; kleur blijft binnen het palet (daling = club-700)
-  const pijlOp = '<svg class="-mt-0.5 inline h-2.5 w-2.5" viewBox="0 0 10 10" fill="currentColor" aria-hidden="true"><path d="M5 1.5l4 7H1z"/></svg>';
-  const pijlNeer = '<svg class="-mt-0.5 inline h-2.5 w-2.5" viewBox="0 0 10 10" fill="currentColor" aria-hidden="true"><path d="M5 8.5l-4-7h8z"/></svg>';
+  const arrowUp = '<svg class="-mt-0.5 inline h-2.5 w-2.5" viewBox="0 0 10 10" fill="currentColor" aria-hidden="true"><path d="M5 1.5l4 7H1z"/></svg>';
+  const arrowDown = '<svg class="-mt-0.5 inline h-2.5 w-2.5" viewBox="0 0 10 10" fill="currentColor" aria-hidden="true"><path d="M5 8.5l-4-7h8z"/></svg>';
 
   // Alle drie de tabellen hebben vier kolommen, dus volstaat één meldingsrij.
-  const melding = (tekst: string, kleur: string) =>
-    `<tr><td colspan="4" class="py-4 text-sm ${kleur}">${tekst}</td></tr>`;
+  const messageRow = (text: string, color: string) =>
+    `<tr><td colspan="4" class="py-4 text-sm ${color}">${text}</td></tr>`;
 
-  function toonRanking(rijen: RankingRij[]) {
-    tabellen.ranking.innerHTML = rijen
-      .map((rij) => {
-        const diff = rij.difference > 0
-          ? `<span class="stem-cijfer text-inkt-950">${pijlOp} ${rij.difference}</span>`
-          : rij.difference < 0
-            ? `<span class="stem-cijfer text-club-700">${pijlNeer} ${Math.abs(rij.difference)}</span>`
+  function renderRanking(rows: RankingRow[]) {
+    tables.ranking.innerHTML = rows
+      .map((row) => {
+        const diff = row.difference > 0
+          ? `<span class="stem-cijfer text-inkt-950">${arrowUp} ${row.difference}</span>`
+          : row.difference < 0
+            ? `<span class="stem-cijfer text-club-700">${arrowDown} ${Math.abs(row.difference)}</span>`
             : '<span class="text-inkt-950/30">–</span>';
         return `<tr class="border-b border-inkt-950/10">
-          <td class="stem-cijfer py-2.5 pr-3 text-club-700">${rij.rank}</td>
-          <td class="py-2.5 pr-3">${spelerLink(rij)}</td>
-          <td class="stem-cijfer py-2.5 pr-3 text-right">${rij.average.toFixed(2)}</td>
+          <td class="stem-cijfer py-2.5 pr-3 text-club-700">${row.rank}</td>
+          <td class="py-2.5 pr-3">${playerLink(row)}</td>
+          <td class="stem-cijfer py-2.5 pr-3 text-right">${row.average.toFixed(2)}</td>
           <td class="py-2.5 text-right">${diff}</td>
         </tr>`;
       })
       .join('');
   }
 
-  function toonSpeeldagen(rondes: Ronde[]) {
-    tabellen.speeldagen.innerHTML = rondes
+  function renderSpeeldagen(rounds: Round[]) {
+    tables.speeldagen.innerHTML = rounds
       .slice()
       .reverse()
-      .map((ronde) => `<tr class="border-b border-inkt-950/10">
-        <td class="py-2.5 pr-3"><a href="${speeldagUrl(ronde.id)}" class="font-semibold text-club-700 hover:text-club-800 hover:underline">Speeldag ${ronde.number}</a></td>
-        <td class="py-2.5 pr-3">${formatDatum(ronde.date)}</td>
-        <td class="stem-cijfer py-2.5 pr-3 text-right">${parseInt(ronde.matches) * 4}</td>
-        <td class="stem-cijfer py-2.5 text-right">${ronde.averageAbsent}</td>
+      .map((round) => `<tr class="border-b border-inkt-950/10">
+        <td class="py-2.5 pr-3"><a href="${speeldagUrl(round.id)}" class="font-semibold text-club-700 hover:text-club-800 hover:underline">Speeldag ${round.number}</a></td>
+        <td class="py-2.5 pr-3">${formatDate(round.date)}</td>
+        <td class="stem-cijfer py-2.5 pr-3 text-right">${parseInt(round.matches) * 4}</td>
+        <td class="stem-cijfer py-2.5 text-right">${round.averageAbsent}</td>
       </tr>`)
       .join('');
   }
 
-  function toonAanwezigheden(statistieken: Statistiek[]) {
-    const gesorteerd = statistieken.slice().sort((a, b) => {
+  function renderAttendance(stats: PlayerStats[]) {
+    const sorted = stats.slice().sort((a, b) => {
       if (a.statistics.rounds.present === b.statistics.rounds.present) {
         return b.statistics.sets.won - a.statistics.sets.won;
       }
       return b.statistics.rounds.present - a.statistics.rounds.present;
     });
-    tabellen.aanwezigheden.innerHTML = gesorteerd
-      .map((rij, i) => `<tr class="border-b border-inkt-950/10">
+    tables.aanwezigheden.innerHTML = sorted
+      .map((row, i) => `<tr class="border-b border-inkt-950/10">
         <td class="stem-cijfer py-2.5 pr-3 text-club-700">${i + 1}</td>
-        <td class="py-2.5 pr-3">${spelerLink(rij)}</td>
-        <td class="stem-cijfer py-2.5 pr-3 text-right">${rij.statistics.rounds.present}</td>
-        <td class="stem-cijfer py-2.5 text-right">${rij.statistics.sets.won}</td>
+        <td class="py-2.5 pr-3">${playerLink(row)}</td>
+        <td class="stem-cijfer py-2.5 pr-3 text-right">${row.statistics.rounds.present}</td>
+        <td class="stem-cijfer py-2.5 text-right">${row.statistics.sets.won}</td>
       </tr>`)
       .join('');
   }
 
-  function toonLaatsteSpeeldag(rondes: Ronde[]) {
-    const laatste = laatsteBerekend(rondes);
-    if (!laatste) return;
+  function renderLatestSpeeldag(rounds: Round[]) {
+    const latest = latestCalculatedRound(rounds);
+    if (!latest) return;
     const link = document.getElementById('intra-laatste') as HTMLAnchorElement;
-    link.href = speeldagUrl(laatste.id);
+    link.href = speeldagUrl(latest.id);
     document.getElementById('intra-laatste-tekst')!.textContent =
-      `Stand na speeldag ${laatste.number} (${formatDatum(laatste.date)})`;
+      `Stand na speeldag ${latest.number} (${formatDate(latest.date)})`;
     link.classList.remove('hidden');
     link.classList.add('inline-flex');
   }
@@ -249,41 +249,41 @@ const tabs = [
    * `gekozen` houdt bij waar de bezoeker staat: klikt hij door terwijl een
    * antwoord onderweg is, dan mag dat antwoord de tabel niet meer overschrijven.
    */
-  let gekozen = 'general';
+  let selected = 'general';
 
-  async function vulTab(key: string, soort: keyof typeof panelen) {
-    const pad =
-      soort === 'ranking' ? `/rankings/${key}`
-      : soort === 'speeldagen' ? '/rounds'
+  async function fillTab(key: string, kind: keyof typeof panels) {
+    const path =
+      kind === 'ranking' ? `/rankings/${key}`
+      : kind === 'speeldagen' ? '/rounds'
       : '/seasons/latest/statistics';
-    const tabel = tabellen[soort];
+    const table = tables[kind];
     // Nog niet opgehaald (dan staat er data van een andere categorie), of nog
     // leeg omdat het verzoek van bij het openen nog loopt: in beide gevallen
     // liever "Laden…" dan een verouderde of blanco tabel.
-    if (!beloftes.has(pad) || !tabel.children.length) {
-      tabel.innerHTML = melding('Laden…', 'text-inkt-500');
+    if (!promises.has(path) || !table.children.length) {
+      table.innerHTML = messageRow('Laden…', 'text-inkt-500');
     }
 
     try {
-      if (soort === 'ranking') {
-        const data = await eenmalig<Rankings>(pad);
-        if (gekozen !== key) return;
-        toonRanking((data[key as keyof Rankings] as RankingRij[]) ?? []);
-      } else if (soort === 'speeldagen') {
-        const rondes = await eenmalig<Ronde[]>(pad);
-        if (gekozen !== key) return;
-        toonSpeeldagen(rondes);
+      if (kind === 'ranking') {
+        const data = await once<Rankings>(path);
+        if (selected !== key) return;
+        renderRanking((data[key as keyof Rankings] as RankingRow[]) ?? []);
+      } else if (kind === 'speeldagen') {
+        const rounds = await once<Round[]>(path);
+        if (selected !== key) return;
+        renderSpeeldagen(rounds);
       } else {
-        const statistieken = await eenmalig<Statistiek[]>(pad);
-        if (gekozen !== key) return;
-        toonAanwezigheden(statistieken);
+        const stats = await once<PlayerStats[]>(path);
+        if (selected !== key) return;
+        renderAttendance(stats);
       }
     } catch {
       // Alleen deze tab is mislukt; de belofte weg, zodat een nieuwe klik
       // het opnieuw probeert in plaats van de fout te blijven herhalen.
-      beloftes.delete(pad);
-      if (gekozen === key) {
-        tabel.innerHTML = melding('Niet gelukt. Probeer het later opnieuw.', 'text-club-700');
+      promises.delete(path);
+      if (selected === key) {
+        table.innerHTML = messageRow('Niet gelukt. Probeer het later opnieuw.', 'text-club-700');
       }
     }
   }
@@ -291,35 +291,35 @@ const tabs = [
   for (const tab of tabs) {
     tab.addEventListener('click', () => {
       const key = tab.dataset.tab!;
-      const soort = tab.dataset.soort as keyof typeof panelen;
-      gekozen = key;
-      for (const andere of tabs) andere.setAttribute('aria-selected', String(andere === tab));
-      for (const paneel of Object.values(panelen)) paneel.classList.add('hidden');
-      panelen[soort].classList.remove('hidden');
-      vulTab(key, soort);
+      const kind = tab.dataset.soort as keyof typeof panels;
+      selected = key;
+      for (const other of tabs) other.setAttribute('aria-selected', String(other === tab));
+      for (const panel of Object.values(panels)) panel.classList.add('hidden');
+      panels[kind].classList.remove('hidden');
+      fillTab(key, kind);
     });
   }
 
-  async function laadData() {
+  async function loadData() {
     // /rounds gaat wel meteen mee: het is het kleinste antwoord van de hele API
     // (0,3 kB gzip) en levert de regel "Stand na speeldag N" naast de kop. Het
     // klassement wacht er niet op — beide verschijnen los van elkaar.
-    eenmalig<Ronde[]>('/rounds')
-      .then(toonLaatsteSpeeldag)
+    once<Round[]>('/rounds')
+      .then(renderLatestSpeeldag)
       // Geen datumregel is geen ramp: het klassement blijft staan, en de
       // Speeldagen-tab probeert het opnieuw.
-      .catch(() => beloftes.delete('/rounds'));
+      .catch(() => promises.delete('/rounds'));
 
     try {
-      const data = await eenmalig<Rankings>('/rankings/general');
-      toonRanking(data.general ?? []);
-      laden.classList.add('hidden');
-      inhoud.classList.remove('hidden');
+      const data = await once<Rankings>('/rankings/general');
+      renderRanking(data.general ?? []);
+      loading.classList.add('hidden');
+      content.classList.remove('hidden');
     } catch {
-      laden.classList.add('hidden');
-      fout.classList.remove('hidden');
+      loading.classList.add('hidden');
+      error.classList.remove('hidden');
     }
   }
 
-  laadData();
+  loadData();
 </script>

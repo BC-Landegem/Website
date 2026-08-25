@@ -1,13 +1,13 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import RailKop from '../../components/RailKop.astro';
+import RailHeading from '../../components/RailHeading.astro';
 import { url } from '../../lib/url';
 import trainingen from '../../data/trainingen.json';
 
 const { locatie, lidgeld } = trainingen;
 
 // Wat de club te bieden heeft — het rijtje uit de clubfolder.
-const aanbod = [
+const offering = [
   'Recreatief en competitief badminton',
   'Intraclubcompetitie',
   'Liga- en PBO-competitie',
@@ -24,7 +24,7 @@ const aanbod = [
   description="Wanneer we spelen, wat je meebrengt, wat het lidgeld kost en hoe je inschrijft bij BC Landegem. Nieuwe spelers mogen drie keer gratis meespelen."
 >
   <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
-    <RailKop
+    <RailHeading
       title="Word lid!"
       intro="Bij BC Landegem begint iedereen op dezelfde manier. Je komt drie keer gratis meespelen. Pas daarna beslis je of je lid wordt."
     >
@@ -41,7 +41,7 @@ const aanbod = [
           Al drie keer meegespeeld? Naar het inschrijvingsformulier
         </a>
       </p>
-    </RailKop>
+    </RailHeading>
 
     {/* Vier stappen als meetpunten op de rail; het vierde meetpunt is de rode
          band onderaan, die de inschrijfactie draagt. */}
@@ -72,14 +72,14 @@ const aanbod = [
 
         <h3 class="stem-baan mt-10 text-xs text-club-700">Wanneer je terechtkan</h3>
         <ol class="mt-4">
-          {trainingen.momenten.map((moment) => (
+          {trainingen.momenten.map((session) => (
             <li class="border-b border-inkt-950/10 py-4 first:border-t sm:grid sm:grid-cols-[7rem_13rem_1fr] sm:items-baseline sm:gap-6">
-              <p class="stem-baan text-xs text-club-700">{moment.dag}</p>
-              <p class="stem-cijfer mt-1 text-2xl text-inkt-950 sm:mt-0">{moment.uren}</p>
+              <p class="stem-baan text-xs text-club-700">{session.dag}</p>
+              <p class="stem-cijfer mt-1 text-2xl text-inkt-950 sm:mt-0">{session.uren}</p>
               <div class="mt-1 sm:mt-0">
-                <p class="font-bold">{moment.omschrijving}</p>
-                <p class="text-sm text-inkt-500">{moment.doelgroep}</p>
-                {moment.opmerking && <p class="text-sm text-inkt-500">{moment.opmerking}</p>}
+                <p class="font-bold">{session.omschrijving}</p>
+                <p class="text-sm text-inkt-500">{session.doelgroep}</p>
+                {session.opmerking && <p class="text-sm text-inkt-500">{session.opmerking}</p>}
               </div>
             </li>
           ))}
@@ -146,12 +146,12 @@ const aanbod = [
         </p>
 
         <ul class="mt-6 max-w-3xl">
-          {lidgeld.tarieven.map((tarief) => (
+          {lidgeld.tarieven.map((rate) => (
             <li class="grid grid-cols-[5rem_1fr] items-baseline gap-4 border-b border-inkt-950/10 py-4 first:border-t">
-              <span class="stem-cijfer text-2xl text-club-700">{tarief.prijs}</span>
+              <span class="stem-cijfer text-2xl text-club-700">{rate.prijs}</span>
               <span>
-                <span class="block font-bold text-inkt-950">{tarief.titel}</span>
-                <span class="block text-sm text-inkt-500">{tarief.detail}</span>
+                <span class="block font-bold text-inkt-950">{rate.titel}</span>
+                <span class="block text-sm text-inkt-500">{rate.detail}</span>
               </span>
             </li>
           ))}
@@ -229,7 +229,7 @@ const aanbod = [
     <section class="pl-10">
       <h2 class="stem-display text-2xl text-inkt-950 sm:text-3xl">Wat je bij ons kan doen</h2>
       <ul class="mt-5 grid max-w-3xl gap-2 leading-relaxed text-inkt-700 sm:grid-cols-2">
-        {aanbod.map((item) => (
+        {offering.map((item) => (
           <li class="grid grid-cols-[1.25rem_1fr] items-baseline">
             <span class="text-club-500" aria-hidden="true">—</span>
             <span>{item}</span>

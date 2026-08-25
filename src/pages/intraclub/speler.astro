@@ -125,11 +125,11 @@ import { url } from '../../lib/url';
 </Layout>
 
 <script>
-  import { fetchJson, renderMatchKaart } from '../../lib/intra';
+  import { fetchJson, renderMatchCard } from '../../lib/intra';
   import type { Match } from '../../lib/intra';
-  import { tekenVerloop } from '../../lib/verloop';
+  import { drawRankingChart } from '../../lib/ranking-chart';
 
-  interface SpelerDetail {
+  interface PlayerDetail {
     id?: string;
     firstName: string;
     name: string;
@@ -142,91 +142,91 @@ import { url } from '../../lib/url';
     };
   }
 
-  const fout = document.getElementById('speler-fout')!;
-  const laden = document.getElementById('speler-laden')!;
+  const error = document.getElementById('speler-fout')!;
+  const loading = document.getElementById('speler-laden')!;
 
-  function percentage(deel: number, totaal: number): number {
-    return totaal > 0 ? Math.round((deel / totaal) * 100) : 0;
+  function percentage(part: number, total: number): number {
+    return total > 0 ? Math.round((part / total) * 100) : 0;
   }
 
-  function vulStat(stat: string, deel: number, totaal: number, context: string) {
-    const blok = document.querySelector(`[data-stat="${stat}"]`)!;
-    blok.querySelector('[data-waarde]')!.textContent = String(percentage(deel, totaal));
-    blok.querySelector('[data-context]')!.textContent = context;
+  function fillStat(stat: string, part: number, total: number, context: string) {
+    const block = document.querySelector(`[data-stat="${stat}"]`)!;
+    block.querySelector('[data-waarde]')!.textContent = String(percentage(part, total));
+    block.querySelector('[data-context]')!.textContent = context;
   }
 
-  async function laadSpeler() {
+  async function loadPlayer() {
     const id = new URLSearchParams(location.search).get('id');
     try {
       if (!id) throw new Error('geen id');
-      const speler = await fetchJson<SpelerDetail>(`/players/${encodeURIComponent(id)}`);
-      if (!speler.id) throw new Error('onbekende speler');
+      const player = await fetchJson<PlayerDetail>(`/players/${encodeURIComponent(id)}`);
+      if (!player.id) throw new Error('onbekende speler');
 
-      const volledigeNaam = `${speler.firstName} ${speler.name}`;
-      document.getElementById('speler-naam')!.textContent = volledigeNaam;
-      document.title = `${volledigeNaam} — intraclub | BC Landegem`;
+      const fullName = `${player.firstName} ${player.name}`;
+      document.getElementById('speler-naam')!.textContent = fullName;
+      document.title = `${fullName} — intraclub | BC Landegem`;
 
-      const historiek = speler.statistics.rankingHistory;
-      const huidige = historiek.at(-1);
-      if (huidige) {
-        const beste = Math.min(...historiek.map((rij) => rij.rank));
-        const besteSpeeldag = historiek.slice().reverse().find((rij) => rij.rank === beste)!;
+      const history = player.statistics.rankingHistory;
+      const current = history.at(-1);
+      if (current) {
+        const best = Math.min(...history.map((row) => row.rank));
+        const bestSpeeldag = history.slice().reverse().find((row) => row.rank === best)!;
         document.getElementById('speler-ranking')!.textContent =
-          `Ranking: ${huidige.rank} · Beste: ${beste} (op speeldag ${besteSpeeldag.number})`;
+          `Ranking: ${current.rank} · Beste: ${best} (op speeldag ${bestSpeeldag.number})`;
       }
 
-      const stats = speler.statistics;
-      vulStat('aanwezig', stats.rounds.present, historiek.length, `${stats.rounds.present} van ${historiek.length} speeldagen`);
-      vulStat('sets', stats.sets.won, stats.sets.total, `${stats.sets.won} van ${stats.sets.total} sets`);
-      vulStat('punten', stats.points.won, stats.points.total, `${stats.points.won} van ${stats.points.total} punten`);
+      const stats = player.statistics;
+      fillStat('aanwezig', stats.rounds.present, history.length, `${stats.rounds.present} van ${history.length} speeldagen`);
+      fillStat('sets', stats.sets.won, stats.sets.total, `${stats.sets.won} van ${stats.sets.total} sets`);
+      fillStat('punten', stats.points.won, stats.points.total, `${stats.points.won} van ${stats.points.total} punten`);
 
       // Eerst tonen, dan pas tekenen: de grafiek meet de breedte van zijn
       // container en krijgt 0 terug zolang die nog 'hidden' is.
-      laden.classList.add('hidden');
+      loading.classList.add('hidden');
       document.getElementById('speler-inhoud')!.classList.remove('hidden');
 
       // Eén punt is geen verloop maar een cijfer; dat staat al in de kop.
-      if (historiek.length < 2) {
+      if (history.length < 2) {
         document.getElementById('verloop-leeg')!.classList.remove('hidden');
       } else {
-        const figuur = document.getElementById('verloop')!;
-        figuur.classList.remove('hidden');
-        tekenVerloop(figuur, historiek);
+        const figure = document.getElementById('verloop')!;
+        figure.classList.remove('hidden');
+        drawRankingChart(figure, history);
 
-        const tabel = document.getElementById('verloop-tabel')!;
-        tabel.classList.remove('hidden');
-        tabel.querySelector('[data-tabel-lichaam]')!.replaceChildren(
-          ...historiek.map((rij) => {
+        const table = document.getElementById('verloop-tabel')!;
+        table.classList.remove('hidden');
+        table.querySelector('[data-tabel-lichaam]')!.replaceChildren(
+          ...history.map((row) => {
             const tr = document.createElement('tr');
             tr.className = 'border-b border-inkt-950/10';
-            const speeldag = document.createElement('th');
-            speeldag.scope = 'row';
-            speeldag.className = 'py-2 text-left font-normal text-inkt-700';
-            speeldag.textContent = String(rij.number);
+            const speeldagCell = document.createElement('th');
+            speeldagCell.scope = 'row';
+            speeldagCell.className = 'py-2 text-left font-normal text-inkt-700';
+            speeldagCell.textContent = String(row.number);
             const rank = document.createElement('td');
             rank.className = 'py-2 text-inkt-950';
-            rank.textContent = String(rij.rank);
-            tr.append(speeldag, rank);
+            rank.textContent = String(row.rank);
+            tr.append(speeldagCell, rank);
             return tr;
           }),
         );
       }
 
-      const matchen = speler.matches.slice().reverse();
-      document.getElementById('speler-matchen')!.innerHTML = matchen
+      const matches = player.matches.slice().reverse();
+      document.getElementById('speler-matchen')!.innerHTML = matches
         .map((match) => `
           <div>
             <p class="stem-baan mb-2 text-xs text-club-700">Speeldag ${match.round?.number ?? ''}</p>
-            ${renderMatchKaart(match, speler.id)}
+            ${renderMatchCard(match, player.id)}
           </div>`)
         .join('');
 
     } catch {
-      laden.classList.add('hidden');
+      loading.classList.add('hidden');
       document.getElementById('speler-inhoud')!.classList.add('hidden');
-      fout.classList.remove('hidden');
+      error.classList.remove('hidden');
     }
   }
 
-  laadSpeler();
+  loadPlayer();
 </script>

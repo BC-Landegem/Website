@@ -3,33 +3,33 @@ import type { GetStaticPaths } from 'astro';
 import Layout from '../../../layouts/Layout.astro';
 import { url } from '../../../lib/url';
 import {
-  perJaar, jaarVan, datumLang, datumKort, artikelPad, groepLabel,
-  type Artikel, type Groep,
-} from '../../../lib/archief';
+  byYear, yearOf, dateLong, dateShort, articlePath, groupLabel,
+  type Article, type Group,
+} from '../../../lib/archive';
 
 export const getStaticPaths: GetStaticPaths = async () => {
-  const jaren = await perJaar();
-  return [...jaren.entries()].flatMap(([jaar, artikels]) =>
-    artikels.map((artikel, i) => ({
-      params: { segment: jaar, slug: artikel.data.urlnaam },
+  const years = await byYear();
+  return [...years.entries()].flatMap(([year, articles]) =>
+    articles.map((article, i) => ({
+      params: { segment: year, slug: article.data.urlnaam },
       props: {
-        artikel,
+        article,
         // Binnen het jaar: nieuwer staat eerder in de lijst (nieuwste eerst).
-        nieuwer: artikels[i - 1] ?? null,
-        ouder: artikels[i + 1] ?? null,
+        newer: articles[i - 1] ?? null,
+        older: articles[i + 1] ?? null,
       },
     })),
   );
 };
 
 interface Props {
-  artikel: Artikel;
-  nieuwer: Artikel | null;
-  ouder: Artikel | null;
+  article: Article;
+  newer: Article | null;
+  older: Article | null;
 }
 
-const { artikel, nieuwer, ouder } = Astro.props;
-const jaar = jaarVan(artikel);
+const { article, newer, older } = Astro.props;
+const year = yearOf(article);
 
 /**
  * De beelden staan in de markdown als absoluut pad (`/archief/beelden/…`), want
@@ -42,29 +42,29 @@ const jaar = jaarVan(artikel);
  * Dus prefixen we de gerenderde HTML hier. Die HTML komt uit onze eigen
  * conversie, niet van een bezoeker: `set:html` is hier veilig.
  */
-const basis = import.meta.env.BASE_URL.replace(/\/$/, '');
-const inhoud = (artikel.rendered?.html ?? '')
-  .replaceAll('"/archief/beelden/', `"${basis}/archief/beelden/`)
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const content = (article.rendered?.html ?? '')
+  .replaceAll('"/archief/beelden/', `"${base}/archief/beelden/`)
   .replaceAll('<img ', '<img loading="lazy" decoding="async" ');
-const reacties = artikel.data.reacties ?? [];
-const isoDatum = artikel.data.datum.toISOString().slice(0, 10);
+const comments = article.data.reacties ?? [];
+const isoDate = article.data.datum.toISOString().slice(0, 10);
 ---
 
 <Layout
-  title={artikel.data.titel}
-  description={`Uit het archief van BC Landegem, ${datumLang(artikel.data.datum)}.`}
+  title={article.data.titel}
+  description={`Uit het archief van BC Landegem, ${dateLong(article.data.datum)}.`}
 >
   <div class="bg-veer-100">
     <div class="mx-auto max-w-3xl px-4 py-14 sm:py-16">
       <nav class="stem-baan mb-8 text-[0.65rem] text-inkt-500">
         <a href={url('/archief/')} class="hover:text-kurk-600">Archief</a>
         <span aria-hidden="true"> / </span>
-        <a href={url(`/archief/${jaar}/`)} class="hover:text-kurk-600">{jaar}</a>
-        {artikel.data.groep && (
+        <a href={url(`/archief/${year}/`)} class="hover:text-kurk-600">{year}</a>
+        {article.data.groep && (
           <>
             <span aria-hidden="true"> / </span>
-            <a href={url(`/archief/${artikel.data.groep}/`)} class="hover:text-kurk-600">
-              {groepLabel(artikel.data.groep as Groep)}
+            <a href={url(`/archief/${article.data.groep}/`)} class="hover:text-kurk-600">
+              {groupLabel(article.data.groep as Group)}
             </a>
           </>
         )}
@@ -79,7 +79,7 @@ const isoDatum = artikel.data.datum.toISOString().slice(0, 10);
       <p class="flex flex-wrap items-baseline gap-x-2 gap-y-1 border-l-2 border-kurk-600 bg-kurk-300/20 px-4 py-2.5 text-sm text-inkt-700">
         <span class="stem-baan text-[0.65rem] text-kurk-600">Uit het archief</span>
         <span>
-          Dit artikel verscheen op <time datetime={isoDatum}>{datumLang(artikel.data.datum)}</time> op
+          Dit artikel verscheen op <time datetime={isoDate}>{dateLong(article.data.datum)}</time> op
           de oude clubsite. Wat erin staat gold toen, niet nu.
         </span>
       </p>
@@ -87,7 +87,7 @@ const isoDatum = artikel.data.datum.toISOString().slice(0, 10);
       <article class="mt-8" data-pagefind-body>
         <header>
           <h1 data-pagefind-meta="title" class="stem-display text-3xl text-inkt-950 sm:text-4xl">
-            {artikel.data.titel}
+            {article.data.titel}
           </h1>
           {/*
             Los meta-attribuut per veld: één attribuut met komma's splitst Pagefind
@@ -95,20 +95,20 @@ const isoDatum = artikel.data.datum.toISOString().slice(0, 10);
             data-pagefind-ignore houdt deze regel uit het zoekuittreksel — anders
             begint elk resultaat met "6 november 2011 · door Luc · Clubnieuws".
           */}
-          <span data-pagefind-meta={`datum:${datumKort(artikel.data.datum)}`} hidden></span>
-          {artikel.data.auteur && (
-            <span data-pagefind-meta={`auteur:${artikel.data.auteur}`} hidden></span>
+          <span data-pagefind-meta={`datum:${dateShort(article.data.datum)}`} hidden></span>
+          {article.data.auteur && (
+            <span data-pagefind-meta={`auteur:${article.data.auteur}`} hidden></span>
           )}
           <p data-pagefind-ignore class="stem-baan mt-3 text-[0.65rem] text-inkt-500">
-            <time datetime={isoDatum}>{datumLang(artikel.data.datum)}</time>
-            {artikel.data.auteur && (
+            <time datetime={isoDate}>{dateLong(article.data.datum)}</time>
+            {article.data.auteur && (
               <>
                 <span aria-hidden="true"> · </span>
-                <span>door {artikel.data.auteur}</span>
+                <span>door {article.data.auteur}</span>
               </>
             )}
             <span aria-hidden="true"> · </span>
-            <span>{artikel.data.categorie === 'Uncategorised' ? 'Clubnieuws' : artikel.data.categorie}</span>
+            <span>{article.data.categorie === 'Uncategorised' ? 'Clubnieuws' : article.data.categorie}</span>
           </p>
         </header>
 
@@ -120,24 +120,24 @@ const isoDatum = artikel.data.datum.toISOString().slice(0, 10);
         */}
         <div
           class="prose prose-sm mt-8 max-w-none text-inkt-700 prose-headings:stem-display prose-headings:text-inkt-950 prose-p:my-2 prose-a:text-kurk-600 prose-a:underline hover:prose-a:text-inkt-950 prose-strong:text-inkt-950 prose-img:my-6 prose-img:border prose-img:border-inkt-950/10 prose-table:text-sm prose-td:px-2 prose-td:py-1 sm:prose-base sm:prose-p:my-2.5"
-          set:html={inhoud}
+          set:html={content}
         />
 
       </article>
 
       {/* ------------------------------------------------------- reacties */}
-      {reacties.length > 0 && (
+      {comments.length > 0 && (
         <section class="mt-14" aria-labelledby="kop-reacties">
           <h2 id="kop-reacties" class="stem-baan text-xs text-inkt-500">
-            {reacties.length} {reacties.length === 1 ? 'reactie' : 'reacties'} destijds
+            {comments.length} {comments.length === 1 ? 'reactie' : 'reacties'} destijds
           </h2>
           <ol class="mt-5 space-y-5">
-            {reacties.map((r) => (
+            {comments.map((r) => (
               <li class="border-l-2 border-inkt-950/10 pl-4">
                 <p class="stem-baan text-[0.65rem] text-inkt-500">
                   {r.naam}
                   <span aria-hidden="true"> · </span>
-                  <time datetime={r.datum.toISOString().slice(0, 10)}>{datumKort(r.datum)}</time>
+                  <time datetime={r.datum.toISOString().slice(0, 10)}>{dateShort(r.datum)}</time>
                 </p>
                 <p class="mt-1 whitespace-pre-line text-sm text-inkt-700">{r.tekst}</p>
               </li>
@@ -151,38 +151,38 @@ const isoDatum = artikel.data.datum.toISOString().slice(0, 10);
 
       {/* ------------------------------------------------------ navigatie */}
       <nav class="mt-14 grid gap-px border border-inkt-950/10 bg-inkt-950/10 sm:grid-cols-2">
-        {ouder ? (
-          <a href={url(artikelPad(ouder))} class="group bg-veer-100 p-4 transition-colors hover:bg-veer-50">
+        {older ? (
+          <a href={url(articlePath(older))} class="group bg-veer-100 p-4 transition-colors hover:bg-veer-50">
             <span class="stem-baan block text-[0.65rem] text-inkt-500">← Ouder</span>
             <span class="mt-1 block text-sm text-inkt-950 group-hover:text-kurk-600">
-              {ouder.data.titel}
+              {older.data.titel}
             </span>
           </a>
         ) : (
           <span class="bg-veer-100 p-4">
-            <span class="stem-baan block text-[0.65rem] text-inkt-500">Oudste van {jaar}</span>
+            <span class="stem-baan block text-[0.65rem] text-inkt-500">Oudste van {year}</span>
           </span>
         )}
-        {nieuwer ? (
+        {newer ? (
           <a
-            href={url(artikelPad(nieuwer))}
+            href={url(articlePath(newer))}
             class="group bg-veer-100 p-4 text-right transition-colors hover:bg-veer-50"
           >
             <span class="stem-baan block text-[0.65rem] text-inkt-500">Nieuwer →</span>
             <span class="mt-1 block text-sm text-inkt-950 group-hover:text-kurk-600">
-              {nieuwer.data.titel}
+              {newer.data.titel}
             </span>
           </a>
         ) : (
           <span class="bg-veer-100 p-4 text-right">
-            <span class="stem-baan block text-[0.65rem] text-inkt-500">Nieuwste van {jaar}</span>
+            <span class="stem-baan block text-[0.65rem] text-inkt-500">Nieuwste van {year}</span>
           </span>
         )}
       </nav>
 
       <p class="mt-6 text-center">
-        <a href={url(`/archief/${jaar}/`)} class="stem-baan text-xs text-inkt-500 hover:text-kurk-600">
-          Alles uit {jaar}
+        <a href={url(`/archief/${year}/`)} class="stem-baan text-xs text-inkt-500 hover:text-kurk-600">
+          Alles uit {year}
         </a>
       </p>
     </div>

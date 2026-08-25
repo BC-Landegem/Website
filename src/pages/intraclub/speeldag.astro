@@ -45,10 +45,10 @@ import { url } from '../../lib/url';
 </Layout>
 
 <script>
-  import { fetchJson, formatDatum, renderMatchKaart } from '../../lib/intra';
+  import { fetchJson, formatDate, renderMatchCard } from '../../lib/intra';
   import type { Match } from '../../lib/intra';
 
-  interface Ronde {
+  interface Round {
     id?: string;
     number: string;
     date: string;
@@ -56,32 +56,32 @@ import { url } from '../../lib/url';
     matches: Match[];
   }
 
-  const fout = document.getElementById('speeldag-fout')!;
-  const laden = document.getElementById('speeldag-laden')!;
+  const error = document.getElementById('speeldag-fout')!;
+  const loading = document.getElementById('speeldag-laden')!;
 
-  async function laadSpeeldag() {
+  async function loadSpeeldag() {
     const id = new URLSearchParams(location.search).get('id');
     try {
       if (!id) throw new Error('geen id');
-      const ronde = await fetchJson<Ronde>(`/rounds/${encodeURIComponent(id)}`);
-      if (!ronde.id) throw new Error('onbekende speeldag');
+      const round = await fetchJson<Round>(`/rounds/${encodeURIComponent(id)}`);
+      if (!round.id) throw new Error('onbekende speeldag');
 
-      document.getElementById('speeldag-titel')!.textContent = `Speeldag ${ronde.number}`;
-      document.title = `Intraclub speeldag ${ronde.number} | BC Landegem`;
+      document.getElementById('speeldag-titel')!.textContent = `Speeldag ${round.number}`;
+      document.title = `Intraclub speeldag ${round.number} | BC Landegem`;
       document.getElementById('speeldag-info')!.textContent =
-        `${formatDatum(ronde.date)} — gemiddelde van de afwezigen: ${ronde.averageAbsent}`;
+        `${formatDate(round.date)} — gemiddelde van de afwezigen: ${round.averageAbsent}`;
 
-      document.getElementById('speeldag-matchen')!.innerHTML = ronde.matches
-        .map((match) => renderMatchKaart(match))
+      document.getElementById('speeldag-matchen')!.innerHTML = round.matches
+        .map((match) => renderMatchCard(match))
         .join('');
 
-      laden.classList.add('hidden');
+      loading.classList.add('hidden');
       document.getElementById('speeldag-inhoud')!.classList.remove('hidden');
     } catch {
-      laden.classList.add('hidden');
-      fout.classList.remove('hidden');
+      loading.classList.add('hidden');
+      error.classList.remove('hidden');
     }
   }
 
-  laadSpeeldag();
+  loadSpeeldag();
 </script>
