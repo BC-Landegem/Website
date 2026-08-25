@@ -56,7 +56,60 @@ import { url } from '../../lib/url';
 
       <section class="mt-14">
         <h2 class="stem-display text-2xl text-inkt-950 sm:text-3xl">Klassementsverloop</h2>
-        <div id="chart-verloop" class="mt-4"></div>
+        {/* De as staat omgekeerd; dat moet in woorden staan, niet enkel in de cijfers. */}
+        <p id="verloop-onderschrift" class="mt-3 text-sm text-inkt-500">
+          Je plaats in het klassement per speeldag — hoe hoger de lijn, hoe beter.
+        </p>
+
+        {/*
+          Eén reeks, dus geen legende: de kop zegt al wat er staat. Elke laag draagt
+          zijn kleur via de text-* klasse hieronder; verloop.ts tekent met currentColor.
+        */}
+        <figure id="verloop" class="relative mt-5 hidden">
+          <svg
+            class="w-full touch-pan-y select-none overflow-visible"
+            role="img"
+            tabindex="0"
+            aria-describedby="verloop-onderschrift"
+          >
+            <g data-laag="grid" class="text-inkt-950/10"></g>
+            <g data-laag="as" class="text-[11px] tabular-nums text-inkt-500"></g>
+            <g data-laag="kruis" class="text-club-700/40"></g>
+            <g data-laag="vlak" class="text-club-500"></g>
+            <g data-laag="labels" class="text-[11px] text-inkt-950"></g>
+            <g data-laag="raakvlak"></g>
+          </svg>
+          <div
+            data-tooltip
+            hidden
+            class="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-[calc(100%+14px)] border-2 border-inkt-950 bg-veer-50 px-2.5 py-1.5 shadow-[3px_3px_0_0_var(--color-inkt-950)]"
+          >
+            {/* Waarde eerst, bijschrift daarna: de lezer heeft de speeldag al aangewezen. */}
+            <p data-tooltip-waarde class="stem-cijfer whitespace-nowrap text-sm text-inkt-950"></p>
+            <p data-tooltip-bijschrift class="whitespace-nowrap text-xs text-inkt-500"></p>
+          </div>
+          <p data-melding class="sr-only" aria-live="polite"></p>
+        </figure>
+
+        {/* De tooltip mag nooit de enige weg naar een cijfer zijn. */}
+        <details id="verloop-tabel" class="mt-5 hidden">
+          <summary class="stem-baan cursor-pointer text-xs text-club-700 hover:text-club-800">
+            Toon de cijfers
+          </summary>
+          <table class="mt-4 w-full max-w-sm text-sm">
+            <thead>
+              <tr class="border-b border-inkt-950/10 text-left">
+                <th scope="col" class="stem-baan pb-2 text-xs text-inkt-500">Speeldag</th>
+                <th scope="col" class="stem-baan pb-2 text-xs text-inkt-500">Ranking</th>
+              </tr>
+            </thead>
+            <tbody data-tabel-lichaam class="tabular-nums"></tbody>
+          </table>
+        </details>
+
+        <p id="verloop-leeg" class="mt-4 hidden text-sm text-inkt-500">
+          Nog te weinig speeldagen voor een verloop — na je tweede speeldag verschijnt de lijn hier.
+        </p>
       </section>
 
       <section class="mt-14">
@@ -72,9 +125,9 @@ import { url } from '../../lib/url';
 </Layout>
 
 <script>
-  import ApexCharts from 'apexcharts';
   import { fetchJson, renderMatchKaart } from '../../lib/intra';
   import type { Match } from '../../lib/intra';
+  import { tekenVerloop } from '../../lib/verloop';
 
   interface SpelerDetail {
     id?: string;
@@ -91,11 +144,6 @@ import { url } from '../../lib/url';
 
   const fout = document.getElementById('speler-fout')!;
   const laden = document.getElementById('speler-laden')!;
-
-  // Wereldtokens voor de grafiek (ApexCharts kent geen CSS-variabelen)
-  const clubRood = '#eb4024';
-  const inktLicht = '#6b5c50';
-  const veerDiep = 'rgba(230, 220, 200, 0.3)';
 
   function percentage(deel: number, totaal: number): number {
     return totaal > 0 ? Math.round((deel / totaal) * 100) : 0;
@@ -132,39 +180,37 @@ import { url } from '../../lib/url';
       vulStat('sets', stats.sets.won, stats.sets.total, `${stats.sets.won} van ${stats.sets.total} sets`);
       vulStat('punten', stats.points.won, stats.points.total, `${stats.points.won} van ${stats.points.total} punten`);
 
-      // Eerst tonen, dan pas de grafiek renderen: ApexCharts meet de breedte van
-      // zijn container en krijgt 0 terug zolang die nog 'hidden' is (te brede grafiek).
+      // Eerst tonen, dan pas tekenen: de grafiek meet de breedte van zijn
+      // container en krijgt 0 terug zolang die nog 'hidden' is.
       laden.classList.add('hidden');
       document.getElementById('speler-inhoud')!.classList.remove('hidden');
 
-      new ApexCharts(document.querySelector('#chart-verloop')!, {
-        series: [{ name: 'Ranking', data: historiek.map((rij) => rij.rank) }],
-        colors: [clubRood],
-        chart: {
-          type: 'line',
-          height: 320,
-          zoom: { enabled: false },
-          toolbar: { show: false },
-          fontFamily: 'Archivo, ui-sans-serif, system-ui, sans-serif',
-          background: 'transparent',
-        },
-        markers: { size: 4 },
-        dataLabels: { enabled: false },
-        stroke: { curve: 'straight', width: 3 },
-        grid: { borderColor: 'rgba(27, 20, 16, 0.1)', row: { colors: [veerDiep, 'transparent'], opacity: 0.5 } },
-        xaxis: {
-          categories: historiek.map((rij) => String(rij.number)),
-          title: { text: 'Speeldag', style: { color: inktLicht } },
-          labels: { style: { colors: inktLicht } },
-        },
-        yaxis: {
-          reversed: true,
-          min: 1,
-          max: Math.max(...historiek.map((rij) => rij.rank)),
-          labels: { formatter: (waarde: number) => waarde.toFixed(0), style: { colors: inktLicht } },
-        },
-        tooltip: { x: { formatter: (waarde: string) => `Speeldag ${waarde}` } },
-      }).render();
+      // Eén punt is geen verloop maar een cijfer; dat staat al in de kop.
+      if (historiek.length < 2) {
+        document.getElementById('verloop-leeg')!.classList.remove('hidden');
+      } else {
+        const figuur = document.getElementById('verloop')!;
+        figuur.classList.remove('hidden');
+        tekenVerloop(figuur, historiek);
+
+        const tabel = document.getElementById('verloop-tabel')!;
+        tabel.classList.remove('hidden');
+        tabel.querySelector('[data-tabel-lichaam]')!.replaceChildren(
+          ...historiek.map((rij) => {
+            const tr = document.createElement('tr');
+            tr.className = 'border-b border-inkt-950/10';
+            const speeldag = document.createElement('th');
+            speeldag.scope = 'row';
+            speeldag.className = 'py-2 text-left font-normal text-inkt-700';
+            speeldag.textContent = String(rij.number);
+            const rank = document.createElement('td');
+            rank.className = 'py-2 text-inkt-950';
+            rank.textContent = String(rij.rank);
+            tr.append(speeldag, rank);
+            return tr;
+          }),
+        );
+      }
 
       const matchen = speler.matches.slice().reverse();
       document.getElementById('speler-matchen')!.innerHTML = matchen

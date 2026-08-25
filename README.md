@@ -36,7 +36,7 @@ src/
   components/   Header, Footer en twee kleine bouwstenen
   data/         Alle inhoud die geen code is — zie "Inhoud aanpassen"
   layouts/      Layout.astro: de enige layout, draagt <head>, PWA en navigatie
-  lib/          Logica: intraclub, kalender, media, en url() voor interne links
+  lib/          Logica: intraclub, kalender, media, de verloopgrafiek, en url()
   pages/        Eén bestand per route (plus twee endpoints: manifest en sw.js)
   styles/       global.css met de Tailwind @theme-tokens
   sw/           Broncode van de service worker en het opruimscript
