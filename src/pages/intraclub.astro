@@ -111,7 +111,7 @@ const tabs = [
             <tr class="stem-baan border-b-[3px] border-inkt-950/20 text-xs text-club-700">
               <th class="py-2.5 pr-3 font-bold">#</th>
               <th class="py-2.5 pr-3 font-bold">Naam</th>
-              <th class="py-2.5 pr-3 text-right font-bold">Aanwezig</th>
+              <th class="py-2.5 pr-3 font-bold">Aanwezig</th>
               <th class="py-2.5 text-right font-bold">Gewonnen sets</th>
             </tr>
           </thead>
@@ -217,7 +217,15 @@ const tabs = [
       .join('');
   }
 
-  function toonAanwezigheden(statistieken: Statistiek[]) {
+  function percentage(deel: number, totaal: number): number {
+    return totaal > 0 ? Math.round((deel / totaal) * 100) : 0;
+  }
+
+  function aantalBerekendeSpeeldagen(rondes: Ronde[]): number {
+    return rondes.filter((ronde) => ronde.calculated === '1').length;
+  }
+
+  function toonAanwezigheden(statistieken: Statistiek[], totaalSpeeldagen: number) {
     const gesorteerd = statistieken.slice().sort((a, b) => {
       if (a.statistics.rounds.present === b.statistics.rounds.present) {
         return b.statistics.sets.won - a.statistics.sets.won;
@@ -228,7 +236,7 @@ const tabs = [
       .map((rij, i) => `<tr class="border-b border-inkt-950/10">
         <td class="stem-cijfer py-2.5 pr-3 text-club-700">${i + 1}</td>
         <td class="py-2.5 pr-3">${spelerLink(rij)}</td>
-        <td class="stem-cijfer py-2.5 pr-3 text-right">${rij.statistics.rounds.present}</td>
+        <td class="stem-cijfer py-2.5 pr-3">${rij.statistics.rounds.present} <span class="text-inkt-500">(${percentage(rij.statistics.rounds.present, totaalSpeeldagen)}%)</span></td>
         <td class="stem-cijfer py-2.5 text-right">${rij.statistics.sets.won}</td>
       </tr>`)
       .join('');
@@ -272,9 +280,12 @@ const tabs = [
         if (gekozen !== key) return;
         toonSpeeldagen(rondes);
       } else {
-        const statistieken = await eenmalig<Statistiek[]>(pad);
+        const [statistieken, rondes] = await Promise.all([
+          eenmalig<Statistiek[]>(pad),
+          eenmalig<Ronde[]>('/rounds'),
+        ]);
         if (gekozen !== key) return;
-        toonAanwezigheden(statistieken);
+        toonAanwezigheden(statistieken, aantalBerekendeSpeeldagen(rondes));
       }
     } catch {
       // Alleen deze tab is mislukt; de belofte weg, zodat een nieuwe klik
