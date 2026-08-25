@@ -5,6 +5,7 @@ import Pijl from '../components/Pijl.astro';
 import { url } from '../lib/url';
 import trainingen from '../data/trainingen.json';
 import hero from '../assets/hero.jpg';
+import { zichtbareAlbums, fotodata, maandNaam, coverUrl } from '../lib/media';
 
 const KURK = { x: 80, y: 700 };
 const straal = (hoekGraden: number, lengte: number) => ({
@@ -37,10 +38,10 @@ const kaarten = [
     linkClass: 'text-club-300',
   },
   {
-    href: '/club/word-lid/',
+    href: '/recreatief/',
     titel: 'Recreatief',
     tekst: 'Vrij spel op maandag, woensdag en zondag. Je hoeft je niet in te schrijven voor een uur: je komt en je speelt.',
-    linkTekst: 'Zo word je lid',
+    linkTekst: 'Alles over recreatief spelen',
     clip: 'polygon(0 0, 100% 10%, 100% 100%, 0 100%)',
     kaartClass: 'col-span-11 col-start-2 rotate-[1.25deg] bg-club-500 text-inkt-950 sm:col-span-5 sm:col-start-8 sm:-mt-12',
     titelClass: 'text-3xl text-white',
@@ -58,6 +59,17 @@ const kaarten = [
     tekstClass: 'max-w-sm text-inkt-700',
     linkClass: 'text-club-700',
   },
+];
+
+// Laatste foto's: de nieuwste albums dragen de homepage-strook. Ze komen uit
+// dezelfde nachtelijke sync als /media/ — geen redactie, geen dood blok: is er
+// niets gesynct, dan valt de sectie weg.
+const fotoAlbum = zichtbareAlbums[0];
+const laatsteFotos = fotoAlbum ? fotodata[fotoAlbum.slug].fotos.slice(0, 5) : [];
+// Veerblad-snedes, afwisselend per tegel (zie DESIGN.md).
+const fotoSnedes = [
+  'polygon(0 8%, 100% 0, 100% 92%, 0 100%)',
+  'polygon(0 0, 100% 8%, 100% 100%, 0 92%)',
 ];
 ---
 
@@ -285,6 +297,49 @@ const kaarten = [
         ))}
       </div>
     </section>
+
+    {/* Laatste foto's: het clubleven als bewijs, vers uit de albums. De foto's
+         hangen op Google's CDN — dat antwoordt met 429 zodra er een vreemde
+         referer meekomt, vandaar referrerpolicy per beeld. Paginabreed zetten
+         kan hier niet: de Google Calendar-key ís referrer-restricted. */}
+    {laatsteFotos.length > 0 && (
+      <section class="mx-auto max-w-6xl px-4 pb-24">
+        <div class="pl-10">
+          <h2 class="stem-display text-4xl text-inkt-950 sm:text-5xl">Uit de club</h2>
+          <p class="mt-3 max-w-xl text-inkt-700">
+            De laatste foto's uit onze albums — {fotoAlbum.titel}, {maandNaam(fotoAlbum.datum)}.
+          </p>
+        </div>
+        <a
+          href={url(`/media/${fotoAlbum.slug}/`)}
+          class="group mt-10 grid grid-cols-2 gap-4 pl-10 sm:grid-cols-3 lg:grid-cols-5"
+          aria-label={`Alle foto's van ${fotoAlbum.titel}`}
+        >
+          {laatsteFotos.map((foto, i) => (
+            <img
+              src={coverUrl(foto.url, 640, 640)}
+              width="640"
+              height="640"
+              alt=""
+              loading="lazy"
+              decoding="async"
+              referrerpolicy="no-referrer"
+              class:list={[
+                'vlucht aspect-square w-full bg-inkt-950/5 object-cover transition-transform duration-300 group-hover:-translate-y-1',
+                i === 4 && 'hidden lg:block',
+              ]}
+              style={`clip-path: ${fotoSnedes[i % 2]}`}
+            />
+          ))}
+        </a>
+        <p class="mt-8 pl-10">
+          <a href={url('/media/')} class="stem-baan inline-flex items-center gap-2 text-xs text-club-700 hover:text-club-800 hover:underline">
+            Alle fotoalbums
+            <Pijl />
+          </a>
+        </p>
+      </section>
+    )}
 
     {/* Sinds 1987: één stille regel op de draad */}
     <section class="mx-auto max-w-6xl px-4 pb-24">
