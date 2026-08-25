@@ -213,10 +213,12 @@ const aanbod = [
         href={trainingen.inschrijfformulier}
         target="_blank"
         rel="noopener"
-        class="stem-baan inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm text-club-600 transition-colors hover:bg-club-50"
+        class="stem-baan inline-flex max-w-full items-center gap-2 rounded-full bg-white px-5 py-3.5 text-xs text-club-600 transition-colors hover:bg-club-50 sm:px-7 sm:text-sm"
       >
         Naar het inschrijvingsformulier
-        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
+        {/* shrink-0: als de tekst op een smal scherm over twee regels breekt,
+            mag de pijl niet mee wegkrimpen. */}
+        <svg class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" d="M4 12h16m0 0l-6-6m6 6l-6 6" />
         </svg>
       </a>

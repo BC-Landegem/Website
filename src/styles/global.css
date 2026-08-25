@@ -63,6 +63,29 @@ a {
   letter-spacing: -0.02em;
   line-height: 0.95;
   text-wrap: balance;
+  /* Vangnet: een lang woord (albumtitel, spelersnaam) breekt liever af dan
+     dat het buiten de kolom loopt. Treedt alleen op als het écht niet past. */
+  overflow-wrap: break-word;
+}
+
+/* Paginakop op de rail (h1 van RailKop en de losse paginakoppen). Nederlandse
+   samenstellingen zijn lang: AANSPREEKPUNT is op text-4xl 344px breed, terwijl
+   een telefoon van 360px na px-4 en de rail-inspringing (pl-10) maar 288px
+   kolom overhoudt — de kop liep buiten beeld. De kop schaalt daarom onder de
+   sm-breekpunt mee met de vensterbreedte (8vw houdt AANSPREEKPUNT tot 320px
+   binnen de kolom) en blijft daarboven op text-4xl/5xl staan. Wat dan nog niet
+   past — PRIVACYVERKLARING is bijna 12px breed per pixel korps — krijgt een
+   koppelteken van de Nederlandse afbreekregels in plaats van een afgesneden
+   woord. */
+.kop-pagina {
+  font-size: clamp(1.5rem, 8vw, 2.25rem);
+  hyphens: auto;
+}
+
+@media (width >= 40rem) {
+  .kop-pagina {
+    font-size: 3rem;
+  }
 }
 
 .stem-baan {
