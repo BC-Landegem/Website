@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import ArchiefLink from '../components/ArchiefLink.astro';
 import RailKop from '../components/RailKop.astro';
 import { url } from '../lib/url';
 
@@ -116,6 +117,10 @@ const tabs = [
           <tbody id="intra-aanwezigheden"></tbody>
         </table>
       </div>
+    </div>
+  
+    <div class="pl-10">
+      <ArchiefLink groep="intraclub" />
     </div>
   </div>
 </Layout>

@@ -28,3 +28,6 @@ Desktop.ini
 
 # Claude Code (lokale sessie-instellingen)
 .claude/settings.local.json
+
+
+scraped/
