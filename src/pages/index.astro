@@ -109,7 +109,7 @@ const kaarten = [
       <a
         id="kurk-cta"
         href={url('/club/word-lid/')}
-        class="stem-baan absolute z-20 flex h-28 w-28 -translate-x-1/2 translate-y-1/2 items-center justify-center rounded-full bg-club-500 px-3 text-center text-xs leading-snug text-white ring-4 ring-kurk-400 ring-offset-4 ring-offset-veer-50 transition-transform duration-300 [transition-timing-function:var(--ease-lancering)] hover:scale-110 sm:h-36 sm:w-36 sm:text-sm"
+        class="stem-baan absolute z-20 flex h-28 w-28 -translate-x-1/2 translate-y-1/2 items-center justify-center rounded-full bg-club-600 px-3 text-center text-xs leading-snug text-white ring-4 ring-kurk-400 ring-offset-4 ring-offset-veer-50 transition-transform duration-300 [transition-timing-function:var(--ease-lancering)] hover:scale-110 sm:h-36 sm:w-36 sm:text-sm"
         style="left: calc(max(100cqw, 75rem) / 18); bottom: calc(max(100cqw, 75rem) / 18);"
       >
         Word lid!
@@ -150,7 +150,7 @@ const kaarten = [
     {/* De rode band rond de kurk. Anker voor de draad: op smalle schermen
          verspringt hij ván de rechtermarge náár de rail ín deze band, waar rood
          op rood onzichtbaar is (zie lib/draad.ts). */}
-    <section id="rode-band" class="border-y-8 border-club-700 bg-club-500 text-white">
+    <section id="rode-band" class="border-y-8 border-club-800 bg-club-600 text-white">
       <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-6 px-4 py-12">
         <div class="flex-[1_1_28rem]">
           <h2 class="stem-display text-3xl sm:text-4xl">Drie keer gratis meespelen</h2>
@@ -165,10 +165,10 @@ const kaarten = [
           >
             Zo begin je
           </a>
-          {/* Kleine tekst op de rode band is inkt-950 (kleine-letter-regel) */}
+          {/* Op de club-600-band is álle tekst wit: inkt-950 haalt daar geen 4,5:1. Rangorde komt van grootte en gewicht. */}
           <a
             href={url('/folder/bc-landegem-folder-2026.pdf')}
-            class="stem-baan inline-flex items-center gap-2 text-xs text-inkt-950 transition-colors hover:underline"
+            class="stem-baan inline-flex items-center gap-2 text-xs text-white transition-colors hover:underline"
           >
             <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v11m0 0l-5-5m5 5l5-5M5 20h14" />
@@ -317,7 +317,7 @@ const kaarten = [
             <a
               id="slot-cta"
               href={url('/club/word-lid/')}
-              class="stem-baan rounded-full bg-club-500 px-7 py-3.5 text-sm text-white transition-colors hover:bg-club-400"
+              class="stem-baan rounded-full bg-club-600 px-7 py-3.5 text-sm text-white transition-colors hover:bg-club-700"
             >
               Word lid!
             </a>

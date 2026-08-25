@@ -1,0 +1,34 @@
+---
+/**
+ * Kleurlab — poort naar het live afstemmen van het clubrood.
+ *
+ * Hoort in de <head>: de opgeslagen tokens moeten op <html> staan vóór de
+ * eerste paint, anders flitst de site kort in het oude rood bij elke navigatie.
+ *
+ * Aanzetten met ?kleurlab in de URL (eventueel met een toestand, bv.
+ * ?kleurlab=0,0.8,-0.02). Daarna blijft het lab aan tot je het paneel sluit.
+ * Voor wie de parameter nooit meegeeft is dit tien regels script en niets meer:
+ * het paneel zelf (public/kleurlab.js) wordt enkel dan opgehaald.
+ */
+import { url } from '../lib/url';
+
+const padLab = url('/kleurlab.js');
+---
+
+<script is:inline define:vars={{ padLab }}>
+  (function () {
+    try {
+      var params = new URLSearchParams(location.search);
+      var uitUrl = params.has('kleurlab');
+      if (uitUrl) localStorage.setItem('kleurlab:aan', '1');
+      if (localStorage.getItem('kleurlab:aan') !== '1') return;
+      // Bij een gedeelde link rekent het paneel de ramp zelf opnieuw uit; de
+      // opgeslagen css hoort dan bij een andere toestand en zetten we niet.
+      var css = localStorage.getItem('kleurlab:css');
+      if (css && !params.get('kleurlab')) document.documentElement.style.cssText += css;
+      var script = document.createElement('script');
+      script.src = padLab;
+      document.head.appendChild(script);
+    } catch (e) {}
+  })();
+</script>

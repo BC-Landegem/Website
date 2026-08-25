@@ -58,7 +58,7 @@ aanraken.
 | Fotoalbums | `src/data/media.ts` | `/media/` — pas na een sync, zie Databronnen |
 | Kalenderbronnen en -kleuren | `src/data/kalender.ts` | `/kalender/` en de events op de homepage |
 | App-naam, offline schil, snelkoppelingen | `src/data/pwa.ts` | Manifest en service worker (iconen genereer je apart) |
-| Kleuren en typografie | `src/styles/global.css` (`@theme`) | De hele site |
+| Kleuren en typografie | `src/styles/global.css` (`@theme`) | De hele site — voor het clubrood eerst het kleurlab, zie hieronder |
 | Losse tekst | De `.astro`-pagina zelf | Alleen die pagina |
 
 ## Databronnen
@@ -71,7 +71,12 @@ browser van de bezoeker. Faalt een bron of is ze leeg, dan wordt ze stil
 genegeerd en verdwijnt de eventssectie op de homepage; de rest van de pagina
 blijft staan. De sleutel in dat bestand is een publieke, referrer-restricted
 browser-key: die hoort in de broncode. Roteer je hem, zet de referrer-restrictie
-dan mee — zonder restrictie is het geen publieke sleutel meer.
+dan mee — zonder restrictie is het geen publieke sleutel meer. De `kleur`- en
+`tekst`-velden van `categorieen` belanden rechtstreeks als CSS-kleur in een
+inline stijl (legende, eventblokken, detailpaneel): een hex mag, een token als
+`var(--color-club-600)` ook — de events staan bewust op dat token zodat ze
+meekleuren wanneer het clubrood wijzigt. Zet er iets dat geen geldige CSS-kleur
+is en het blok blijft stil ongekleurd.
 
 **Google Photos** — de gecureerde albumlijst staat in `src/data/media.ts`, de
 foto's zelf blijven bij Google. De nachtelijke workflow `media-sync.yml` leest de
@@ -89,6 +94,26 @@ snapshot in `src/data/intraclub-voorbeeld.json` en doet geen enkel request.
 
 **Twizzit** — het inschrijfformulier is één externe link in
 `src/data/trainingen.json`. Geen integratie, geen sleutel.
+
+## Kleurlab
+
+Alle rode oppervlakken lopen via de tokens `--color-club-50..900`. Om een ander
+clubrood te bespreken zonder eerst te committen: zet `?kleurlab` achter een
+willekeurige URL. Er verschijnt een paneel dat die tien tokens live herrekent
+(felheid, diepte, tint), de contrastwaarden meet en een deelbare link geeft.
+De keuze blijft staan tijdens het navigeren en zit enkel in de browser van wie
+het aanzette — zonder de parameter wordt `public/kleurlab.js` niet eens
+opgehaald.
+
+Is er een winnaar, dan plak je het blok uit "Kopieer CSS" in het `@theme`-blok
+van `src/styles/global.css`. Daarna mag het lab eruit: `KleurLab.astro`,
+`public/kleurlab.js` en de import in `Layout.astro`.
+
+De vier contrastregels in het paneel volgen de twee-roden-regel uit DESIGN.md:
+witte tekst staat op `club-600`, donkere tekst op `club-500`, kleine rode tekst
+op veerwit is `club-700`, en de vluchtdraad is een lijn (3:1 volstaat). Zolang
+die vier groen staan is de keuze vrij — de felheid is dan een smaakkwestie,
+geen leesbaarheidskwestie.
 
 ## Scripts
 

@@ -18,7 +18,9 @@ export const categorieen: Record<KalenderCategorie, { label: string; kleur: stri
   spelen: { label: 'Vrij spel & intraclub', kleur: '#a97438', tekst: '#1b1410' }, // kurk-600 / inkt-950
   training: { label: 'Trainingen', kleur: '#6b5c50', tekst: '#ffffff' }, // inkt-500
   match: { label: 'Competitiematchen', kleur: '#1b1410', tekst: '#faf7f1' }, // inkt-950 / veer-50
-  event: { label: 'Events', kleur: '#d03117', tekst: '#ffffff' }, // club-600
+  // Via het token, niet de hex: zo volgt de kalender mee wanneer het clubrood
+  // wijzigt. Alle consumenten zetten deze waarde als CSS-kleur.
+  event: { label: 'Events', kleur: 'var(--color-club-600)', tekst: '#ffffff' },
 };
 
 /**

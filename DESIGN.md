@@ -53,13 +53,13 @@ spacing:
   rail-inspring: "2.5rem"
 components:
   knop-primair:
-    backgroundColor: "{colors.club-500}"
+    backgroundColor: "{colors.club-600}"
     textColor: "#ffffff"
     typography: "{typography.baan}"
     rounded: "{rounded.vol}"
     padding: "0.875rem 1.75rem"
   knop-primair-hover:
-    backgroundColor: "{colors.club-600}"
+    backgroundColor: "{colors.club-700}"
   knop-omtrek:
     backgroundColor: "transparent"
     textColor: "{colors.inkt-950}"
@@ -73,7 +73,7 @@ components:
     rounded: "{rounded.vol}"
     padding: "0.875rem 1.75rem"
   kurk-cta:
-    backgroundColor: "{colors.club-500}"
+    backgroundColor: "{colors.club-600}"
     textColor: "#ffffff"
     typography: "{typography.baan}"
     rounded: "{rounded.vol}"
@@ -107,8 +107,8 @@ De browser draagt de wereld mee: selectie is clubrood met wit, de caret is clubr
 Warm drieklank: veerwit als grond, warm inktbruinzwart als basis, clubrood dat hele banen bezit, kurk als zeldzaam derde accent.
 
 ### Primary
-- **Clubrood** ({colors.club-500}): het bindende merkrood. Bezit hele banen: de rode band-sectie, het kurk-CTA-punt, de vluchtdraad (stroke 4px), de meetpuntbollen, primaire knoppen, actieve nav-onderstreping, ::selection en caret.
-- **Clubrood diep** ({colors.club-600}): hover-toestand van primaire knoppen en tekstlinks op lichte grond; tekstkleur van de inverse knop op rood.
+- **Clubrood** ({colors.club-500}): het bindende merkrood, en tegelijk de felste kleur in de wereld — het zit op de rand van wat sRGB kan. Daarom draagt het lijnen, punten en grote letters, geen kleine witte tekst. Bezit: de vluchtdraad (stroke 4px), de meetpuntbollen, de display-accentregel in de hero, de rode veerpanelen (met inkt-950-bodytekst), actieve nav-onderstreping, ::selection en caret.
+- **Clubrood diep** ({colors.club-600}): elk rood vlak dat witte tekst draagt — de rode band-sectie, het kurk-CTA-punt, primaire knoppen, geselecteerde filterpillen, genummerde stapbollen. Ook tekstlinks op lichte grond en de tekstkleur van de inverse knop op rood.
 - **Clubrood donker** ({colors.club-700}): kleine rode tekst op lichte gronden (baan-labels, "Ontdek meer"-links) én de dikke randen (8px) van de rode band. Contrastregel, zie hieronder.
 - **Clubrood zeer donker** ({colors.club-800}): hover van kleine rode tekstlinks.
 - **Clubrood licht** ({colors.club-300}): rode accenten op donkere (inkt) grond — hoverkleur van links en koppen op inkt-950.
@@ -129,7 +129,7 @@ Warm drieklank: veerwit als grond, warm inktbruinzwart als basis, clubrood dat h
 ### Named Rules
 **De hele-baan-regel.** Clubrood bezit hele banen: een volledige sectie, een volledig paneel, de volledige draad. Rood verschijnt nooit als klein decoratief strooisel — de enige kleine rode elementen zijn functioneel (meetpuntbollen op de draad, de actieve nav-streep) en horen bij de draadgrammatica.
 
-**De kleine-letter-regel.** Kleine rode tekst (baan-labels, tekstlinks, cijfers ≤ text-lg) op lichte grond gebruikt club-700, nooit club-500 — club-500 haalt op veerwit onvoldoende contrast voor kleine tekst. Wit op club-500 is alleen toegestaan voor grote/vette tekst (display-koppen, baan-knoppen, tekst ≥ text-xl bold); gewone lopende tekst op een rood vlak is inkt-950 (zoals op het Recreatief-veerpaneel). Op inkt-950 is de rode accentkleur club-300.
+**De twee-roden-regel.** Welk rood een vlak krijgt, bepaalt de tekst die erop komt. **Witte tekst op rood is altijd club-600** (5,08:1) — met club-500 haalt wit maar 3,97:1 en zakt het onder AA, ook een baan-label van 12px. De enige uitzondering is displaytekst: vanaf 24px of 18,7px vet volstaat 3:1, en daarom mag de witte kop van het rode veerpaneel wel op club-500 staan. **Donkere tekst op rood is altijd club-500**: inkt-950 haalt daar 4,58:1, op club-600 nog maar 3,58:1. Dat is het geval bij de rode veerpanelen. Een club-600-vlak draagt zijn rangorde in grootte en gewicht, niet in doorzichtigheid — `text-white/70` haalt er 3,16:1 en hoort er dus niet. Kleine rode tekst op lichte grond gebruikt club-700, nooit club-500; club-500 mag daar enkel op displayformaat (≥ text-4xl) of als decoratie met `aria-hidden`. Op inkt-950 is de rode accentkleur club-300.
 
 ## Typography
 
@@ -180,14 +180,14 @@ Vlak. De wereld gebruikt geen schaduwen als ontwerpmiddel: diepte komt uit kleur
 ### Buttons
 Alle knoppen zijn `.stem-baan`-pillen; ze veranderen bij hover alleen van kleur (300ms), nooit van vorm.
 - **Shape:** volrond (rounded-full).
-- **Primair:** clubrood ({colors.club-500}) met witte tekst, px-7 py-3.5; hover {colors.club-600}. Op donkere grond (slot): hover wordt lichter ({colors.club-400}).
+- **Primair:** clubrood diep ({colors.club-600}) met witte tekst, px-7 py-3.5; hover gaat dieper ({colors.club-700}). Op donkere grond (slot): hover wordt lichter ({colors.club-400}).
 - **Omtrek:** transparant met 2px inkt-950-rand en inkt-950-tekst, px-7 py-3; hover: rand en tekst naar club-600. Op donkere grond: rand veer-200/40, tekst veer-50; hover rand club-400, tekst club-300.
 - **Invers (op rode band):** witte grond, club-600-tekst; hover club-50-grond.
 - **Kurk-CTA (signatuur, alleen hero):** cirkel van 7rem (≥sm 9rem), clubrood, witte baan-tekst, `ring-4 ring-kurk-400 ring-offset-4 ring-offset-veer-50`, verankerd op het kurkpunt van de verenkrans; hover `scale-110` met ease-lancering.
 
 ### Cards / Containers
 - **Veerpanelen (signatuur):** géén gelijke kaarten. Schuin geknipte, licht geroteerde, overlappende vlakken op het 12-kolomsraster; elk paneel een andere kleurbaan (inkt-950 met veer-50-tekst / club-500 met inkt-950-bodytekst en witte kop / veer-200 met inkt-950-tekst). Interne padding p-8 (≥sm p-10). Het hele paneel is de link; hover tilt het op (-translate-y-2, ease-lancering) en kleurt de kop (op inkt: naar club-300).
-- **Rode band:** full-bleed sectie in club-500 met `border-y-8 border-club-700`, display-kop in wit, vette witte subregel (text-xl bold), inverse knop rechts. Eén per pagina, hooguit.
+- **Rode band:** full-bleed sectie in club-600 met `border-y-8 border-club-800` — op een club-600-vlak is een club-700-rand niet meer te zien. Display-kop in wit, vette witte subregel (text-xl bold), inverse knop rechts, secundaire link in vol wit. Eén per pagina, hooguit.
 - **Zwart slot:** inkt-950-sectie met veer-50/veer-200-tekst, twee knoppen (primair + omtrek-donker) en de clubfoto in een clip-path-figuur; de draadstaart landt op de foto.
 
 ### Lijsten op de rail
@@ -210,7 +210,7 @@ Daarnaast drie **snelkoppeling-iconen** (192, `snelkoppeling-*.png`) voor wat ee
 
 ### Do:
 - **Do** laat elke nieuwe pagina met echte tijdsdata (uren, datums, standen) op de rail aansluiten: pl-10, meetpuntbollen (h-3.5 w-3.5, club-500, ring-4 veer-50) op de rail-x, hairline-rijen, stem-cijfer voor de data. Zonder eigen script: statische rail, geen scroll-draad.
-- **Do** geef clubrood hele banen (een rode band-sectie of een rood paneel) en gebruik club-700 voor alle kleine rode tekst op lichte grond.
+- **Do** geef clubrood hele banen (een rode band-sectie of een rood paneel), kies club-600 zodra er witte tekst op komt, en gebruik club-700 voor alle kleine rode tekst op lichte grond.
 - **Do** gate alle beweging dubbel: achter `.js` op `<html>` én `prefers-reduced-motion`; gebruik uitsluitend --ease-lancering en --ease-drop en houd de duur ≤ 0.6s.
 - **Do** snijd panelen met clip-path (8–10% helling) en roteer ze licht (±1.5°, afwisselend teken) op het 12-kolomsraster met bewuste overlap.
 - **Do** laat lege secties stil verdwijnen (hidden tot data er is), zoals de events-sectie — echt boven mooi.
@@ -219,7 +219,7 @@ Daarnaast drie **snelkoppeling-iconen** (192, `snelkoppeling-*.png`) voor wat ee
 - **Don't** zet kickers of eyebrow-labels boven koppen; de display-kop draagt zichzelf.
 - **Don't** bouw gelijke kaartengrids (drie identieke kolommen met dezelfde kaart) — dit is de wereld die de site expliciet weigert.
 - **Don't** gebruik unicode-tekens als iconen (→, ▸, ✓, •) — pijlen en iconen zijn getekende inline SVG's.
-- **Don't** zet witte tekst kleiner dan text-xl op club-500, en gebruik nooit club-500 voor kleine tekst op veerwit (neem club-700); lopende tekst op rood is inkt-950.
+- **Don't** zet witte tekst op club-500 (neem club-600) en gebruik nooit club-500 voor kleine tekst op veerwit (neem club-700); donkere lopende tekst op rood hoort op club-500, niet op club-600.
 - **Don't** voeg schaduwen toe aan inhoud of foto's; diepte komt uit kleurbanen, overlap en transform.
 - **Don't** introduceer een tweede lettertype of een vierde typestem; alles is Archivo in drie breedtes.
 

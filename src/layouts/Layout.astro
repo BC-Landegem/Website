@@ -2,6 +2,7 @@
 import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import KleurLab from '../components/KleurLab.astro';
 import { APP_KORTE_NAAM, THEMA_KLEUR } from '../data/pwa';
 import registratieSjabloon from '../sw/registratie.js?raw';
 import { url } from '../lib/url';
@@ -78,6 +79,8 @@ const swRegistratie = registratieSjabloon
     />
     <meta name="generator" content={Astro.generator} />
     <script is:inline>document.documentElement.classList.add('js');</script>
+    {/* Intern kleurlab: doet niets zonder ?kleurlab in de URL. */}
+    <KleurLab />
     {import.meta.env.PROD && <script is:inline set:html={swRegistratie} />}
   </head>
   <body class="flex min-h-screen flex-col bg-veer-50 text-inkt-950 antialiased">

@@ -234,7 +234,7 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
           <button
             id="loot-opnieuw"
             type="button"
-            class="stem-baan inline-flex items-center gap-2 rounded-full bg-club-500 px-6 py-3 text-sm text-white transition-colors hover:bg-club-400"
+            class="stem-baan inline-flex items-center gap-2 rounded-full bg-club-600 px-6 py-3 text-sm text-white transition-colors hover:bg-club-700"
           >
             <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h5M20 20v-5h-5M20 9A8 8 0 006.3 5.3M4 15a8 8 0 0013.7 3.7" />
@@ -334,7 +334,7 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
                   role="tab"
                   data-set-tab={set}
                   aria-selected={set === 0 ? 'true' : 'false'}
-                  class="stem-baan rounded-full border-2 border-inkt-950/20 px-4 py-1.5 text-xs text-inkt-700 transition-colors hover:border-club-600 hover:text-club-600 aria-selected:border-club-500 aria-selected:bg-club-500 aria-selected:text-white"
+                  class="stem-baan rounded-full border-2 border-inkt-950/20 px-4 py-1.5 text-xs text-inkt-700 transition-colors hover:border-club-600 hover:text-club-600 aria-selected:border-club-600 aria-selected:bg-club-600 aria-selected:text-white"
                 >
                   Set {set + 1}
                 </button>
@@ -438,7 +438,7 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
                       data-uitslag={set}
                       data-soort={soort}
                       aria-pressed={(soort === 'gewonnen') === setstand.gewonnen ? 'true' : 'false'}
-                      class="stem-baan rounded-full border-2 border-inkt-950/20 px-3 py-1 text-[0.65rem] text-inkt-700 transition-colors hover:border-club-600 hover:text-club-600 aria-pressed:border-club-500 aria-pressed:bg-club-500 aria-pressed:text-white"
+                      class="stem-baan rounded-full border-2 border-inkt-950/20 px-3 py-1 text-[0.65rem] text-inkt-700 transition-colors hover:border-club-600 hover:text-club-600 aria-pressed:border-club-600 aria-pressed:bg-club-600 aria-pressed:text-white"
                     >
                       {soort === 'gewonnen' ? 'Gewonnen' : 'Verloren'}
                     </button>

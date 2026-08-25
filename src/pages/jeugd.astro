@@ -206,7 +206,7 @@ const drempel = [
   </div>
 
   {/* De rode band als scharnier: hierboven het verhaal, hieronder het naslagwerk */}
-  <section class="border-y-8 border-club-700 bg-club-500 text-white">
+  <section class="border-y-8 border-club-800 bg-club-600 text-white">
     <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-6 px-4 py-12">
       <div class="flex-[1_1_26rem]">
         <h2 class="stem-display text-3xl sm:text-4xl">Spring eens binnen op woensdag</h2>
@@ -225,10 +225,10 @@ const drempel = [
             <path stroke-linecap="round" stroke-linejoin="round" d="M4 12h16m0 0l-6-6m6 6l-6 6" />
           </svg>
         </a>
-        {/* Kleine tekst op de rode band is inkt-950 (kleine-letter-regel) */}
+        {/* Op de club-600-band is álle tekst wit: inkt-950 haalt daar geen 4,5:1. Rangorde komt van grootte en gewicht. */}
         <a
           href={url('/club/word-lid/#inschrijven')}
-          class="stem-baan inline-flex items-center gap-2 text-xs text-inkt-950 transition-colors hover:underline"
+          class="stem-baan inline-flex items-center gap-2 text-xs text-white transition-colors hover:underline"
         >
           Of schrijf je meteen in
         </a>
