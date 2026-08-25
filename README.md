@@ -62,7 +62,8 @@ aanraken.
 | Speeluren, sporthal, inschrijflink | `src/data/trainingen.json` | Homepage, `/jeugd/`, `/club/word-lid/` en de footer |
 | Competitieploegen, seizoen | `src/data/teams.json` | `/competitie/` én de ploeglinks in de navigatie (`Header.astro`) |
 | Sponsors | `src/data/sponsors.json` + logo in `src/assets/sponsors/` | De sponsorbalk in de footer |
-| Fotoalbums | `src/data/media.ts` | `/media/` — pas na een sync, zie Databronnen |
+| Fotoalbums | `src/data/media.ts` | `/media/` én de fotostrook op de homepage — pas na een sync, zie Databronnen |
+| Facebook-/Instagram-links | `src/data/sociaal.ts` | De knoppen "Volg de club" in de footer — leeg = het blok verdwijnt |
 | Kalenderbronnen en -kleuren | `src/data/kalender.ts` | `/kalender/` en de events op de homepage |
 | App-naam, offline schil, snelkoppelingen | `src/data/pwa.ts` | Manifest en service worker (iconen genereer je apart) |
 | Kleuren en typografie | `src/styles/global.css` (`@theme`) | De hele site — voor het clubrood eerst het kleurlab, zie hieronder |
@@ -88,7 +89,12 @@ is en het blok blijft stil ongekleurd.
 **Google Photos** — de gecureerde albumlijst staat in `src/data/media.ts`, de
 foto's zelf blijven bij Google. De nachtelijke workflow `media-sync.yml` leest de
 publieke share-pagina's uit en schrijft `src/data/media.json`; de build leest
-alleen dat bestand en praat nooit met Google. Breekt de scrape, dan blijft de
+alleen dat bestand en praat nooit met Google. De sectie "Uit de club" op de
+homepage toont de eerste vijf foto's van het nieuwste album uit diezelfde lijst:
+komt er een album bij, dan ververst die strook vanzelf. Die foto's dragen elk
+`referrerpolicy="no-referrer"` — Google's CDN antwoordt met 429 zodra er een
+vreemde referer meekomt, en op de homepage kan dat niet paginabreed omdat de
+Google Calendar-key juist referrer-restricted is. Breekt de scrape, dan blijft de
 vorige data staan, kleurt de workflow rood en draait de site gewoon door. Een
 foto van de site halen doe je in het Google Photos-album zelf.
 
