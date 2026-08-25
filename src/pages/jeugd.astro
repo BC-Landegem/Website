@@ -11,15 +11,15 @@ const LUC = 'mailto:vantornhoutluc@skynet.be';
 // word-lid, hier kort herhaald zodat niemand hoeft door te klikken.
 const drempel = [
   ['Drie keer gratis meespelen', 'Pas daarna moet je beslissen of je kind lid wordt.'],
-  ['Een racket van de club', 'Voor je eerste keren ligt er een klaar om te lenen.'],
+  ['Een racket breng je zelf mee', 'Heb je er nog geen, leen er dan een van iemand die al speelt.'],
   ['Sportschoenen volstaan', 'Er is geen clubkledij en geen dresscode.'],
-  ['Shuttles krijg je van ons', 'We spelen met clubshuttles, en die zitten in het lidgeld.'],
+  ['Shuttles krijg je van ons', 'We spelen met clubshuttles en die zitten in het lidgeld.'],
 ];
 ---
 
 <Layout
   title="Jeugd"
-  description="De jeugdwerking van BC Landegem: vanaf 8 jaar, vrij spelen op woensdagavond en training op zaterdag in twee groepen. Drie keer gratis proberen, racket van de club."
+  description="De jeugdwerking van BC Landegem: vanaf 8 jaar, vrij spelen op woensdagavond en training op zaterdag in twee groepen. Drie keer gratis proberen, zonder selectie."
 >
   <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
     <RailKop
@@ -30,8 +30,8 @@ const drempel = [
     <div class="mt-10 max-w-3xl pl-10">
       <p class="text-lg leading-relaxed text-inkt-700">
         Om te beginnen volstaat het dat je kind eens binnenwandelt op een woensdagavond. Kunnen
-        badmintonnen hoeft niet, materiaal meebrengen ook niet. Hieronder lees je hoe het daarna
-        verdergaat, tot en met een eerste tornooi.
+        badmintonnen hoeft niet. Een racket en sportschoenen zijn genoeg, de shuttles krijg je van
+        ons. Hieronder lees je hoe het daarna verdergaat, tot en met een eerste tornooi.
       </p>
     </div>
 
@@ -77,10 +77,11 @@ const drempel = [
         </p>
 
         <p class="mt-4 max-w-3xl leading-relaxed text-inkt-700">
-          Eén ding regel je dan wel best snel: <strong class="text-inkt-950">een eigen
-          racket</strong>. De clubrackets zijn er om te proberen, niet om een heel seizoen mee te
-          trainen. Bestellen kan via de club, dus vraag gerust raad aan de trainers voor je er zelf
-          een gaat kopen.
+          Waar je wel zelf voor zorgt, is <strong class="text-inkt-950">een racket</strong>. Voor
+          die eerste keren volstaat er een dat je van iemand kan lenen. Wordt het menens, koop dan
+          een racket dat bij je kind past: vraag gerust raad aan de trainers voor je er een gaat
+          kopen, bestellen kan ook via de club. Lukt het voor die eerste woensdag echt niet om
+          ergens een racket te vinden, laat het dan op voorhand weten.
         </p>
       </li>
 
@@ -211,8 +212,8 @@ const drempel = [
       <div class="flex-[1_1_26rem]">
         <h2 class="stem-display text-3xl sm:text-4xl">Spring eens binnen op woensdag</h2>
         <p class="mt-2 max-w-xl text-xl font-bold text-white">
-          Vanaf 19u00 in {locatie.naam}, {locatie.gemeente}. Laat vooraf even iets weten, dan vangt
-          iemand je kind op en ligt er een racket klaar.
+          Vanaf 19u00 in {locatie.naam}, {locatie.gemeente}. Laat vooraf even iets weten, dan staat
+          er iemand klaar om je kind op te vangen.
         </p>
       </div>
       <div class="flex flex-col items-start gap-4">
