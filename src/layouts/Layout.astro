@@ -3,6 +3,7 @@ import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { APP_KORTE_NAAM, THEMA_KLEUR } from '../data/pwa';
+import registratieSjabloon from '../sw/registratie.js?raw';
 import { url } from '../lib/url';
 
 interface Props {
@@ -29,14 +30,13 @@ const pageTitle = title ? `${title} | BC Landegem` : 'BC Landegem — Badmintonc
 // Alle paden lopen via url(): import.meta.env.BASE_URL is '/Website' zónder
 // slash op het einde, dus `${BASE_URL}favicon.ico` gaf /Websitefavicon.ico.
 
-// Registratie van de service worker, alleen in een echte build — in dev zou de
-// worker de HMR-assets cachen. Als string, want scriptinhoud in een
-// JSX-expressie dwingt tot onleesbaar accolade-ontsnappen.
-const swRegistratie = `if ('serviceWorker' in navigator) {
-  addEventListener('load', function () {
-    navigator.serviceWorker.register(${JSON.stringify(url('/sw.js'))}).catch(function () {});
-  });
-}`;
+// Registratie van de service worker plus het opruimen van vreemde workers
+// (zie src/sw/registratie.js). Inline in de head zodat het geen extra request
+// kost, en alleen in een echte build — in dev zou de worker de HMR-assets
+// cachen.
+const swRegistratie = registratieSjabloon
+  .replaceAll('__SW_PAD__', url('/sw.js'))
+  .replaceAll('__BASE__', url('/'));
 ---
 
 <!doctype html>
