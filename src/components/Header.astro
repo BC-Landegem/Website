@@ -164,7 +164,7 @@ const isActive = (href: string) => currentPath.startsWith(url(href).replace(/\/$
             href={url('/club/over-de-club/')}
             class:list={[
               'hidden items-center gap-1 border-b-2 border-transparent px-3 py-2 text-sm font-semibold transition-colors hover:text-club-600 lg:flex',
-              (isActive('/club/') || isActive('/intraclub/')) && 'border-club-500 text-club-600',
+              isActive('/club/') && 'border-club-500 text-club-600',
             ]}
           >
             Club

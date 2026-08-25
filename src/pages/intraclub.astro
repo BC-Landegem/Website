@@ -237,7 +237,7 @@ const tabs = [
     const laatste = laatsteBerekend(rondes);
     if (!laatste) return;
     const link = document.getElementById('intra-laatste') as HTMLAnchorElement;
-    link.href = speeldagUrl(laatste.id);
+    // link.href = speeldagUrl(laatste.id);
     document.getElementById('intra-laatste-tekst')!.textContent =
       `Stand na speeldag ${laatste.number} (${formatDatum(laatste.date)})`;
     link.classList.remove('hidden');

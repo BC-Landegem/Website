@@ -1,7 +1,5 @@
 // De vluchtdraad op de homepage: één doorlopende rode lijn van kurk tot slot,
-// getekend naarmate de bezoeker scrolt. Plus de landing-animatie (.vlucht →
-// .geland) via een IntersectionObserver. Zonder JS is er geen draad, maar alle
-// inhoud blijft gewoon zichtbaar.
+// altijd volledig zichtbaar. De pluim schuift mee over de baan naarmee je scrollt.
 
 // Alle DOM-ankers van de draad op één plek: hernoem je een id in index.astro,
 // dan is dit de inventaris die mee moet.
@@ -27,16 +25,39 @@ const IDS = {
 // eromheen te sluipen langs de schermranden — dat leest als een kader, niet als
 // een vlucht — vliegt de baan daar dezelfde parabool in miniatuur: uit de kurk
 // omhoog, een hangmoment in de vrije band onder de tekst, en rechts weer neer
-// de rode band in, waar rood op rood de oversteek naar de rail verbergt. De
-// shuttle-glyph hangt op mobiel los in de lucht, vóór de draad uit.
+// de rode band in, waar rood op rood de oversteek naar de rail verbergt.
 const SMAL_TOT = 768;
 // Baan in de buitenmarge: de tekstkolom begint op px-4 (16px), de draad (4px)
 // blijft er met zijn hele dikte links van.
 const MARGE = 7;
+// Vaste plek van het hangmoment: gelijk aan de CSS van #shuttle-glyph vóór JS
+// (right 5%, top-16 / top-20, w-20 / w-28). De baangeometrie leest hieruit,
+// niet uit de live positie van de pluim — die volgt de lijn tijdens scrollen.
+const GLYPH_Breedte = (sm: boolean) => (sm ? 112 : 80);
+const GLYPH_TOP = (sm: boolean) => (sm ? 80 : 64);
+// Statische hero-stand (gelijk aan de oude -rotate-12 op de img).
+const GLYPH_HANG_HOEK = -12;
+// logo-pluim.svg wijst rechtop; -102° t.o.v. de baantang ( +102° stond ondersteboven).
+const GLYPH_HOEK_OFFSET = -102;
+const SCROLL_DREMPEL = 16;
 
 function middenVan(el: Element, wrect: DOMRect) {
   const r = el.getBoundingClientRect();
   return { x: r.left - wrect.left + r.width / 2, y: r.top - wrect.top + r.height / 2 };
+}
+
+function hangpunt(wrect: DOMRect): { x: number; y: number } {
+  const hero = document.querySelector('#pagina > section');
+  const sm = wrect.width >= 640;
+  const half = GLYPH_Breedte(sm) / 2;
+  if (!hero) {
+    return { x: wrect.width * 0.95 - half, y: GLYPH_TOP(sm) + half };
+  }
+  const hrect = hero.getBoundingClientRect();
+  return {
+    x: hrect.right - wrect.left - wrect.width * 0.05 - half,
+    y: hrect.top - wrect.top + GLYPH_TOP(sm) + half,
+  };
 }
 
 /**
@@ -45,7 +66,6 @@ function middenVan(el: Element, wrect: DOMRect) {
  * veranderen of dichtklappen.
  */
 export function initDraad(): { herbouw: () => void } {
-  // — Elementen laten neerdalen zodra ze in beeld komen —
   const kijker = new IntersectionObserver(
     (entries) => {
       for (const entry of entries) {
@@ -62,24 +82,63 @@ export function initDraad(): { herbouw: () => void } {
   const wrapper = document.getElementById(IDS.wrapper);
   const kern = document.getElementById(IDS.kern) as SVGPathElement | null;
   const staart = document.getElementById(IDS.staart) as SVGPathElement | null;
+  const glyph = document.getElementById(IDS.glyph);
   const rustig = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let monsters: { y: number; len: number }[] = [];
   let kernLengte = 0;
   let staartLengte = 0;
+  let totaleLengte = 0;
+  let hangLen = 0;
+
+  function puntOpDraad(len: number, wrect: DOMRect): { x: number; y: number } | null {
+    if (!kern || !staart) return null;
+    const clamped = Math.max(0, Math.min(len, totaleLengte));
+    if (clamped <= kernLengte) return kern.getPointAtLength(clamped);
+    const slot = document.getElementById(IDS.slot);
+    if (!slot) return null;
+    const srect = slot.getBoundingClientRect();
+    const p = staart.getPointAtLength(clamped - kernLengte);
+    return { x: srect.left - wrect.left + p.x, y: srect.top - wrect.top + p.y };
+  }
+
+  function plaatsGlyph(scrollLen: number) {
+    if (!wrapper || !glyph) return;
+    const wrect = wrapper.getBoundingClientRect();
+    const G = hangpunt(wrect);
+    const volgPad = window.scrollY >= SCROLL_DREMPEL && scrollLen > hangLen + 8;
+
+    if (!volgPad) {
+      glyph.style.right = 'auto';
+      glyph.style.left = `${G.x}px`;
+      glyph.style.top = `${G.y}px`;
+      glyph.style.transform = `translate(-50%, -50%) rotate(${GLYPH_HANG_HOEK}deg)`;
+      return;
+    }
+
+    const p = puntOpDraad(scrollLen, wrect);
+    if (!p) return;
+    const vooruit = puntOpDraad(Math.min(scrollLen + 8, totaleLengte), wrect);
+    const hoek = vooruit
+      ? (Math.atan2(vooruit.y - p.y, vooruit.x - p.x) * 180) / Math.PI + GLYPH_HOEK_OFFSET
+      : GLYPH_HANG_HOEK;
+    glyph.style.right = 'auto';
+    glyph.style.left = `${p.x}px`;
+    glyph.style.top = `${p.y}px`;
+    glyph.style.transform = `translate(-50%, -50%) rotate(${hoek}deg)`;
+  }
 
   function bouwDraad() {
     const kurk = document.getElementById(IDS.kurk);
-    const glyph = document.getElementById(IDS.glyph);
     const uren = document.getElementById(IDS.uren);
     const jaar = document.getElementById(IDS.jaar);
     const slot = document.getElementById(IDS.slot);
     const foto = document.getElementById(IDS.foto);
-    if (!wrapper || !kern || !staart || !kurk || !glyph || !uren || !jaar || !slot || !foto) return;
+    if (!wrapper || !kern || !staart || !kurk || !uren || !jaar || !slot || !foto) return;
 
     const wrect = wrapper.getBoundingClientRect();
     const K = middenVan(kurk, wrect);
     const kurkStraal = kurk.getBoundingClientRect().width / 2;
-    const G = middenVan(glyph, wrect);
+    const G = hangpunt(wrect);
     const urect = uren.getBoundingClientRect();
     const railX = urect.left - wrect.left + 6;
     const urenTop = urect.top - wrect.top + 8;
@@ -114,9 +173,8 @@ export function initDraad(): { herbouw: () => void } {
     // Het hangmoment: zo hoog als de vrije band toelaat (nooit ín de tekst) en
     // altijd ruim boven de kurk, anders is het geen boog meer maar een deuk.
     const hangY = Math.min(Math.max(valY, K.y - 190), K.y - kurkStraal - 30);
-    // De val komt precies onder de shuttle-glyph neer: die hangt op mobiel los
-    // in de lucht, en deze uitlijning maakt hem het punt waar de baan heen wijst
-    // in plaats van een losse versiering. Blijft binnen beeld op elke breedte.
+    // De val komt precies onder het hangmoment neer: zo wijst de baan naar
+    // de vaste starthoek van de pluim in plaats van naar een losse versiering.
     const invalX = Math.min(wrect.width - 34, Math.max(wrect.width * 0.72, G.x));
     // Asymmetrisch zoals een echte shuttlebaan: de klim beslaat ruim de helft
     // van de vrije breedte, de val is korter en dus steiler.
@@ -167,6 +225,20 @@ export function initDraad(): { herbouw: () => void } {
 
     kernLengte = kern.getTotalLength();
     staartLengte = staart.getTotalLength();
+    totaleLengte = kernLengte + staartLengte;
+
+    hangLen = 0;
+    let best = Infinity;
+    for (let i = 0; i <= 200; i++) {
+      const l = (kernLengte * i) / 200;
+      const p = kern.getPointAtLength(l);
+      const afstand = (p.x - G.x) ** 2 + (p.y - G.y) ** 2;
+      if (afstand < best) {
+        best = afstand;
+        hangLen = l;
+      }
+    }
+
     monsters = [];
     for (let i = 0; i <= 240; i++) {
       const len = (kernLengte * i) / 240;
@@ -179,27 +251,25 @@ export function initDraad(): { herbouw: () => void } {
     if (rustig) {
       kern.style.strokeDasharray = staart.style.strokeDasharray = 'none';
       kern.style.strokeDashoffset = staart.style.strokeDashoffset = '0';
+      plaatsGlyph(totaleLengte);
     } else {
-      kern.style.strokeDasharray = String(kernLengte + 2);
-      staart.style.strokeDasharray = String(staartLengte + 2);
+      kern.style.strokeDasharray = staart.style.strokeDasharray = 'none';
+      kern.style.strokeDashoffset = staart.style.strokeDashoffset = '0';
       tekenDraad();
     }
   }
 
   function tekenDraad() {
     if (!wrapper || !kern || !staart || !monsters.length) return;
-    // Tot net boven de onderrand: het diepste punt van de baan is de kurk, en
-    // die staat op mobiel onderaan het eerste scherm. Met een ruimere marge
-    // (0.85 van de hoogte) viel de lancering op veel toestellen buiten beeld en
-    // bleef de draad onzichtbaar tot je scrolde.
+    // Scroll-progress bepaalt waar de pluim op de baan staat; de lijn zelf blijft
+    // altijd volledig getekend.
     const zichtbaarTot = -wrapper.getBoundingClientRect().top + window.innerHeight - 32;
     let len = 0;
     for (const m of monsters) {
       if (m.y > zichtbaarTot) break;
       len = m.len;
     }
-    kern.style.strokeDashoffset = String(Math.max(0, kernLengte - len));
-    staart.style.strokeDashoffset = String(Math.max(0, staartLengte - Math.max(0, len - kernLengte)));
+    plaatsGlyph(len);
   }
 
   let scrollTik = false;

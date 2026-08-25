@@ -102,21 +102,6 @@ const fotoSnedes = [
         ))}
       </svg>
 
-      {/* De shuttle op het hangmoment, neus in vliegrichting. Eigen SVG los van de
-           verenkrans, zodat hij op elke viewporthoogte zichtbaar blijft (draad-anker). */}
-      <svg
-        id="shuttle-glyph"
-        class="absolute right-[5%] top-16 w-16 overflow-visible sm:top-20 sm:w-24"
-        viewBox="-16 -24 70 50"
-        aria-hidden="true"
-      >
-        <g transform="rotate(-8)"><g class="vlucht" style="transition-delay: 1.4s">
-          <path d="M 8 0 L 44 -16 L 40 -6 L 46 -4 L 42 3 L 47 6 L 41 12 L 44 18 L 8 0 Z" fill="var(--color-veer-50)" stroke="var(--color-inkt-950)" stroke-width="2" stroke-linejoin="round" />
-          <circle cx="0" cy="0" r="10" fill="var(--color-kurk-400)" stroke="var(--color-inkt-950)" stroke-width="2" />
-          <path d="M -10 0 A 10 10 0 0 0 10 0 Z" fill="var(--color-club-500)" />
-        </g></g>
-      </svg>
-
       {/* Het kurkpunt is de primaire actie: Word lid! zit op de kurk */}
       <a
         id="kurk-cta"
@@ -158,6 +143,22 @@ const fotoSnedes = [
         </div>
       </div>
     </section>
+
+    {/* Pluim volgt de vluchtlijn (positie via lib/draad.ts). Buiten de hero
+         zodat overflow-hidden hem niet afknipt tijdens het scrollen. */}
+    <div
+      id="shuttle-glyph"
+      class="pointer-events-none absolute right-[5%] top-16 -z-[1] w-20 overflow-visible sm:top-20 sm:w-28"
+      aria-hidden="true"
+    >
+      <img
+        src={url('/images/logo-pluim.svg')}
+        alt=""
+        width="516"
+        height="538"
+        class="h-full w-full object-contain"
+      />
+    </div>
 
     {/* De rode band rond de kurk. Anker voor de draad: op smalle schermen
          verspringt hij ván de rechtermarge náár de rail ín deze band, waar rood
@@ -397,9 +398,9 @@ const fotoSnedes = [
       </div>
     </section>
 
-    {/* De vluchtdraad: één doorlopende rode lijn van kurk tot slot, getekend met de
-         scroll. Hij loopt achter de inhoud en duikt onder de rode band door. */}
-    <svg id="draad" class="pointer-events-none absolute inset-0 -z-[1] h-full w-full" aria-hidden="true">
+    {/* De vluchtdraad: één doorlopende rode lijn van kurk tot slot, altijd zichtbaar.
+         Hij loopt achter de inhoud en duikt onder de rode band door. */}
+    <svg id="draad" class="pointer-events-none absolute inset-0 -z-[2] h-full w-full" aria-hidden="true">
       <path id="draad-kern" fill="none" stroke="var(--color-club-500)" stroke-width="4" stroke-linecap="round" />
     </svg>
   </div>
