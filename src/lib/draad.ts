@@ -19,17 +19,16 @@ const IDS = {
   intraPunt: 'punt-intra',
   band: 'rode-band',
   slotKnoppen: 'slot-knoppen',
-  kop: 'hero-kop',
   heroSlot: 'volgend-moment',
 } as const;
 
 // Onder md staat alle tekst in één volle kolom (px-4): de diagonaal van kurk
-// naar shuttle en die van de rail naar het slot zouden dwars door koppen en
-// lopende tekst snijden. De baan blijft daar dezelfde vlucht — lancering,
-// hangmoment bij de shuttle, val — maar loopt door de vrije stroken: omhoog
-// langs de linkermarge, over de kop heen, langs de rechtermarge naar beneden
-// en dan schuin door de lege band onder de tekst de rode band in, waar rood op
-// rood de oversteek naar de rail verbergt.
+// naar shuttle zou dwars door koppen en lopende tekst snijden. In plaats van
+// eromheen te sluipen langs de schermranden — dat leest als een kader, niet als
+// een vlucht — vliegt de baan daar dezelfde parabool in miniatuur: uit de kurk
+// omhoog, een hangmoment in de vrije band onder de tekst, en rechts weer neer
+// de rode band in, waar rood op rood de oversteek naar de rail verbergt. De
+// shuttle-glyph hangt op mobiel los in de lucht, vóór de draad uit.
 const SMAL_TOT = 768;
 // Baan in de buitenmarge: de tekstkolom begint op px-4 (16px), de draad (4px)
 // blijft er met zijn hele dikte links van.
@@ -79,6 +78,7 @@ export function initDraad(): { herbouw: () => void } {
 
     const wrect = wrapper.getBoundingClientRect();
     const K = middenVan(kurk, wrect);
+    const kurkStraal = kurk.getBoundingClientRect().width / 2;
     const G = middenVan(glyph, wrect);
     const urect = uren.getBoundingClientRect();
     const railX = urect.left - wrect.left + 6;
@@ -94,7 +94,6 @@ export function initDraad(): { herbouw: () => void } {
     const srect = slot.getBoundingClientRect();
     const slotTop = srect.top - wrect.top;
     const smal = wrect.width < SMAL_TOT;
-    const rechterMarge = wrect.width - MARGE;
     const eindX = smal ? MARGE : wrect.width * 0.52;
     const dx = G.x - K.x;
     const dy = K.y - G.y;
@@ -106,33 +105,35 @@ export function initDraad(): { herbouw: () => void } {
     const bandTop = brect ? brect.top - wrect.top : railStart - 360;
     const bandOnder = brect ? brect.bottom - wrect.top : railStart - 120;
 
-    // Hoogte van de boog over de hero-kop heen: boven de regelbox van de kop,
-    // nooit hoger dan nodig en nooit tot tegen de paginarand. Vanaf sm groeit
-    // de kop tot boven de shuttle, dus G.y alleen volstaat niet.
-    const kopEl = document.getElementById(IDS.kop);
-    const kopTop = kopEl ? kopEl.getBoundingClientRect().top - wrect.top : G.y;
-    const boogY = Math.max(24, Math.min(G.y, kopTop - 16));
     // Onderkant van de herokolom: daaronder ligt de vrije band met de
-    // verenkrans, waar de val schuin doorheen mag duiken.
+    // verenkrans, waar de miniatuurparabool zijn hele vlucht in kwijt kan.
     const heroSlotEl = document.getElementById(IDS.heroSlot);
     const valY = heroSlotEl
       ? heroSlotEl.getBoundingClientRect().bottom - wrect.top + 24
       : K.y - 80;
+    // Het hangmoment: zo hoog als de vrije band toelaat (nooit ín de tekst) en
+    // altijd ruim boven de kurk, anders is het geen boog meer maar een deuk.
+    const hangY = Math.min(Math.max(valY, K.y - 190), K.y - kurkStraal - 30);
+    // De val komt precies onder de shuttle-glyph neer: die hangt op mobiel los
+    // in de lucht, en deze uitlijning maakt hem het punt waar de baan heen wijst
+    // in plaats van een losse versiering. Blijft binnen beeld op elke breedte.
+    const invalX = Math.min(wrect.width - 34, Math.max(wrect.width * 0.72, G.x));
+    // Asymmetrisch zoals een echte shuttlebaan: de klim beslaat ruim de helft
+    // van de vrije breedte, de val is korter en dus steiler.
+    const hangX = K.x + (invalX - K.x) * 0.56;
 
     kern.setAttribute(
       'd',
       smal
         ? [
             `M ${K.x} ${K.y}`,
-            // lancering: uit de kurk naar links en in één boog omhoog
-            `C ${K.x - 60} ${K.y + 6}, ${MARGE} ${K.y - dy * 0.32}, ${MARGE} ${boogY + 30}`,
-            // over de kop heen naar het hangmoment bij de shuttle
-            `C ${MARGE} ${boogY + 8}, ${G.x - 240} ${boogY}, ${G.x} ${G.y}`,
-            // de val: langs de rechtermarge naar beneden
-            `C ${G.x + 46} ${G.y + 50}, ${rechterMarge} ${G.y + 40}, ${rechterMarge} ${valY}`,
-            // schuin door de vrije band onder de tekst, langs de kurk, de rode
-            // band in — daar (rood op rood) steekt hij onzichtbaar over
-            `C ${rechterMarge} ${valY + 80}, ${wrect.width * 0.6} ${bandTop - 24}, ${railX} ${bandOnder + 24}`,
+            // lancering: steil uit de kurk, pas laat uitvlakkend — dat maakt de
+            // top een hangmoment in plaats van een regenboog
+            `C ${K.x + 24} ${K.y - (K.y - hangY) * 0.66}, ${hangX - 74} ${hangY}, ${hangX} ${hangY}`,
+            // de val: kort over de top, dan bijna verticaal de rode band in
+            `C ${hangX + 52} ${hangY}, ${invalX} ${Math.min(hangY + 44, bandTop)}, ${invalX} ${bandTop + 18}`,
+            // binnen de band (rood op rood) steekt hij onzichtbaar over naar de rail
+            `C ${invalX} ${bandOnder - 20}, ${railX} ${bandTop + 20}, ${railX} ${bandOnder + 24}`,
             `L ${railX} ${J.y}`,
             // de rail verlaten richting slot: op mobiel blijft hij in de marge
             `C ${railX} ${J.y + 200}, ${eindX} ${slotTop - 200}, ${eindX} ${slotTop}`,
@@ -187,7 +188,11 @@ export function initDraad(): { herbouw: () => void } {
 
   function tekenDraad() {
     if (!wrapper || !kern || !staart || !monsters.length) return;
-    const zichtbaarTot = -wrapper.getBoundingClientRect().top + window.innerHeight * 0.85;
+    // Tot net boven de onderrand: het diepste punt van de baan is de kurk, en
+    // die staat op mobiel onderaan het eerste scherm. Met een ruimere marge
+    // (0.85 van de hoogte) viel de lancering op veel toestellen buiten beeld en
+    // bleef de draad onzichtbaar tot je scrolde.
+    const zichtbaarTot = -wrapper.getBoundingClientRect().top + window.innerHeight - 32;
     let len = 0;
     for (const m of monsters) {
       if (m.y > zichtbaarTot) break;

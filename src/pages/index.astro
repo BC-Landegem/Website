@@ -28,7 +28,8 @@ const kaarten = [
   {
     href: '/jeugd/',
     titel: 'Jeugd',
-    tekst: 'Vrij spel op woensdagavond, training op zaterdag in twee groepen — van eerste racket tot geselecteerde jeugd.',
+    tekst: 'Vanaf 8 jaar. Vrij spel op woensdagavond, zonder selectie. Wie er klaar voor is, traint op zaterdag mee in groep 1 of 2.',
+    linkTekst: 'Alles over de jeugdwerking',
     clip: 'polygon(0 10%, 100% 0, 100% 100%, 0 100%)',
     kaartClass: 'col-span-12 -rotate-1 bg-inkt-950 text-veer-50 sm:col-span-7 sm:col-start-3 sm:p-10',
     titelClass: 'text-4xl text-white transition-colors group-hover:text-club-300',
@@ -38,7 +39,8 @@ const kaarten = [
   {
     href: '/club/word-lid/',
     titel: 'Recreatief',
-    tekst: 'Vrij spel op maandag, woensdag en zondag. Iedereen speelt mee, op elk niveau.',
+    tekst: 'Vrij spel op maandag, woensdag en zondag. Je hoeft je niet in te schrijven voor een uur: je komt en je speelt.',
+    linkTekst: 'Zo word je lid',
     clip: 'polygon(0 0, 100% 10%, 100% 100%, 0 100%)',
     kaartClass: 'col-span-11 col-start-2 rotate-[1.25deg] bg-club-500 text-inkt-950 sm:col-span-5 sm:col-start-8 sm:-mt-12',
     titelClass: 'text-3xl text-white',
@@ -48,7 +50,8 @@ const kaarten = [
   {
     href: '/competitie/',
     titel: 'Competitie',
-    tekst: 'Onze ploegen spelen competitie — volg de wedstrijden, verslagen en standen.',
+    tekst: 'Onze ploegen spelen in de Liga- en PBO-competitie. Volg hun kalender, verslagen en standen.',
+    linkTekst: 'Naar de ploegen',
     clip: 'polygon(0 8%, 100% 0, 100% 96%, 0 100%)',
     kaartClass: 'col-span-12 -rotate-[0.75deg] bg-veer-200 text-inkt-950 sm:col-span-6 sm:col-start-4 sm:-mt-8',
     titelClass: 'text-3xl',
@@ -114,14 +117,14 @@ const kaarten = [
 
       <div class="mx-auto w-full max-w-6xl px-4 pb-44 pt-24 sm:pb-52 md:py-24">
         <div class="max-w-3xl md:ml-[22%]">
-          <h1 id="hero-kop" class="stem-display text-inkt-950">
+          <h1 class="stem-display text-inkt-950">
             <span class="block text-[clamp(2rem,10.2vw,3rem)] sm:text-6xl lg:text-7xl">Badminton</span>
             <span class="block text-[clamp(1.25rem,6.4vw,1.875rem)] sm:text-4xl lg:text-5xl">voor jong en oud</span>
             <span class="block text-[clamp(2rem,10.2vw,3rem)] text-club-500 sm:text-6xl lg:text-7xl">in Nevele</span>
           </h1>
           <p class="mt-6 max-w-xl text-lg text-inkt-700">
-            Recreatief of competitief, beginner of gevorderde: bij BC Landegem sla je altijd raak.
-            Kom vrijblijvend een keertje meespelen!
+            Vrij spel op maandag, woensdag en zondag, jeugdtraining op zaterdag. Nieuwe spelers
+            mogen drie keer gratis meespelen voor ze beslissen.
           </p>
           <div class="mt-8 flex flex-wrap items-center gap-4">
             <a
@@ -150,9 +153,9 @@ const kaarten = [
     <section id="rode-band" class="border-y-8 border-club-700 bg-club-500 text-white">
       <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-6 px-4 py-12">
         <div class="flex-[1_1_28rem]">
-          <h2 class="stem-display text-3xl sm:text-4xl">Proefbeurten altijd welkom</h2>
+          <h2 class="stem-display text-3xl sm:text-4xl">Drie keer gratis meespelen</h2>
           <p class="mt-2 max-w-xl text-xl font-bold text-white">
-            Spring gerust eens binnen tijdens een speelmoment in {trainingen.locatie.naam}.
+            Spring binnen tijdens een speelmoment in {trainingen.locatie.naam}. Afspreken hoeft niet, laten weten dat je komt is wel zo aangenaam.
           </p>
         </div>
         <div class="flex flex-col items-start gap-4">
@@ -160,7 +163,7 @@ const kaarten = [
             href={url('/club/word-lid/')}
             class="stem-baan rounded-full bg-white px-7 py-3.5 text-sm text-club-600 transition-colors hover:bg-club-50"
           >
-            Kom vrijblijvend proberen
+            Zo begin je
           </a>
           <!-- Kleine tekst op de rode band is inkt-950 (kleine-letter-regel) -->
           <a
@@ -275,7 +278,7 @@ const kaarten = [
             <h3 class={`stem-display ${kaart.titelClass}`}>{kaart.titel}</h3>
             <p class={`mt-3 text-sm leading-relaxed ${kaart.tekstClass}`}>{kaart.tekst}</p>
             <span class={`stem-baan mt-6 inline-flex items-center gap-2 text-xs ${kaart.linkClass}`}>
-              Ontdek meer
+              {kaart.linkTekst}
               <Pijl class="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
             </span>
           </a>
@@ -289,8 +292,8 @@ const kaarten = [
         <span id="punt-1987" class="absolute left-[6px] top-2 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-club-500 ring-4 ring-veer-50" aria-hidden="true"></span>
         <p class="stem-cijfer text-2xl text-inkt-950">1987</p>
         <p class="mt-1 max-w-xl text-inkt-700">
-          Ontstaan uit een gemeentelijke initiatiecursus, uitgegroeid tot een club met jeugdwerking,
-          recreatieve avonden én competitieploegen.
+          Begonnen als een gemeentelijke initiatiecursus. Vandaag heeft de club een jeugdwerking,
+          vrij spel op vier dagen en ploegen in competitie.
         </p>
         <a href={url('/club/over-de-club/')} class="stem-baan mt-3 inline-block text-xs text-club-700 hover:text-club-800 hover:underline">
           Lees hoe het begon
@@ -308,8 +311,7 @@ const kaarten = [
         <div>
           <h2 class="stem-display text-4xl text-white sm:text-5xl">Zin om mee te spelen?</h2>
           <p class="mt-4 max-w-md text-veer-200">
-            Schrijf je in, of kom eerst gewoon eens kijken en meespelen tijdens een speelmoment.
-            Jong of oud, beginner of gevorderde — je bent welkom.
+            Kom eerst eens meespelen tijdens een speelmoment, of schrijf je meteen in.
           </p>
           <div id="slot-knoppen" class="mt-8 flex flex-wrap gap-4">
             <a
