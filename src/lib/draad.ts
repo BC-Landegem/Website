@@ -21,7 +21,7 @@ const IDS = {
 } as const;
 
 // Onder md staat alle tekst in één volle kolom (px-4): de diagonaal van kurk
-// naar de pluim zou dwars door koppen en lopende tekst snijden. In plaats van
+// naar de shuttle zou dwars door koppen en lopende tekst snijden. In plaats van
 // eromheen te sluipen langs de schermranden — dat leest als een kader, niet als
 // een vlucht — vliegt de baan daar dezelfde parabool in miniatuur: uit de kurk
 // omhoog, een hangmoment in de vrije band onder de tekst, en rechts weer neer

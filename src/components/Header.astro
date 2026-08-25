@@ -23,9 +23,6 @@ const mainItems = [
 
 const reeksen = ['Heren', 'Gemengd', 'Dames'];
 
-// De balk klapt pas open vanaf lg (1024px), niet vanaf md. Met zeven items plus
-// de Word lid!-knop paste de rij op 768px al niet meer: de knop viel buiten de
-// header. Tussen 768 en 1023 staat dus het hamburgermenu.
 
 const currentPath = Astro.url.pathname;
 const isActive = (href: string) => currentPath.startsWith(url(href).replace(/\/$/, ''));
