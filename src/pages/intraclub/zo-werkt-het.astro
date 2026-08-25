@@ -431,7 +431,7 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
               <div class="grid grid-cols-[3rem_minmax(0,1fr)] items-center gap-x-3 gap-y-2 border-b border-inkt-950/5 pb-4 last:border-0 last:pb-0 sm:grid-cols-[3rem_9rem_minmax(0,1fr)_8rem]">
                 <span class="stem-baan text-xs text-inkt-500">Set {set + 1}</span>
 
-                <div class="flex gap-1 justify-self-start" role="group" aria-label={`Uitslag set ${set + 1}`}>
+                <div class="flex flex-wrap gap-1 justify-self-start" role="group" aria-label={`Uitslag set ${set + 1}`}>
                   {['gewonnen', 'verloren'].map((soort) => (
                     <button
                       type="button"
