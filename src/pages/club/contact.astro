@@ -11,13 +11,13 @@ const { locatie } = trainingen;
 // en adres staan (/jeugd/ en /club/aanspreekpunt-integriteit/).
 const wie = [
   {
-    kop: 'Alles over lid worden, uren en de club',
-    tekst: 'Twijfel je of je bij ons past, wil je eens komen meespelen, of heb je een praktische vraag? Dit adres komt bij het bestuur terecht.',
+    kop: 'Lid worden, speeluren en al de rest',
+    tekst: 'Mails naar dit adres komen bij het bestuur terecht. Wil je eens komen meespelen, of heb je een praktische vraag over de club, dan is dit de juiste plek.',
     mail: 'info@bclandegem.be',
   },
   {
     kop: 'De jeugdwerking',
-    tekst: 'Vragen over trainingen, groepen of een kind dat midden in het seizoen wil starten gaan naar Luc Van Tornhout, jeugdverantwoordelijke.',
+    tekst: 'Vragen over de trainingen, de groepen, of over een kind dat midden in het seizoen wil beginnen, gaan naar jeugdverantwoordelijke Luc Van Tornhout.',
     mail: 'vantornhoutluc@skynet.be',
     naam: 'Luc Van Tornhout',
   },
@@ -26,12 +26,12 @@ const wie = [
 
 <Layout
   title="Contact"
-  description="Contactgegevens van Badmintonclub Landegem: waar we spelen in Nevele (Deinze), en wie je waarvoor aanspreekt."
+  description="Contactgegevens van Badmintonclub Landegem: waar we spelen in Nevele (Deinze), en bij wie je met welke vraag terechtkan."
 >
   <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
     <RailKop
       title="Contact"
-      intro="De kortste weg naar een antwoord is binnenspringen tijdens een speelmoment — er staat altijd iemand van de club in de zaal. Lukt dat niet, dan mag je ons gerust mailen."
+      intro="In de zaal heb je het snelst een antwoord: op elk speelmoment staat er iemand van de club. Kan je niet langskomen, mail ons dan gerust."
     />
 
     {/* Waar we spelen */}
@@ -55,14 +55,14 @@ const wie = [
           href={url('/kalender/')}
           class="stem-baan inline-flex items-center gap-2 rounded-full border-2 border-inkt-950/20 px-7 py-3 text-sm text-inkt-950 transition-colors hover:border-club-600 hover:text-club-600"
         >
-          Wanneer we er zijn
+          Naar de kalender
         </a>
       </div>
     </section>
 
     {/* Wie je waarvoor aanspreekt */}
     <section class="mt-16 pl-10">
-      <h2 class="stem-display text-3xl text-inkt-950 sm:text-4xl">Wie je waarvoor aanspreekt</h2>
+      <h2 class="stem-display text-3xl text-inkt-950 sm:text-4xl">Bij wie je terechtkan</h2>
       <ul class="mt-6 max-w-3xl">
         {wie.map((item) => (
           <li class="border-b border-inkt-950/10 py-6 first:border-t">
@@ -78,8 +78,8 @@ const wie = [
         <li class="border-b border-inkt-950/10 py-6">
           <h3 class="font-bold text-inkt-950">Grensoverschrijdend gedrag of een slecht gevoel</h3>
           <p class="mt-2 leading-relaxed text-inkt-700">
-            Daarvoor hebben we een aanspreekpunt integriteit, los van het bestuur. Je vindt daar wie
-            het is en hoe je haar bereikt.
+            Daarvoor is er een aanspreekpunt integriteit, los van het bestuur. Op die pagina staat
+            wie het is en hoe je er terechtkan.
           </p>
           <p class="mt-3">
             <a href={url('/club/aanspreekpunt-integriteit/')} class="stem-baan text-sm font-semibold text-club-700 underline hover:text-club-800">
@@ -88,9 +88,10 @@ const wie = [
           </p>
         </li>
         <li class="border-b border-inkt-950/10 py-6">
-          <h3 class="font-bold text-inkt-950">Een foto van jezelf die je liever niet online ziet</h3>
+          <h3 class="font-bold text-inkt-950">Een foto die je liever niet online ziet</h3>
           <p class="mt-2 leading-relaxed text-inkt-700">
-            Laat het weten en de foto verdwijnt van de site. Dat geldt voor alle albums onder
+            Laat het weten, dan halen we die foto uit het album en verdwijnt hij van de site. Dat
+            geldt voor alle albums bij
             <a href={url('/media/')} class="font-semibold text-club-700 underline hover:text-club-800">Foto's</a>.
           </p>
           <p class="mt-3">
@@ -102,8 +103,8 @@ const wie = [
         <li class="border-b border-inkt-950/10 py-6">
           <h3 class="font-bold text-inkt-950">Je gegevens en je privacy</h3>
           <p class="mt-2 leading-relaxed text-inkt-700">
-            Wil je weten welke gegevens we bijhouden, of wil je ze laten aanpassen of wissen, dan
-            staat in onze privacyverklaring bij wie je daarvoor terechtkan.
+            Welke gegevens we bijhouden, en bij wie je terechtkan om ze te laten aanpassen of
+            wissen, staat in de privacyverklaring.
           </p>
           <p class="mt-3">
             <a href={url('/club/privacy/')} class="stem-baan text-sm font-semibold text-club-700 underline hover:text-club-800">
@@ -116,11 +117,11 @@ const wie = [
 
     {/* Geen formulier, wel duidelijkheid over wat er daarna gebeurt */}
     <section class="mt-16 max-w-3xl pl-10">
-      <h2 class="stem-display text-2xl text-inkt-950 sm:text-3xl">Wat je best meestuurt</h2>
+      <h2 class="stem-display text-2xl text-inkt-950 sm:text-3xl">Wat je meestuurt</h2>
       <p class="mt-3 leading-relaxed text-inkt-700">
-        Wil je eens komen meespelen, zet er dan meteen bij om wie het gaat (volwassene of kind, en
-        welke leeftijd) en wanneer je zou willen langskomen. Dan weten we wie je in de zaal mag
-        verwachten en zorgen we dat er iemand klaarstaat om je wegwijs te maken.
+        Wil je eens komen meespelen, zet er dan bij wie er komt, hoe oud die is en welke avond je
+        zou willen. Dan weten we wie we mogen verwachten en staat er iemand klaar om je wegwijs te
+        maken.
       </p>
     </section>
   </div>
@@ -130,8 +131,8 @@ const wie = [
       <div class="flex-[1_1_28rem]">
         <h2 class="stem-display text-3xl sm:text-4xl">Mail ons gerust</h2>
         <p class="mt-2 max-w-xl text-xl font-bold text-white">
-          Elke vraag mag naar info@bclandegem.be — ook de vraag of je wel goed genoeg bent om te
-          komen. (Het antwoord is ja.)
+          Elke vraag mag naar info@bclandegem.be. Ook als je nog nooit een racket vasthad en niet
+          weet of dit iets voor jou is.
         </p>
       </div>
       <a
