@@ -2,13 +2,10 @@
 // sjabloon staat in src/sw/service-worker.js; hier vullen we de build-waarden
 // in die de worker zelf niet kan weten.
 //
-// LET OP bij de domeinswitch naar bclandegem.be: daar draait vandaag al een
-// PWA, dus staat er bij bestaande bezoekers al een service worker op de root
-// van dat domein. Zolang die niet vervangen wordt, blijft hij hun de oude site
-// serveren — ook nadat deze site er live staat. Zorg dat dit bestand dan op
-// exact hetzelfde pad terechtkomt als de service worker van de oude site (die
-// bestandsnaam moet je op de oude site nakijken); de browser ziet hem dan als
-// een update, installeert deze en gooit in activate elke vreemde cache weg.
+// De naam van dit bestand doet niet ter zake voor de domeinswitch naar
+// bclandegem.be, waar vandaag al workers van de oude site staan: register() op
+// dezelfde scope vervangt de bestaande registratie hoe die worker ook heet, en
+// src/sw/registratie.js meldt de rest af. Zie PRODUCT.md.
 import type { APIRoute } from 'astro';
 import sjabloon from '../sw/service-worker.js?raw';
 import { SCHIL_ASSETS, SCHIL_PADEN } from '../data/pwa';
@@ -26,10 +23,10 @@ export const GET: APIRoute = () => {
     .replace('/* __SCHIL__ */ []', JSON.stringify(schil));
 
   return new Response(code, {
-    headers: {
-      'content-type': 'text/javascript; charset=utf-8',
-      // Voorkomt dat een browser of proxy een oude worker blijft opdissen.
-      'cache-control': 'no-cache',
-    },
+    // Alleen het content-type: dit endpoint wordt bij de statische build naar
+    // een bestand geprerenderd, dus vallen eigen headers weg en bepaalt GitHub
+    // Pages ze. Hoeft ook niet — een browser omzeilt zijn HTTP-cache voor het
+    // hoofdscript van een service worker.
+    headers: { 'content-type': 'text/javascript; charset=utf-8' },
   });
 };

@@ -12,6 +12,16 @@ import {
 } from '../data/pwa';
 import { url } from '../lib/url';
 
+const snelkoppeling = (naam: string, beschrijving: string, pad: string, icoon: string) => ({
+  name: naam,
+  short_name: naam,
+  description: beschrijving,
+  url: url(pad),
+  icons: [
+    { src: url(`/icons/snelkoppeling-${icoon}.png`), sizes: '192x192', type: 'image/png' },
+  ],
+});
+
 export const GET: APIRoute = () => {
   const start = url('/');
 
@@ -41,10 +51,18 @@ export const GET: APIRoute = () => {
         purpose: 'maskable',
       },
     ],
+    // Snelkoppelingen: wat je krijgt bij een lange druk op het app-icoon. De
+    // oude PWA op www.bclandegem.be had er twee (Kalender en de intraclub-
+    // tussenstand), elk met een beschrijving en een eigen icoon — die vullen we
+    // hier aan met Competitie, omdat spelers daar via het menu al rechtstreeks
+    // naartoe springen. Beschrijving én icoon horen erbij: zonder icoon valt een
+    // launcher terug op het app-icoon en zijn de drie niet van elkaar te
+    // onderscheiden. De ?utm_source=pwa van de oude site laten we weg; er is
+    // hier geen analytics die er iets mee doet.
     shortcuts: [
-      { name: 'Kalender', short_name: 'Kalender', url: url('/kalender/') },
-      { name: 'Intraclub', short_name: 'Intraclub', url: url('/intraclub/') },
-      { name: 'Competitie', short_name: 'Competitie', url: url('/competitie/') },
+      snelkoppeling('Kalender', 'Bekijk de kalender van BC Landegem', '/kalender/', 'kalender'),
+      snelkoppeling('Intraclub', 'Bekijk de intraclub tussenstand', '/intraclub/', 'intraclub'),
+      snelkoppeling('Competitie', 'Bekijk de ploegen en uitslagen', '/competitie/', 'competitie'),
     ],
   };
 

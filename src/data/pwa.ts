@@ -26,10 +26,17 @@ export const SCHIL_PADEN = [
   '/offline/',
 ];
 
-/** Vaste bestanden uit public/ die bij de schil horen. */
+/**
+ * Vaste bestanden uit public/ die bij de schil horen. De gehashte assets van
+ * Astro staan hier niet bij: hun namen zijn hier niet bekend, dus leest de
+ * service worker die bij installatie uit de HTML die hij net ophaalde.
+ */
 export const SCHIL_ASSETS = [
   '/images/logo-bc1.svg',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
   '/icons/icon-maskable-512.png',
+  '/icons/snelkoppeling-kalender.png',
+  '/icons/snelkoppeling-intraclub.png',
+  '/icons/snelkoppeling-competitie.png',
 ];
