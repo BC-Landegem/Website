@@ -29,6 +29,42 @@ export interface RankingRij extends Speler {
   difference: number;
 }
 
+export type RankingCategorie = 'general' | 'women' | 'recreants' | 'veterans';
+
+/**
+ * /rankings geeft alle vier de categorieën in één keer, /rankings/<categorie>
+ * er precies één. Dat laatste is ruim twee keer sneller — de API rekent per
+ * speler het verschil met de vorige speeldag uit — dus halen de pagina's per
+ * categorie op: enkel wat er op het scherm staat.
+ */
+export type Rankings = { seasonId: number } & Partial<Record<RankingCategorie, RankingRij[]>>;
+
+export interface Ronde {
+  id: string;
+  number: string;
+  date: string;
+  calculated: string;
+  matches: string;
+  averageAbsent: string;
+}
+
+/**
+ * De laatst berekende speeldag. De API heeft daar een eigen endpoint voor
+ * (/rounds/latestCalculated), maar dat sleept alle matchen én alle
+ * aanwezigheden van die speeldag mee — 2,3 kB gzip tegen 0,3 kB voor heel
+ * /rounds — terwijl we enkel nummer en datum nodig hebben. /rounds bevat dat
+ * al, dus scheelt dit een volledig request op het kritieke pad.
+ */
+export function laatsteBerekend(rondes: Ronde[]): Ronde | undefined {
+  return rondes.reduce<Ronde | undefined>(
+    (beste, ronde) =>
+      ronde.calculated === '1' && (!beste || Number(ronde.number) > Number(beste.number))
+        ? ronde
+        : beste,
+    undefined,
+  );
+}
+
 export async function fetchJson<T>(pad: string): Promise<T> {
   const res = await fetch(`${INTRA_API}${pad}`);
   if (!res.ok) throw new Error(`API-fout: ${res.status}`);

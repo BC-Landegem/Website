@@ -121,14 +121,9 @@ const tabs = [
 </Layout>
 
 <script>
-  import { fetchJson, naam, spelerUrl, speeldagUrl, formatDatum } from '../lib/intra';
-  import type { RankingRij } from '../lib/intra';
+  import { fetchJson, naam, spelerUrl, speeldagUrl, formatDatum, laatsteBerekend } from '../lib/intra';
+  import type { RankingRij, Rankings, Ronde } from '../lib/intra';
 
-  interface Rankings {
-    seasonId: number;
-    [categorie: string]: RankingRij[] | number;
-  }
-  interface Ronde { id: string; number: string; date: string; matches: string; averageAbsent: string }
   interface Statistiek {
     id: string; firstName: string; name: string;
     statistics: { rounds: { present: number }; sets: { won: number } };
@@ -143,6 +138,36 @@ const tabs = [
     speeldagen: document.getElementById('paneel-speeldagen')!,
     aanwezigheden: document.getElementById('paneel-aanwezigheden')!,
   };
+  const tabellen = {
+    ranking: document.getElementById('intra-tabel')!,
+    speeldagen: document.getElementById('intra-speeldagen')!,
+    aanwezigheden: document.getElementById('intra-aanwezigheden')!,
+  };
+
+  /*
+   * De intra-API staat op shared hosting, praat HTTP/1.1 en wordt merkbaar
+   * trager zodra ze meerdere verzoeken tegelijk krijgt: één call landt in
+   * ~0,3 s, vier gelijktijdige calls in 1 tot 2,3 s. Deze pagina haalde vroeger
+   * /rankings (alle vier de klassementen), /rounds, de seizoensstatistieken én
+   * /rounds/latestCalculated op in één Promise.all — dus wachtte je op het
+   * langzaamste van vier verzoeken die elkaar in de weg zaten, voor drie tabs
+   * die je misschien nooit opent.
+   *
+   * Nu haalt ze bij het openen enkel het algemene klassement en /rounds op. De
+   * andere klassementen en de aanwezigheden komen pas bij een klik op hun tab,
+   * en elk antwoord verschijnt zodra het binnen is in plaats van te wachten op
+   * de rest. /rounds/latestCalculated is helemaal weg: /rounds geeft de laatste
+   * speeldag ook, en is tien keer kleiner.
+   */
+  const beloftes = new Map<string, Promise<unknown>>();
+  function eenmalig<T>(pad: string): Promise<T> {
+    let belofte = beloftes.get(pad) as Promise<T> | undefined;
+    if (!belofte) {
+      belofte = fetchJson<T>(pad);
+      beloftes.set(pad, belofte);
+    }
+    return belofte;
+  }
 
   const spelerLink = (rij: { id: string; firstName: string; name: string }) =>
     `<a href="${spelerUrl(rij.id)}" class="font-medium hover:text-club-600 hover:underline">${naam(rij)}</a>`;
@@ -151,9 +176,12 @@ const tabs = [
   const pijlOp = '<svg class="-mt-0.5 inline h-2.5 w-2.5" viewBox="0 0 10 10" fill="currentColor" aria-hidden="true"><path d="M5 1.5l4 7H1z"/></svg>';
   const pijlNeer = '<svg class="-mt-0.5 inline h-2.5 w-2.5" viewBox="0 0 10 10" fill="currentColor" aria-hidden="true"><path d="M5 8.5l-4-7h8z"/></svg>';
 
+  // Alle drie de tabellen hebben vier kolommen, dus volstaat één meldingsrij.
+  const melding = (tekst: string, kleur: string) =>
+    `<tr><td colspan="4" class="py-4 text-sm ${kleur}">${tekst}</td></tr>`;
+
   function toonRanking(rijen: RankingRij[]) {
-    const tabel = document.getElementById('intra-tabel')!;
-    tabel.innerHTML = rijen
+    tabellen.ranking.innerHTML = rijen
       .map((rij) => {
         const diff = rij.difference > 0
           ? `<span class="stem-cijfer text-inkt-950">${pijlOp} ${rij.difference}</span>`
@@ -171,8 +199,7 @@ const tabs = [
   }
 
   function toonSpeeldagen(rondes: Ronde[]) {
-    const tabel = document.getElementById('intra-speeldagen')!;
-    tabel.innerHTML = rondes
+    tabellen.speeldagen.innerHTML = rondes
       .slice()
       .reverse()
       .map((ronde) => `<tr class="border-b border-inkt-950/10">
@@ -191,8 +218,7 @@ const tabs = [
       }
       return b.statistics.rounds.present - a.statistics.rounds.present;
     });
-    const tabel = document.getElementById('intra-aanwezigheden')!;
-    tabel.innerHTML = gesorteerd
+    tabellen.aanwezigheden.innerHTML = gesorteerd
       .map((rij, i) => `<tr class="border-b border-inkt-950/10">
         <td class="stem-cijfer py-2.5 pr-3 text-club-700">${i + 1}</td>
         <td class="py-2.5 pr-3">${spelerLink(rij)}</td>
@@ -202,40 +228,86 @@ const tabs = [
       .join('');
   }
 
-  async function laadData() {
+  function toonLaatsteSpeeldag(rondes: Ronde[]) {
+    const laatste = laatsteBerekend(rondes);
+    if (!laatste) return;
+    const link = document.getElementById('intra-laatste') as HTMLAnchorElement;
+    link.href = speeldagUrl(laatste.id);
+    document.getElementById('intra-laatste-tekst')!.textContent =
+      `Stand na speeldag ${laatste.number} (${formatDatum(laatste.date)})`;
+    link.classList.remove('hidden');
+    link.classList.add('inline-flex');
+  }
+
+  /**
+   * Vult het paneel van een tab, en haalt de data op als dat de eerste keer is.
+   * `gekozen` houdt bij waar de bezoeker staat: klikt hij door terwijl een
+   * antwoord onderweg is, dan mag dat antwoord de tabel niet meer overschrijven.
+   */
+  let gekozen = 'general';
+
+  async function vulTab(key: string, soort: keyof typeof panelen) {
+    const pad =
+      soort === 'ranking' ? `/rankings/${key}`
+      : soort === 'speeldagen' ? '/rounds'
+      : '/seasons/latest/statistics';
+    const tabel = tabellen[soort];
+    // Nog niet opgehaald (dan staat er data van een andere categorie), of nog
+    // leeg omdat het verzoek van bij het openen nog loopt: in beide gevallen
+    // liever "Laden…" dan een verouderde of blanco tabel.
+    if (!beloftes.has(pad) || !tabel.children.length) {
+      tabel.innerHTML = melding('Laden…', 'text-inkt-500');
+    }
+
     try {
-      const [rankings, rondes, statistieken, laatste] = await Promise.all([
-        fetchJson<Rankings>('/rankings'),
-        fetchJson<Ronde[]>('/rounds'),
-        fetchJson<Statistiek[]>('/seasons/latest/statistics'),
-        fetchJson<Ronde | false>('/rounds/latestCalculated'),
-      ]);
-
-      toonRanking(rankings.general as RankingRij[]);
-      toonSpeeldagen(rondes);
-      toonAanwezigheden(statistieken);
-
-      if (laatste && laatste.id) {
-        const link = document.getElementById('intra-laatste') as HTMLAnchorElement;
-        link.href = speeldagUrl(laatste.id);
-        document.getElementById('intra-laatste-tekst')!.textContent =
-          `Stand na speeldag ${laatste.number} (${formatDatum(laatste.date)})`;
-        link.classList.remove('hidden');
-        link.classList.add('inline-flex');
+      if (soort === 'ranking') {
+        const data = await eenmalig<Rankings>(pad);
+        if (gekozen !== key) return;
+        toonRanking((data[key as keyof Rankings] as RankingRij[]) ?? []);
+      } else if (soort === 'speeldagen') {
+        const rondes = await eenmalig<Ronde[]>(pad);
+        if (gekozen !== key) return;
+        toonSpeeldagen(rondes);
+      } else {
+        const statistieken = await eenmalig<Statistiek[]>(pad);
+        if (gekozen !== key) return;
+        toonAanwezigheden(statistieken);
       }
-
-      for (const tab of tabs) {
-        tab.addEventListener('click', () => {
-          for (const andere of tabs) andere.setAttribute('aria-selected', 'false');
-          tab.setAttribute('aria-selected', 'true');
-          for (const paneel of Object.values(panelen)) paneel.classList.add('hidden');
-          panelen[tab.dataset.soort as keyof typeof panelen].classList.remove('hidden');
-          if (tab.dataset.soort === 'ranking') {
-            toonRanking(rankings[tab.dataset.tab!] as RankingRij[]);
-          }
-        });
+    } catch {
+      // Alleen deze tab is mislukt; de belofte weg, zodat een nieuwe klik
+      // het opnieuw probeert in plaats van de fout te blijven herhalen.
+      beloftes.delete(pad);
+      if (gekozen === key) {
+        tabel.innerHTML = melding('Niet gelukt. Probeer het later opnieuw.', 'text-club-700');
       }
+    }
+  }
 
+  for (const tab of tabs) {
+    tab.addEventListener('click', () => {
+      const key = tab.dataset.tab!;
+      const soort = tab.dataset.soort as keyof typeof panelen;
+      gekozen = key;
+      for (const andere of tabs) andere.setAttribute('aria-selected', String(andere === tab));
+      for (const paneel of Object.values(panelen)) paneel.classList.add('hidden');
+      panelen[soort].classList.remove('hidden');
+      vulTab(key, soort);
+    });
+  }
+
+  async function laadData() {
+    // /rounds gaat wel meteen mee: het is het kleinste antwoord van de hele API
+    // (0,3 kB gzip) en levert de regel "Stand na speeldag N" naast de kop. Het
+    // klassement wacht er niet op — beide verschijnen los van elkaar.
+    eenmalig<Ronde[]>('/rounds')
+      .then(toonLaatsteSpeeldag)
+      // Geen datumregel is geen ramp: het klassement blijft staan, en de
+      // Speeldagen-tab probeert het opnieuw.
+      .catch(() => beloftes.delete('/rounds'));
+
+    try {
+      const data = await eenmalig<Rankings>('/rankings/general');
+      toonRanking(data.general ?? []);
       laden.classList.add('hidden');
       inhoud.classList.remove('hidden');
     } catch {

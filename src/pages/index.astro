@@ -373,8 +373,8 @@ const kaarten = [
     haalKalender,
     type KalenderItem,
   } from '../lib/kalender-client';
-  import { fetchJson, naam, spelerUrl, formatDatum } from '../lib/intra';
-  import type { RankingRij } from '../lib/intra';
+  import { fetchJson, naam, spelerUrl, formatDatum, laatsteBerekend } from '../lib/intra';
+  import type { RankingRij, Ronde } from '../lib/intra';
 
   // De vluchtdraad en de landing-animatie leven in lib/draad.ts; `herbouw`
   // herberekent de draad zodra een sectie van hoogte verandert of dichtklapt.
@@ -596,11 +596,26 @@ const kaarten = [
   //   faalt de API of is de stand leeg, dan klapt de sectie dicht. —
   async function laadIntra() {
     const sectie = document.getElementById('intra-sectie')!;
+
+    // De datumregel loopt náást de top-10, niet ervoor: de API wordt trager van
+    // gelijktijdige verzoeken, dus mag de lijst niet op deze wachten. `min-h-4`
+    // op de regel houdt de ruimte vrij, dus verschuift er niets als ze landt.
+    // Bewust /rounds i.p.v. /rounds/latestCalculated: hetzelfde nummer en
+    // dezelfde datum, maar zonder de matchen en aanwezigheden van die speeldag
+    // (0,3 kB tegen 2,3 kB gzip).
+    fetchJson<Ronde[]>('/rounds')
+      .then((rondes) => {
+        const laatste = laatsteBerekend(rondes);
+        if (!laatste) return;
+        document.getElementById('intra-stand-na')!.textContent =
+          `Stand na speeldag ${laatste.number} · ${formatDatum(laatste.date)}`;
+      })
+      .catch(() => {});
+
     try {
-      const [rankings, laatste] = await Promise.all([
-        fetchJson<{ seasonId: number; general: RankingRij[] }>('/rankings/general?$top=10'),
-        fetchJson<{ id: string; number: string; date: string } | false>('/rounds/latestCalculated').catch(() => false as const),
-      ]);
+      const rankings = await fetchJson<{ seasonId: number; general: RankingRij[] }>(
+        '/rankings/general?$top=10',
+      );
       const rijen = rankings.general ?? [];
       if (!rijen.length) {
         sectie.classList.add('hidden');
@@ -619,10 +634,6 @@ const kaarten = [
           <a href="${spelerUrl(rij.id)}" class="truncate font-bold text-inkt-950 hover:text-club-600 hover:underline">${esc(naam(rij))}</a>
           <span class="stem-cijfer text-lg text-inkt-950">${rij.average.toFixed(2)}</span>`;
         lijst.append(li);
-      }
-      if (laatste && laatste.id) {
-        document.getElementById('intra-stand-na')!.textContent =
-          `Stand na speeldag ${laatste.number} · ${formatDatum(laatste.date)}`;
       }
       herbouw();
     } catch {

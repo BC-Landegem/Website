@@ -65,6 +65,13 @@ const swRegistratie = registratieSjabloon
     <!-- Kalenderdata (hero-chip, events, kalenderpagina) komt via fetch van de
          Google Calendar API; preconnect scheelt een handshake. -->
     <link rel="preconnect" href="https://www.googleapis.com" crossorigin />
+    <!-- De intraclub-API staat op het oude domein en praat HTTP/1.1: de TLS-
+         handshake kost er 150–450 ms, en die stond vóór dit hint volledig op
+         het kritieke pad van de standen (de homepage-top-10 en /intraclub/).
+         crossorigin, want een CORS-fetch gebruikt de anonieme socketpool — zonder
+         dat attribuut warmt de preconnect de verkeerde verbinding op. Bij de
+         domeinswitch naar bclandegem.be wordt dit same-origin en dus overbodig. -->
+    <link rel="preconnect" href="https://www.bclandegem.be" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&display=swap"
       rel="stylesheet"
