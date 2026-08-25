@@ -19,9 +19,14 @@ op type stripping. De workflows draaien op Node 24.
 ```bash
 npm install
 npm run dev       # dev-server met hot reload
-npm run build     # statische build naar dist/
+npm run build     # statische build naar dist/, daarna de zoekindex
 npm run preview   # dist/ lokaal serveren zoals Pages het doet
 ```
+
+> **`npm run build` doet twee dingen.** Na `astro build` draait `pagefind --site dist`
+> over de gebouwde HTML en schrijft de zoekindex naar `dist/pagefind/`. In dev
+> bestaat die index dus niet en zegt het zoekveld op `/archief/` dat gewoon;
+> zoeken testen doe je met `npm run build && npm run preview`.
 
 > **Let op de base-prefix.** De site staat op GitHub Pages onder `/Website`, en
 > Astro past die prefix ook in dev toe. De dev-server draait dus op
@@ -33,14 +38,16 @@ npm run preview   # dist/ lokaal serveren zoals Pages het doet
 ```
 src/
   assets/       Afbeeldingen die door de build gaan (hero, sponsorlogo's)
-  components/   Header, Footer en twee kleine bouwstenen
+  components/   Header, Footer en kleine bouwstenen (o.a. het archiefzoekveld)
+  content/      archief/: 837 markdownbestanden uit de oude Joomla-site
   data/         Alle inhoud die geen code is — zie "Inhoud aanpassen"
   layouts/      Layout.astro: de enige layout, draagt <head>, PWA en navigatie
   lib/          Logica: intraclub, kalender, media, de verloopgrafiek, en url()
   pages/        Eén bestand per route (plus twee endpoints: manifest en sw.js)
   styles/       global.css met de Tailwind @theme-tokens
   sw/           Broncode van de service worker en het opruimscript
-public/         Wordt onaangeraakt gekopieerd (logo, iconen, favicons)
+public/         Wordt onaangeraakt gekopieerd (logo, iconen, favicons,
+                en de geredde beelden uit het Joomla-archief)
 scripts/        Onderhoudsscripts die je met de hand draait — zie hieronder
 .claude/        Projectconfiguratie voor Claude Code — zie "De README bijhouden"
 ```
@@ -64,7 +71,7 @@ aanraken.
 
 ## Databronnen
 
-Vier bronnen leven buiten deze repo. Ze verschillen in *wanneer* ze opgehaald
+Vijf bronnen leven buiten deze repo. Ze verschillen in *wanneer* ze opgehaald
 worden en in *wat er gebeurt als ze falen* — dat verschil is bewust.
 
 **Google Calendar** — geconfigureerd in `src/data/kalender.ts`, opgehaald in de
@@ -101,6 +108,57 @@ snapshot in `src/data/intraclub-voorbeeld.json` en doet geen enkel request.
 **Twizzit** — het inschrijfformulier is één externe link in
 `src/data/trainingen.json`. Geen integratie, geen sleutel.
 
+**De oude Joomla-site** — de enige bron die *eenmalig* is en een vervaldatum heeft.
+De databasedump staat in `scraped/` en blijft **buiten git** (zie `.gitignore`): hij
+bevat de wachtwoordhashes van 74 ledenaccounts, plus e-mailadressen en IP-adressen
+uit de reacties. Alleen de uitvoer van de conversie hoort in de repo, nooit de bron.
+
+`scripts/archief-beelden.mjs` leest die dump, zoekt elke `<img>` en elke link naar
+een beeld of document in de oude artikels op, en haalt op wat nog bestaat. Resultaat:
+de bestanden in `public/archief/beelden/` en een manifest in
+`src/data/archief-beelden.json` dat per bron-URL vastlegt welk bestand het werd — of
+waarom er geen is (`404`, `403`, timeout, imgur-placeholder). De conversie leest dat
+manifest later om `<img src>` te herschrijven of de tag weg te halen.
+
+> **Hier zit een klok op.** www.bclandegem.be draait op het moment van schrijven nog
+> en serveert `images/…` gewoon; na de domeinswitch is dat voorbij. Van de 163
+> bron-URL's leefden er 98 — de rest (vooral Facebook-CDN) was toen al dood. Opnieuw
+> draaien ná de switch levert minder op, nooit meer.
+
+## Archief
+
+De 837 artikels van de oude Joomla-site leven onder `/archief/`. Drie routes doen
+het werk:
+
+| Route | Bestand | Wat het toont |
+| --- | --- | --- |
+| `/archief/` | `pages/archief/index.astro` | Zoekveld, de vijf onderwerpen, de jaarlijn |
+| `/archief/2013/` en `/archief/competitie/` | `pages/archief/[segment]/index.astro` | Eén route, twee soorten overzicht |
+| `/archief/2013/de-titel/` | `pages/archief/[segment]/[slug].astro` | Het artikel met zijn reacties |
+
+Jaar en onderwerp delen bewust één route: ze zitten op dezelfde plek in de URL, en
+twee dynamische mappen naast elkaar kan Astro niet uit elkaar houden.
+
+**Kurk in plaats van clubrood.** Het hele archief draait op `kurk-*` en `veer-100`
+waar de levende site `club-*` en `veer-50` gebruikt. Dat is geen versiering maar
+het afgesproken signaal: rood betekent "dit geldt nu", kurk betekent "dit gold
+toen". Elk artikel draagt daarbovenop een expliciete band. Nodig, want een deel
+van deze artikels léést als nieuws — *"Nu woensdag is er intraclub, graag om
+20u30"* ging ooit over aanstaande woensdag.
+
+**Zoeken.** Pagefind indexeert alleen wat in `data-pagefind-body` staat, en dat
+attribuut draagt enkel het `<article>` op een archiefpagina. Zodra één pagina het
+heeft, slaat Pagefind alle pagina's zonder over — de rest van de site komt dus
+niet in de resultaten. De bijlijn onder de titel draagt `data-pagefind-ignore`,
+anders begint elk resultaat met "6 november 2011 · door Luc · Clubnieuws".
+
+**Valstrik bij het frontmatter.** Het veld heet `urlnaam`, niet `slug`. Een veld
+dat `slug` heet wordt door de glob-loader geclaimd als de identiteit van de entry,
+en die moet dan over de héle collectie uniek zijn. Onze namen zijn uniek per jaar
+— `intraclub` bestaat in 2010, 2012 én 2013 — en de loader liet die dubbels
+stilzwijgend vallen. Dat kostte twintig artikels, met alleen een `[WARN]` in de
+build als aanwijzing.
+
 ## Kleurlab
 
 Alle rode oppervlakken lopen via de tokens `--color-club-50..900`. Om een ander
@@ -130,7 +188,21 @@ uit waarom het bestaat en wanneer je het opnieuw draait.
 node scripts/genereer-iconen.mjs   # PWA-iconen uit het logo — na een logo- of kleurwijziging
 node scripts/scrape-media.mjs      # media.json lokaal bijwerken (doet de workflow 's nachts ook)
 node scripts/intra-snapshot.mjs    # nieuw voorbeeld voor /intraclub/zo-werkt-het/
+node scripts/archief-beelden.mjs   # beelden uit de oude Joomla-artikels redden — zie Databronnen
+node scripts/archief-conversie.mjs # die artikels omzetten naar src/content/archief/ (--dry om te proefdraaien)
 ```
+
+`archief-beelden.mjs` is idempotent: wat al in `public/archief/beelden/` staat wordt
+overgeslagen, dus opnieuw draaien pikt alleen op wat nog ontbreekt. Het heeft de
+SQL-dump nodig en stopt met een foutmelding als die er niet is.
+
+`archief-conversie.mjs` is dat **niet**: het gooit `src/content/archief/` weg en
+schrijft alles opnieuw. Draai eerst met `--dry`. Het leunt op `turndown`
+(devDependency, draait alleen hier — komt nooit in de browser) en op het manifest
+van `archief-beelden.mjs`, dus draai dat eerst. Onderaan zijn uitvoer staat een
+eindcontrole die klaagt over alles wat nog naar Joomla ruikt: overgebleven
+plugintags, smileycodes, `<span>`-restanten, beelden buiten `/archief/beelden/`.
+Blijft die stil, dan is de conversie schoon.
 
 ## Bouwen en deployen
 
@@ -153,6 +225,17 @@ workflows triggert.
 - **`public/icons/` is gegenereerde uitvoer die tóch in git staat.** Bewerk de
   PNG's niet met de hand — pas het logo of de kleuren aan en draai
   `genereer-iconen.mjs` opnieuw.
+- **`src/content/archief/` is na de eerste conversie de bron van waarheid.**
+  De 837 markdownbestanden zijn ooit uit de dump gegenereerd, maar
+  `archief-conversie.mjs` opnieuw draaien **wist de map en schrijft alles over** —
+  handmatige correcties in een artikel zijn dan weg. Verbeter een typo in het
+  `.md`-bestand, niet in het script.
+- **`public/archief/beelden/` ziet er gegenereerd uit, maar is onvervangbaar.**
+  Anders dan `public/icons/` kun je deze bestanden niet opnieuw maken: hun bron
+  verdwijnt met de domeinswitch. Gooi ze niet weg om ze "opnieuw te laten
+  ophalen" — dan zijn ze weg. Hetzelfde geldt voor
+  `src/data/archief-beelden.json`: dat is uitvoer van het script en bewerk je niet
+  met de hand, maar het bijhouden ervan is wél hoe je weet wat er ontbreekt.
 - **Service workers houden vast.** Test je de PWA lokaal, ruim dan af en toe je
   registratie op in DevTools → Application; anders debug je een oude cache.
 

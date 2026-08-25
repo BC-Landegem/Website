@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import ArchiefLink from '../components/ArchiefLink.astro';
 import RailKop from '../components/RailKop.astro';
 import { url } from '../lib/url';
 import trainingen from '../data/trainingen.json';
@@ -278,6 +279,8 @@ const drempel = [
         Staat je vraag hier niet bij? Mail Luc
         op  <a href={LUC} class="font-semibold text-club-700 underline hover:text-club-800">vantornhoutluc@skynet.be</a>.
       </p>
+    
+      <ArchiefLink groep="jeugd" />
     </section>
   </div>
 </Layout>

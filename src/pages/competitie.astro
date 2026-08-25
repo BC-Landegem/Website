@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import ArchiefLink from '../components/ArchiefLink.astro';
 import RailKop from '../components/RailKop.astro';
 import teams from '../data/teams.json';
 
@@ -76,5 +77,9 @@ const types = ['Heren', 'Gemengd', 'Dames'];
         </svg>
       </a>
     </p>
+
+    <div class="pl-10">
+      <ArchiefLink groep="competitie" />
+    </div>
   </div>
 </Layout>
