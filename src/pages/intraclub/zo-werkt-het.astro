@@ -110,7 +110,7 @@ const bonusRegels = [
   { wie: 'Dubbelklassement 1 tot 4', punten: '0' },
 ];
 
-const bronLabel = { boven: 'bovenste band', onder: 'onderste band', rest: 'restbaan' } as const;
+const bronLabel = { boven: 'bovenste groep', onder: 'onderste groep', rest: 'restbaan' } as const;
 const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
 ---
 
@@ -284,7 +284,7 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
         </div>
 
         <p class="mt-5 max-w-2xl text-sm text-inkt-500">
-          Deelt het aantal aanwezigen niet door vier, dan schuiven de laatste namen samen in een
+          Deelt het aantal aanwezigen niet door vier of komt het loten niet exact uit, dan schuiven de laatste namen samen in een
           <strong class="font-bold text-inkt-700">restbaan</strong>. Dat is de enige baan waar de
           sterkste en de zwakste van de zaal samen op kunnen staan.
           {heeftRestbaan ? (
@@ -292,7 +292,7 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
           ) : (
             <> Op {datumTekst} viel dat niet voor: alle {aantal} aanwezigen pasten precies op banen.</>
           )}<br />
-          Indien er een restbaan is, kunnen die spelers hun match aanvullen met speler(s) die al een intraclub match gespeelt hebben. Voor die speler(s) telt enkel het resultaat van hun eerste match mee voor het berekenen van de rangschikking.
+          Indien er een restbaan is met minder dan 4 spelers, kunnen die spelers hun match aanvullen met speler(s) die al een intraclub match gespeelt hebben. Voor die speler(s) telt enkel het resultaat van hun eerste match mee voor het berekenen van de rangschikking.
   
         </p>
       </section>
@@ -605,7 +605,7 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
           <div class="bg-club-500 p-5 text-inkt-950">
             <p class="stem-baan text-xs">Nog nooit meegedaan?</p>
             <p class="mt-2 text-sm font-medium">
-              Je hoeft er niets voor te kunnen. Door de banden speel je tegen je eigen niveau, en met de
+              Je hoeft er niets voor te kunnen. Door de groepen speel je tegen je eigen niveau, en met de
               bonuspunten klopt een recreant geregeld een competitiespeler. Kom gewoon eens langs op
               woensdag, vanaf 20u in Sporthal Oostbroek.
             </p>
@@ -677,8 +677,8 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
   const bijschrift = el('loting-bijschrift');
 
   const bronNaam: Record<Baanbron, string> = {
-    boven: 'bovenste band',
-    onder: 'onderste band',
+    boven: 'bovenste groep',
+    onder: 'onderste groep',
     rest: 'restbaan',
     uitgeloot: 'uitgeloot',
   };
