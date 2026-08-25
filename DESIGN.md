@@ -201,6 +201,11 @@ Alle knoppen zijn `.stem-baan`-pillen; ze veranderen bij hover alleen van kleur 
 ### Iconen
 Iconen zijn altijd inline getekende SVG's (stroke currentColor, stroke-width 2–2.5, round caps), 16–24px: hamburger/kruis, chevron, en de pijl `M4 12h16m0 0l-6-6m6 6l-6 6`. Pijlen bewegen mee met hover (translate-x-1).
 
+### App-iconen (PWA)
+De iconen in `public/icons/` zijn geen apart merkteken: ze zijn gerenderd uit het clublogo (`public/images/logo-bc1.svg`) door `scripts/genereer-iconen.mjs`, dat bij een logo- of kleurwijziging opnieuw moet lopen. Twee smaken, want een launcher behandelt ze verschillend. **any** (192 en 512): logo in inkt-950 op veerwit, 78% dekking — de rustige variant tussen de app-iconen. **maskable** (512): het beeldmerk in veerwit op een vlak clubrood dat tot in de rand loopt, logo op 56% zodat het binnen de veilige zone blijft wanneer het systeem er een cirkel of squircle uit knipt. Rood is hier bewust: het beginscherm is de enige plek waar de club naast vreemde merken staat, en daar bezit clubrood het vlak zoals het dat op de site in hele banen doet. De themakleur van de app is daarentegen veerwit (#faf7f1), gelijk aan de header, zodat de statusbalk naadloos in de pagina doorloopt.
+
+Daarnaast drie **snelkoppeling-iconen** (192, `snelkoppeling-*.png`) voor wat een lange druk op het app-icoon geeft. Die komen niet uit het logo maar zijn getekend in het icoonidioom hierboven — 24-grid, stroke-width 2.5, round caps — en staan als paden in `scripts/genereer-iconen.mjs`: een kalenderblad, oplopende staven voor de intraclubstand, en een schild als ploegembleem voor de competitie. Alle drie inkt-950 op veerwit, gelijk aan het rustige app-icoon, op 52% van de zijde zodat ze een ronde uitsnede overleven. De rij snelkoppelingen leest zo als familie ónder het rode beeldmerk in plaats van ernaast te schreeuwen. Ze zijn op één 24-grid getekend en dus onderling even groot; een nieuwe snelkoppeling hoort op datzelfde grid.
+
 ## Do's and Don'ts
 
 ### Do:
