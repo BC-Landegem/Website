@@ -102,6 +102,22 @@ const fotoSnedes = [
         ))}
       </svg>
 
+      {/* Pluim uit het clublogo: statisch op het hangmoment, achter de hero-inhoud
+           maar vóór de rode vluchtlijn (zie z-index op #pagina). */}
+      <div
+        id="shuttle-glyph"
+        class="pointer-events-none absolute right-[5%] top-16 -z-[1] w-20 overflow-visible sm:top-20 sm:w-28"
+        aria-hidden="true"
+      >
+        <img
+          src={url('/images/logo-pluim.svg')}
+          alt=""
+          width="516"
+          height="538"
+          class="h-full w-full -rotate-12 object-contain"
+        />
+      </div>
+
       {/* Het kurkpunt is de primaire actie: Word lid! zit op de kurk */}
       <a
         id="kurk-cta"
@@ -143,22 +159,6 @@ const fotoSnedes = [
         </div>
       </div>
     </section>
-
-    {/* Pluim volgt de vluchtlijn (positie via lib/draad.ts). Buiten de hero
-         zodat overflow-hidden hem niet afknipt tijdens het scrollen. */}
-    <div
-      id="shuttle-glyph"
-      class="pointer-events-none absolute right-[5%] top-16 -z-[1] w-20 overflow-visible sm:top-20 sm:w-28"
-      aria-hidden="true"
-    >
-      <img
-        src={url('/images/logo-pluim.svg')}
-        alt=""
-        width="516"
-        height="538"
-        class="h-full w-full object-contain"
-      />
-    </div>
 
     {/* De rode band rond de kurk. Anker voor de draad: op smalle schermen
          verspringt hij ván de rechtermarge náár de rail ín deze band, waar rood
