@@ -58,27 +58,42 @@ const googleUrl = (id: string) => `https://calendar.google.com/calendar/render?c
       </div>
       <div id="kalender"></div>
 
-      <!-- Detailpaneel: dezelfde grammatica als een railrij (cijfer-wanneer, vette titel, stille plaats) -->
+      <!-- Detailpaneel: een kopband in de categoriekleur (dezelfde kleur als de
+           legende en het blokje op de kalender), daaronder de railgrammatica —
+           baan-dag, cijfer-uren, vette omschrijving, stille plaats. Onder 640px
+           plakt het paneel onderaan de viewport (kalender-detail--blad). -->
       <div
         id="kalender-detail"
         role="dialog"
         aria-labelledby="kalender-detail-titel"
-        class="absolute z-20 hidden w-80 max-w-[calc(100vw-2rem)] border-2 border-inkt-950 bg-white p-5"
+        tabindex="-1"
+        class="absolute z-20 hidden w-80 max-w-[calc(100vw-2rem)] border-2 border-inkt-950 bg-white shadow-lg"
       >
-        <button
-          id="kalender-detail-sluit"
-          type="button"
-          class="absolute right-2 top-2 flex h-8 w-8 items-center justify-center text-inkt-500 transition-colors hover:text-club-600"
-          aria-label="Sluiten"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
-            <path d="M5 5l14 14M19 5L5 19" />
-          </svg>
-        </button>
-        <p id="kalender-detail-wanneer" class="stem-cijfer pr-8 text-lg text-club-700"></p>
-        <h2 id="kalender-detail-titel" class="mt-0.5 pr-8 font-bold text-inkt-950"></h2>
-        <p id="kalender-detail-plaats" class="mt-0.5 text-sm text-inkt-500"></p>
-        <p id="kalender-detail-beschrijving" class="mt-3 max-h-40 overflow-y-auto text-sm leading-relaxed text-inkt-700"></p>
+        <div id="kalender-detail-band" class="flex items-center justify-between gap-2 border-b-2 border-inkt-950 py-2 pl-5 pr-3">
+          <span id="kalender-detail-soort" class="stem-baan min-w-0 truncate text-xs"></span>
+          <button
+            id="kalender-detail-sluit"
+            type="button"
+            class="flex h-8 w-8 shrink-0 items-center justify-center transition-opacity hover:opacity-60"
+            aria-label="Sluiten"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+              <path d="M5 5l14 14M19 5L5 19" />
+            </svg>
+          </button>
+        </div>
+        <div class="p-5">
+          <p id="kalender-detail-dag" class="stem-baan text-xs text-club-700"></p>
+          <p id="kalender-detail-uren" class="stem-cijfer mt-1 text-2xl text-inkt-950"></p>
+          <h2 id="kalender-detail-titel" class="mt-1.5 font-bold text-inkt-950"></h2>
+          <p id="kalender-detail-plaats" class="mt-0.5 text-sm text-inkt-500"></p>
+          <div id="kalender-detail-tekst" class="mt-4 border-t border-inkt-950/10 pt-4">
+            <p
+              id="kalender-detail-beschrijving"
+              class="max-h-48 overflow-y-auto overscroll-contain whitespace-pre-line pr-2 text-sm leading-6 text-inkt-700"
+            ></p>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -157,56 +172,146 @@ const googleUrl = (id: string) => `https://calendar.google.com/calendar/render?c
   const laden = document.getElementById('kalender-laden')!;
   const foutmelding = document.getElementById('kalender-fout')!;
   const paneel = document.getElementById('kalender-detail')!;
-  const paneelWanneer = document.getElementById('kalender-detail-wanneer')!;
+  const paneelBand = document.getElementById('kalender-detail-band')!;
+  const paneelSoort = document.getElementById('kalender-detail-soort')!;
+  const paneelDag = document.getElementById('kalender-detail-dag')!;
+  const paneelUren = document.getElementById('kalender-detail-uren')!;
   const paneelTitel = document.getElementById('kalender-detail-titel')!;
   const paneelPlaats = document.getElementById('kalender-detail-plaats')!;
   const paneelBeschrijving = document.getElementById('kalender-detail-beschrijving')!;
+  const paneelTekst = document.getElementById('kalender-detail-tekst')!;
   const sluitKnop = document.getElementById('kalender-detail-sluit')!;
-  const isMobiel = window.matchMedia('(max-width: 640px)').matches;
+  // Eén bron voor 'smal scherm': de lijstweergave bij het laden, en per keer
+  // opnieuw gelezen wanneer het detailpaneel een blad moet worden.
+  const smalScherm = window.matchMedia('(max-width: 640px)');
+  const isMobiel = smalScherm.matches;
 
   // — Detailpaneel: klik of Enter op een activiteit toont uur, plaats en
   //   beschrijving in de wereld zelf; de Google Calendar-pagina blijft dicht. —
   let trigger: HTMLElement | null = null;
 
-  const uurTekst = (d: Date) => `${d.getHours()}u${String(d.getMinutes()).padStart(2, '0')}`;
+  // In de lijstweergave is een activiteit een <tr>. Chrome laat de
+  // kolombreedtes van die tabel dichtklappen zodra de rij zélf focus krijgt
+  // (blur herstelt het meteen) — dus is daar de titelcel het bedienbare
+  // element, niet de rij. In de maandweergave blijft dat het blokje zelf.
+  const bedienbaar = (el: HTMLElement): HTMLElement =>
+    el.querySelector<HTMLElement>('.fc-list-event-title') ?? el;
 
-  function wanneerTekst(event: EventApi): string {
+  const uur = (d: Date) => `${d.getHours()}u${String(d.getMinutes()).padStart(2, '0')}`;
+  const datumOpties: Intl.DateTimeFormatOptions = { weekday: 'long', day: 'numeric', month: 'long' };
+
+  function dagTekst(event: EventApi): string {
     const start = event.start;
     if (!start) return '';
-    const datum = start.toLocaleDateString('nl-BE', { weekday: 'short', day: 'numeric', month: 'long' });
-    if (event.allDay) return datum;
-    return event.end ? `${datum} · ${uurTekst(start)} – ${uurTekst(event.end)}` : `${datum} · ${uurTekst(start)}`;
+    const dag = start.toLocaleDateString('nl-BE', datumOpties);
+    if (!event.allDay || !event.end) return dag;
+    // Bij een activiteit over meerdere dagen is de einddatum exclusief.
+    const laatste = new Date(event.end.getTime() - 86400000);
+    if (laatste.toDateString() === start.toDateString()) return dag;
+    return `${dag} – ${laatste.toLocaleDateString('nl-BE', datumOpties)}`;
+  }
+
+  function urenTekst(event: EventApi): string {
+    if (!event.start) return '';
+    if (event.allDay) return 'Hele dag';
+    return event.end ? `${uur(event.start)} – ${uur(event.end)}` : `vanaf ${uur(event.start)}`;
+  }
+
+  // Google Calendar levert beschrijvingen als HTML. De tags gaan eruit, maar de
+  // entiteiten (&nbsp;, &amp;, &#39;) moeten terug naar echte tekens en de
+  // regeleindes blijven staan — anders leest een aankondiging als één blok met
+  // "&nbsp;" ertussen.
+  function alsTekst(html: string): string {
+    const metRegels = html
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<\/(p|div|li|ul|ol|h[1-6])>/gi, '\n');
+    const tekst = new DOMParser().parseFromString(metRegels, 'text/html').body.textContent ?? '';
+    return tekst
+      .replace(/\u00a0/g, ' ')
+      .replace(/[^\S\n]+/g, ' ')
+      .replace(/ ?\n ?/g, '\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+  }
+
+  // Een inschrijflink of e-mailadres in de beschrijving hoort klikbaar te zijn;
+  // de rest blijft tekst (geen vreemde HTML via innerHTML in de pagina).
+  const linkPatroon = /(?:https?:\/\/|www\.)\S+[^\s.,;:!?)"']|[\w.+-]+@[\w-]+\.[\w.-]+/gi;
+
+  function vulBeschrijving(tekst: string) {
+    paneelBeschrijving.textContent = '';
+    let gelezen = 0;
+    for (const match of tekst.matchAll(linkPatroon)) {
+      const vondst = match[0];
+      const start = match.index ?? 0;
+      if (start > gelezen) paneelBeschrijving.append(tekst.slice(gelezen, start));
+      const link = document.createElement('a');
+      const mail = !/^(?:https?:|www\.)/i.test(vondst);
+      link.textContent = vondst;
+      link.href = mail ? `mailto:${vondst}` : vondst.startsWith('www.') ? `https://${vondst}` : vondst;
+      link.className = 'font-semibold text-club-700 underline underline-offset-2 hover:text-club-800';
+      if (!mail) {
+        link.target = '_blank';
+        link.rel = 'noopener';
+      }
+      paneelBeschrijving.append(link);
+      gelezen = start + vondst.length;
+    }
+    paneelBeschrijving.append(tekst.slice(gelezen));
+  }
+
+  // Onder 640px is er geen ruimte naast de lijst: het paneel wordt een blad
+  // onderaan de viewport, zodat het nooit half buiten beeld openklapt.
+  function plaatsPaneel(eventEl: HTMLElement) {
+    const blad = smalScherm.matches;
+    paneel.classList.toggle('kalender-detail--blad', blad);
+    if (blad) {
+      paneel.style.left = '';
+      paneel.style.top = '';
+      return;
+    }
+    const rect = eventEl.getBoundingClientRect();
+    const wrect = wrap.getBoundingClientRect();
+    const hoogte = paneel.offsetHeight;
+    const kop = (document.querySelector('header')?.getBoundingClientRect().height ?? 0) + 8;
+    const onder = rect.bottom + 8;
+    const boven = rect.top - 8 - hoogte;
+    // Standaard onder de activiteit; alleen omklappen als het daar niet past
+    // én er boven wél plaats is onder de sticky header.
+    const top = onder + hoogte <= window.innerHeight || boven < kop ? onder : boven;
+    paneel.style.left = `${Math.max(0, Math.min(rect.left - wrect.left, wrap.clientWidth - paneel.offsetWidth))}px`;
+    paneel.style.top = `${top - wrect.top}px`;
   }
 
   function openDetail(event: EventApi, eventEl: HTMLElement) {
     const plaats = (event.extendedProps.location as string | undefined) ?? '';
-    const beschrijving = ((event.extendedProps.description as string | undefined) ?? '')
-      .replace(/<[^>]*>/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim();
+    const beschrijving = alsTekst((event.extendedProps.description as string | undefined) ?? '');
+    const soort =
+      categorieen[event.extendedProps.categorie as keyof typeof categorieen] ?? categorieen.event;
 
-    paneelWanneer.textContent = wanneerTekst(event);
+    paneelSoort.textContent = soort.label;
+    paneelBand.style.background = soort.kleur;
+    paneelBand.style.color = soort.tekst;
+    paneelDag.textContent = dagTekst(event);
+    paneelUren.textContent = urenTekst(event);
     paneelTitel.textContent = event.title;
     paneelPlaats.textContent = plaats.toLowerCase() === 'onbekend' ? '' : plaats;
     paneelPlaats.classList.toggle('hidden', !paneelPlaats.textContent);
-    paneelBeschrijving.textContent = beschrijving;
-    paneelBeschrijving.classList.toggle('hidden', !beschrijving);
+    vulBeschrijving(beschrijving);
+    paneelTekst.classList.toggle('hidden', !beschrijving);
+    paneelBeschrijving.scrollTop = 0;
 
     paneel.classList.remove('hidden');
-    const rect = eventEl.getBoundingClientRect();
-    const wrect = wrap.getBoundingClientRect();
-    const links = Math.max(0, Math.min(rect.left - wrect.left, wrap.clientWidth - paneel.offsetWidth));
-    paneel.style.left = `${links}px`;
-    paneel.style.top = `${rect.bottom - wrect.top + 8}px`;
+    plaatsPaneel(eventEl);
 
     trigger = eventEl;
-    sluitKnop.focus();
+    paneel.focus({ preventScroll: true });
   }
 
   function sluitDetail() {
     if (paneel.classList.contains('hidden')) return;
     paneel.classList.add('hidden');
-    trigger?.focus();
+    trigger?.focus({ preventScroll: true });
     trigger = null;
   }
 
@@ -287,6 +392,9 @@ const googleUrl = (id: string) => `https://calendar.google.com/calendar/render?c
       borderColor: categorieen[bron.categorie].kleur,
       textColor: categorieen[bron.categorie].tekst,
       eventDataTransform(data: Record<string, unknown>) {
+        // De categorie reist mee: het detailpaneel draagt dezelfde kleur als
+        // het blokje op de kalender en de legende bovenaan.
+        data.extendedProps = { ...((data.extendedProps as object | undefined) ?? {}), categorie: bron.categorie };
         // Nooit naar de Google Calendar-pagina navigeren (ook niet via
         // middelklik of "open in nieuw tabblad"); details tonen we zelf.
         delete data.url;
@@ -310,19 +418,20 @@ const googleUrl = (id: string) => `https://calendar.google.com/calendar/render?c
     },
     eventDidMount(arg) {
       // Zonder url is het element geen link meer; maak het zelf bedienbaar.
-      arg.el.setAttribute('role', 'button');
-      if (!arg.el.hasAttribute('tabindex')) arg.el.tabIndex = 0;
+      const knop = bedienbaar(arg.el);
+      knop.setAttribute('role', 'button');
+      if (!knop.hasAttribute('tabindex')) knop.tabIndex = 0;
       arg.el.title = arg.event.title;
-      arg.el.addEventListener('keydown', (e) => {
+      knop.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          openDetail(arg.event, arg.el);
+          openDetail(arg.event, knop);
         }
       });
     },
     eventClick(info) {
       info.jsEvent.preventDefault();
-      openDetail(info.event, info.el);
+      openDetail(info.event, bedienbaar(info.el));
     },
   });
 
@@ -437,11 +546,14 @@ const googleUrl = (id: string) => `https://calendar.google.com/calendar/render?c
     background: var(--color-veer-100);
     color: var(--color-club-800);
   }
+  /* Popovers zijn chroom: ze mogen zich als enige van het raster losmaken. */
   #kalender .fc-popover {
     background: #ffffff;
     border: 2px solid var(--color-inkt-950);
     border-radius: 0;
-    box-shadow: none;
+    box-shadow:
+      0 10px 15px -3px rgb(27 20 16 / 0.12),
+      0 4px 6px -4px rgb(27 20 16 / 0.12);
   }
   #kalender .fc-popover-header {
     font-variation-settings: "wdth" 110;
@@ -451,6 +563,39 @@ const googleUrl = (id: string) => `https://calendar.google.com/calendar/render?c
     font-size: 0.75rem;
     background: var(--color-veer-100);
     padding: 0.5rem 0.75rem;
+  }
+  /* De sluitknop staat op een gekleurde band: de focusring neemt de tekstkleur
+     van die band over, want clubrood op club-600 verdwijnt. */
+  #kalender-detail-sluit:focus-visible {
+    outline-color: currentColor;
+  }
+  /* Mobiel: het paneel is een blad onderaan de viewport. */
+  #kalender-detail.kalender-detail--blad {
+    position: fixed;
+    inset: auto 0.5rem 0.5rem;
+    width: auto;
+    max-width: none;
+  }
+  /* Het paneel landt als een shuttle: van boven, kort, beslist. */
+  @media (prefers-reduced-motion: no-preference) {
+    #kalender-detail:not(.hidden) {
+      animation: detail-land 0.28s var(--ease-drop) both;
+    }
+    #kalender-detail.kalender-detail--blad:not(.hidden) {
+      animation-name: detail-blad;
+    }
+  }
+  @keyframes detail-land {
+    from {
+      opacity: 0;
+      transform: translateY(-0.5rem);
+    }
+  }
+  @keyframes detail-blad {
+    from {
+      opacity: 0;
+      transform: translateY(0.75rem);
+    }
   }
   @media (max-width: 640px) {
     #kalender .fc-toolbar {

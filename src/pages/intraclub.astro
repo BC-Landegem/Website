@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import RailKop from '../components/RailKop.astro';
+import { url } from '../lib/url';
 
 const tabs = [
   { key: 'general', label: 'Algemeen', soort: 'ranking' },
@@ -20,7 +21,17 @@ const tabs = [
     <RailKop
       title="Intraclub"
       intro="Onze interne competitie: vier spelers per match, elke set een ander duo, het hele seizoen een klassement."
-    />
+    >
+      <a
+        href={url('/intraclub/zo-werkt-het/')}
+        class="stem-baan mt-5 inline-flex items-center gap-2 text-xs text-club-700 hover:text-club-800 hover:underline"
+      >
+        Zo werkt intraclub
+        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 12h16m0 0l-6-6m6 6l-6 6" />
+        </svg>
+      </a>
+    </RailKop>
 
     <div
       id="intra-fout"
