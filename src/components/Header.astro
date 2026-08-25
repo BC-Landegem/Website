@@ -2,10 +2,9 @@
 import { url } from '../lib/url';
 import teams from '../data/teams.json';
 
-// De hoofdnavigatie volgt de doelgroepen: jeugd, recreanten, competitie. De
-// intraclub zat hier vroeger ook, maar dat is ledenjargon dat een nieuwkomer
-// nooit aanklikt — hij staat nu onder Club (en blijft één tik ver via de
-// app-snelkoppeling en de top-10 op de homepage).
+// De hoofdnavigatie volgt de doelgroepen: jeugd, recreanten, intraclub,
+// competitie. Intraclub staat naast Recreatief omdat het grotendeels dezelfde
+// mensen zijn — /recreatief/ linkt er twee keer heen.
 const clubItems = [
   { label: 'Over de club', href: '/club/over-de-club/' },
   { label: 'Contact', href: '/club/contact/' },
@@ -17,15 +16,12 @@ const clubItems = [
 const mainItems = [
   { label: 'Jeugd', href: '/jeugd/' },
   { label: 'Recreatief', href: '/recreatief/' },
+  { label: 'Intraclub', href: '/intraclub/' },
   { label: 'Kalender', href: '/kalender/' },
   { label: "Foto's", href: '/media/' },
 ];
 
 const reeksen = ['Heren', 'Gemengd', 'Dames'];
-
-// De balk klapt pas open vanaf lg (1024px), niet vanaf md. Met zeven items plus
-// de Word lid!-knop paste de rij op 768px al niet meer: de knop viel buiten de
-// header. Tussen 768 en 1023 staat dus het hamburgermenu.
 
 const currentPath = Astro.url.pathname;
 const isActive = (href: string) => currentPath.startsWith(url(href).replace(/\/$/, ''));
@@ -53,7 +49,12 @@ const isActive = (href: string) => currentPath.startsWith(url(href).replace(/\/$
       </svg>
     </label>
 
-    {/* Navigatie */}
+    {/* Navigatie. Het breekpunt ligt op lg, niet op md: met acht items mat de
+         balk uitgeklapt 736px en paste hij met logo en marges pas vanaf ~893px.
+         Op een tablet van 768px liep hij ruim honderd pixels buiten beeld; daar
+         draagt de hamburger de navigatie. Intraclub maakt het negen items, dus
+         de marge tot lg (1024px) is nu krap — komt er nog een item bij, meet de
+         balk dan opnieuw voor je op lg blijft rekenen. */}
     <nav
       class="absolute inset-x-0 top-full hidden max-h-[calc(100vh-4rem)] overflow-y-auto border-b border-inkt-950/10 bg-veer-50 shadow-lg peer-checked:block lg:static lg:block lg:max-h-none lg:overflow-visible lg:border-0 lg:bg-transparent lg:shadow-none"
     >
@@ -164,7 +165,7 @@ const isActive = (href: string) => currentPath.startsWith(url(href).replace(/\/$
             href={url('/club/over-de-club/')}
             class:list={[
               'hidden items-center gap-1 border-b-2 border-transparent px-3 py-2 text-sm font-semibold transition-colors hover:text-club-600 lg:flex',
-              (isActive('/club/') || isActive('/intraclub/')) && 'border-club-500 text-club-600',
+              isActive('/club/') && 'border-club-500 text-club-600',
             ]}
           >
             Club
