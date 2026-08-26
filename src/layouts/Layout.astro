@@ -2,9 +2,9 @@
 import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import KleurLab from '../components/KleurLab.astro';
-import { APP_KORTE_NAAM, THEMA_KLEUR } from '../data/pwa';
-import registratieSjabloon from '../sw/registratie.js?raw';
+import ColorLab from '../components/ColorLab.astro';
+import { APP_SHORT_NAME, THEME_COLOR } from '../data/pwa';
+import registrationTemplate from '../sw/registration.js?raw';
 import { url } from '../lib/url';
 
 interface Props {
@@ -32,11 +32,11 @@ const pageTitle = title ? `${title} | BC Landegem` : 'BC Landegem — Badmintonc
 // slash op het einde, dus `${BASE_URL}favicon.ico` gaf /Websitefavicon.ico.
 
 // Registratie van de service worker plus het opruimen van vreemde workers
-// (zie src/sw/registratie.js). Inline in de head zodat het geen extra request
+// (zie src/sw/registration.js). Inline in de head zodat het geen extra request
 // kost, en alleen in een echte build — in dev zou de worker de HMR-assets
 // cachen.
-const swRegistratie = registratieSjabloon
-  .replaceAll('__SW_PAD__', url('/sw.js'))
+const swRegistration = registrationTemplate
+  .replaceAll('__SW_PATH__', url('/sw.js'))
   .replaceAll('__BASE__', url('/'));
 ---
 
@@ -56,11 +56,11 @@ const swRegistratie = registratieSjabloon
     {/* Progressive web app: installeerbaar op het beginscherm, met een service
          worker die de schil offline houdt. Zie src/data/pwa.ts. */}
     <link rel="manifest" href={url('/manifest.webmanifest')} />
-    <meta name="theme-color" content={THEMA_KLEUR} />
+    <meta name="theme-color" content={THEME_COLOR} />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content={APP_KORTE_NAAM} />
+    <meta name="apple-mobile-web-app-title" content={APP_SHORT_NAME} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     {/* Kalenderdata (hero-chip, events, kalenderpagina) komt via fetch van de
@@ -80,10 +80,10 @@ const swRegistratie = registratieSjabloon
     <meta name="generator" content={Astro.generator} />
     <script is:inline>document.documentElement.classList.add('js');</script>
     {/* Intern kleurlab: doet niets zonder ?kleurlab in de URL. */}
-    <KleurLab />
-    {import.meta.env.PROD && <script is:inline set:html={swRegistratie} />}
+    <ColorLab />
+    {import.meta.env.PROD && <script is:inline set:html={swRegistration} />}
   </head>
-  <body class="flex min-h-screen flex-col bg-veer-50 text-inkt-950 antialiased">
+  <body class="flex min-h-screen flex-col bg-feather-50 text-ink-950 antialiased">
     {/*
       DESIGN CONTRACT — De Shuttle (seed fc2b4f50, code-led)
       THESIS: De site is opgebouwd uit de anatomie van de shuttle — kurk, rode

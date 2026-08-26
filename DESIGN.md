@@ -10,14 +10,14 @@ colors:
   club-300: "#f19486"
   club-100: "#fbdfda"
   club-50: "#fdf1ef"
-  veer-50: "#faf7f1"
-  veer-100: "#f2ecdf"
-  veer-200: "#e6dcc8"
-  inkt-950: "#1b1410"
-  inkt-700: "#493c33"
-  inkt-500: "#6b5c50"
-  kurk-400: "#cf9a5f"
-  kurk-300: "#ddb887"
+  feather-50: "#faf7f1"
+  feather-100: "#f2ecdf"
+  feather-200: "#e6dcc8"
+  ink-950: "#1b1410"
+  ink-700: "#493c33"
+  ink-500: "#6b5c50"
+  cork-400: "#cf9a5f"
+  cork-300: "#ddb887"
 typography:
   display:
     fontFamily: "Archivo, ui-sans-serif, system-ui, 'Segoe UI', sans-serif"
@@ -62,7 +62,7 @@ components:
     backgroundColor: "{colors.club-700}"
   knop-omtrek:
     backgroundColor: "transparent"
-    textColor: "{colors.inkt-950}"
+    textColor: "{colors.ink-950}"
     typography: "{typography.baan}"
     rounded: "{rounded.vol}"
     padding: "0.75rem 1.75rem"
@@ -107,29 +107,29 @@ De browser draagt de wereld mee: selectie is clubrood met wit, de caret is clubr
 Warm drieklank: veerwit als grond, warm inktbruinzwart als basis, clubrood dat hele banen bezit, kurk als zeldzaam derde accent.
 
 ### Primary
-- **Clubrood** ({colors.club-500}): het bindende merkrood, en tegelijk de felste kleur in de wereld — het zit op de rand van wat sRGB kan. Daarom draagt het lijnen, punten en grote letters, geen kleine witte tekst. Bezit: de vluchtdraad (stroke 4px), de meetpuntbollen, de display-accentregel in de hero, de rode veerpanelen (met inkt-950-bodytekst), actieve nav-onderstreping, ::selection en caret.
+- **Clubrood** ({colors.club-500}): het bindende merkrood, en tegelijk de felste kleur in de wereld — het zit op de rand van wat sRGB kan. Daarom draagt het lijnen, punten en grote letters, geen kleine witte tekst. Bezit: de vluchtdraad (stroke 4px), de meetpuntbollen, de display-accentregel in de hero, de rode veerpanelen (met ink-950-bodytekst), actieve nav-onderstreping, ::selection en caret.
 - **Clubrood diep** ({colors.club-600}): elk rood vlak dat witte tekst draagt — de rode band-sectie, het kurk-CTA-punt, primaire knoppen, geselecteerde filterpillen, genummerde stapbollen. Ook tekstlinks op lichte grond en de tekstkleur van de inverse knop op rood.
 - **Clubrood donker** ({colors.club-700}): kleine rode tekst op lichte gronden (baan-labels, "Ontdek meer"-links) én de dikke randen (8px) van de rode band. Contrastregel, zie hieronder.
 - **Clubrood zeer donker** ({colors.club-800}): hover van kleine rode tekstlinks.
-- **Clubrood licht** ({colors.club-300}): rode accenten op donkere (inkt) grond — hoverkleur van links en koppen op inkt-950.
+- **Clubrood licht** ({colors.club-300}): rode accenten op donkere (inkt) grond — hoverkleur van links en koppen op ink-950.
 - **Clubrood pastel** ({colors.club-100} / {colors.club-50}): gevulde veer in de verenkrans (100, op lage opaciteit); hovergrond van de inverse knop (50).
 
 ### Secondary
-- **Kurk** ({colors.kurk-400}): de kurkring rond het CTA-punt (ring-4 met veer-50 offset) en de kurkdop van de getekende shuttle-glyph. Zeldzaam en fysiek: kurk verschijnt alleen waar de echte shuttle kurk heeft.
-- **Kurk licht** ({colors.kurk-300}): gevulde veer in de verenkrans, op lage opaciteit (0.35).
+- **Kurk** ({colors.cork-400}): de kurkring rond het CTA-punt (ring-4 met feather-50 offset) en de kurkdop van de getekende shuttle-glyph. Zeldzaam en fysiek: kurk verschijnt alleen waar de echte shuttle kurk heeft.
+- **Kurk licht** ({colors.cork-300}): gevulde veer in de verenkrans, op lage opaciteit (0.35).
 
 ### Neutral
-- **Veerwit** ({colors.veer-50}): de grond van de hele site (body-achtergrond) en de ring rond meetpuntbollen; tekstkleur op inkt-950.
-- **Veer** ({colors.veer-100}): hovergrond in de navigatie; scrollbalkspoor.
-- **Veer diep** ({colors.veer-200}): het lichtste veerpaneel (Competitie), tekst op inkt-950 (footer), gevulde veer in de verenkrans.
-- **Inktzwart** ({colors.inkt-950}): warm bruinzwart. Alle basistekst, donkere panelen (Jeugd-veer, slotsectie, footer), hairlines op 6–10% opaciteit (borders, verenkrans-stralen).
-- **Inkt** ({colors.inkt-700}): lopende tekst met iets minder nadruk (intro's, paragrafen naast koppen).
-- **Inkt licht** ({colors.inkt-500}): tertiaire tekst (doelgroep-regels, locatieregels), scrollbalkduim.
+- **Veerwit** ({colors.feather-50}): de grond van de hele site (body-achtergrond) en de ring rond meetpuntbollen; tekstkleur op ink-950.
+- **Veer** ({colors.feather-100}): hovergrond in de navigatie; scrollbalkspoor.
+- **Veer diep** ({colors.feather-200}): het lichtste veerpaneel (Competitie), tekst op ink-950 (footer), gevulde veer in de verenkrans.
+- **Inktzwart** ({colors.ink-950}): warm bruinzwart. Alle basistekst, donkere panelen (Jeugd-veer, slotsectie, footer), hairlines op 6–10% opaciteit (borders, verenkrans-stralen).
+- **Inkt** ({colors.ink-700}): lopende tekst met iets minder nadruk (intro's, paragrafen naast koppen).
+- **Inkt licht** ({colors.ink-500}): tertiaire tekst (doelgroep-regels, locatieregels), scrollbalkduim.
 
 ### Named Rules
 **De hele-baan-regel.** Clubrood bezit hele banen: een volledige sectie, een volledig paneel, de volledige draad. Rood verschijnt nooit als klein decoratief strooisel — de enige kleine rode elementen zijn functioneel (meetpuntbollen op de draad, de actieve nav-streep) en horen bij de draadgrammatica.
 
-**De twee-roden-regel.** Welk rood een vlak krijgt, bepaalt de tekst die erop komt. **Witte tekst op rood is altijd club-600** (5,08:1) — met club-500 haalt wit maar 3,97:1 en zakt het onder AA, ook een baan-label van 12px. De enige uitzondering is displaytekst: vanaf 24px of 18,7px vet volstaat 3:1, en daarom mag de witte kop van het rode veerpaneel wel op club-500 staan. **Donkere tekst op rood is altijd club-500**: inkt-950 haalt daar 4,58:1, op club-600 nog maar 3,58:1. Dat is het geval bij de rode veerpanelen. Een club-600-vlak draagt zijn rangorde in grootte en gewicht, niet in doorzichtigheid — `text-white/70` haalt er 3,16:1 en hoort er dus niet. Kleine rode tekst op lichte grond gebruikt club-700, nooit club-500; club-500 mag daar enkel op displayformaat (≥ text-4xl) of als decoratie met `aria-hidden`. Op inkt-950 is de rode accentkleur club-300.
+**De twee-roden-regel.** Welk rood een vlak krijgt, bepaalt de tekst die erop komt. **Witte tekst op rood is altijd club-600** (5,08:1) — met club-500 haalt wit maar 3,97:1 en zakt het onder AA, ook een baan-label van 12px. De enige uitzondering is displaytekst: vanaf 24px of 18,7px vet volstaat 3:1, en daarom mag de witte kop van het rode veerpaneel wel op club-500 staan. **Donkere tekst op rood is altijd club-500**: ink-950 haalt daar 4,58:1, op club-600 nog maar 3,58:1. Dat is het geval bij de rode veerpanelen. Een club-600-vlak draagt zijn rangorde in grootte en gewicht, niet in doorzichtigheid — `text-white/70` haalt er 3,16:1 en hoort er dus niet. Kleine rode tekst op lichte grond gebruikt club-700, nooit club-500; club-500 mag daar enkel op displayformaat (≥ text-4xl) of als decoratie met `aria-hidden`. Op ink-950 is de rode accentkleur club-300.
 
 ## Typography
 
@@ -140,10 +140,10 @@ Warm drieklank: veerwit als grond, warm inktbruinzwart als basis, clubrood dat h
 **Character:** Eén familie, drie breedtes — sportief, direct en zonder franje. De stemmen verschillen in `font-variation-settings: "wdth"`, niet in familie. Geladen via Google Fonts als variabel font (`Archivo:wdth,wght@62..125,300..900`).
 
 ### Hierarchy
-- **Display** (`.stem-display`: wdth 125, weight 900, uppercase, letter-spacing -0.02em, line-height 0.95, text-wrap balance): alle sectiekoppen en de hero-kop. Grootte per context: hero text-5xl→7xl, sectiekoppen text-4xl/5xl, paneelkoppen text-3xl/4xl, compacte chroomkoppen (bv. de kalender-maandtitel) text-2xl (1.5rem). De **paginakop** (de h1 van `RailKop` en de losse paginakoppen) staat niet vast op text-4xl maar op `.kop-pagina`: clamp(1.5rem, 8vw, 2.25rem) onder de sm-breekpunt, text-5xl daarboven. Nederlandse samenstellingen zijn in kapitaal breder dan een telefoonkolom — AANSPREEKPUNT meet op text-4xl 344px terwijl een 360px-toestel na px-4 en de rail-inspringing 288px overhoudt — en liepen zo buiten beeld. Wat na het meeschalen nog niet past, breekt af: een titel die op élke telefoon moet breken (Privacyverklaring) krijgt een zacht afbreekstreepje (`\u00AD`) op de naad van de samenstelling, de rest vangt `hyphens: auto` met `overflow-wrap: break-word` als vangnet op.
-- **Baan** (`.stem-baan`: wdth 110, weight 700, uppercase, letter-spacing 0.08em): labels en knoppen — dag-labels op de speelurenrail, alle knopteksten, navigatiekopjes, footerkopjes, "Ontdek meer"-links. Vrijwel altijd text-xs of text-sm.
-- **Cijfer** (`.stem-cijfer`: wdth 112, weight 800, tabular-nums, letter-spacing -0.01em): alle data op de draad — speeluren (text-2xl/3xl), eventdatums (text-lg), het jaartal 1987 (text-2xl), het eerstvolgende speelmoment. Tabulaire cijfers zodat uren op de rail uitlijnen.
-- **Body** (weight 400–500, text-sm–lg, leading-relaxed): lopende tekst in inkt-950 of inkt-700; nadruk met weight 700 (`font-bold`), nooit met een extra kleur.
+- **Display** (`.type-display`: wdth 125, weight 900, uppercase, letter-spacing -0.02em, line-height 0.95, text-wrap balance): alle sectiekoppen en de hero-kop. Grootte per context: hero text-5xl→7xl, sectiekoppen text-4xl/5xl, paneelkoppen text-3xl/4xl, compacte chroomkoppen (bv. de kalender-maandtitel) text-2xl (1.5rem). De **paginakop** (de h1 van `RailHeading` en de losse paginakoppen) staat niet vast op text-4xl maar op `.page-heading`: clamp(1.5rem, 8vw, 2.25rem) onder de sm-breekpunt, text-5xl daarboven. Nederlandse samenstellingen zijn in kapitaal breder dan een telefoonkolom — AANSPREEKPUNT meet op text-4xl 344px terwijl een 360px-toestel na px-4 en de rail-inspringing 288px overhoudt — en liepen zo buiten beeld. Wat na het meeschalen nog niet past, breekt af: een titel die op élke telefoon moet breken (Privacyverklaring) krijgt een zacht afbreekstreepje (`\u00AD`) op de naad van de samenstelling, de rest vangt `hyphens: auto` met `overflow-wrap: break-word` als vangnet op.
+- **Baan** (`.type-label`: wdth 110, weight 700, uppercase, letter-spacing 0.08em): labels en knoppen — dag-labels op de speelurenrail, alle knopteksten, navigatiekopjes, footerkopjes, "Ontdek meer"-links. Vrijwel altijd text-xs of text-sm.
+- **Cijfer** (`.type-numeral`: wdth 112, weight 800, tabular-nums, letter-spacing -0.01em): alle data op de draad — speeluren (text-2xl/3xl), eventdatums (text-lg), het jaartal 1987 (text-2xl), het eerstvolgende speelmoment. Tabulaire cijfers zodat uren op de rail uitlijnen.
+- **Body** (weight 400–500, text-sm–lg, leading-relaxed): lopende tekst in ink-950 of ink-700; nadruk met weight 700 (`font-bold`), nooit met een extra kleur.
 
 ### Named Rules
 **De drie-stemmen-regel.** Elke tekst is één van vier dingen: display-kop, baan-label, cijfer of lopende tekst. Nieuwe tekstsoorten worden op een van deze vier gemapt; er komt geen vierde stem bij.
@@ -156,12 +156,12 @@ Warm drieklank: veerwit als grond, warm inktbruinzwart als basis, clubrood dat h
 - **Paginaritme (homepage als referentie):** hero (min-h-[88vh], verenkrans vanuit het kurkpunt linksonder) → full-bleed rode band → speelurenrail → events-rail (verdwijnt stil bij leegte) → drie veerpanelen → stille 1987-regel → zwart slot met foto. Licht en donker wisselen; de draad naait de secties aaneen.
 - **De draad- en railgrammatica (de kern van de wereld):**
   - De **vluchtdraad** is één `<path>` (stroke clubrood, 4px, round linecap) in een absoluut gepositioneerde SVG achter de inhoud (`-z-[1]`), van het kurkpunt via de shuttle-glyph naar de speelurenrail, langs 1987 tot de slotsectie; een tweede **staartpad** leeft ín de slotsectie (boven de zwarte grond) en landt op de foto. Hij wordt met de scroll getekend (stroke-dasharray/-offset, geactiveerd tot 85% viewporthoogte) en na een resize herbouwd. **De hero komt leeg binnen:** het kurkpunt staat in het eerste beeld, dus die leeslijn alleen zou de hele klim al op scrollstand 0 tonen. Een scroll-poort knijpt de lengte af tot je een beeld ver gescrold hebt — je ziet de vlucht dus vertrekken in plaats van ze aan te treffen. Bij `prefers-reduced-motion: reduce` staat de draad meteen volledig getekend.
-  - De **rail-x** ligt op de linkerrand van de lijst + 6px; lijstitems krijgen `pl-10` (2.5rem inspringing) en een **meetpuntbol**: `h-3.5 w-3.5 rounded-full bg-club-500 ring-4 ring-veer-50`, absoluut op `left-[6px] -translate-x-1/2`. Rijen scheiden met hairlines (`border-b border-inkt-950/10`, eerste rij ook border-t).
+  - De **rail-x** ligt op de linkerrand van de lijst + 6px; lijstitems krijgen `pl-10` (2.5rem inspringing) en een **meetpuntbol**: `h-3.5 w-3.5 rounded-full bg-club-500 ring-4 ring-feather-50`, absoluut op `left-[6px] -translate-x-1/2`. Rijen scheiden met hairlines (`border-b border-ink-950/10`, eerste rij ook border-t).
   - **Onder md loopt de vluchtdraad door de marges.** In één kolom is er geen vrije baan dwars door de tekst: dezelfde vlucht (lancering, hangmoment bij de shuttle, val) loopt daar omhoog langs de linkermarge, over de kop heen, langs de rechtermarge naar beneden en dan schuin door de lege band onder de herotekst — langs het kurkpunt — de rode band in. Daar (rood op rood, achter een dekkende sectie) steekt hij onzichtbaar over naar de rail-x, die hij vanaf de onderrand van de band ononderbroken volgt tot 1987. Ook de staart blijft in de marge, langs kop, tekst en knoppen, en buigt pas ónder de knoppen in naar de foto. De draad snijdt nooit door lopende tekst: hij loopt links of rechts ván de letters, of achter een dekkend vlak.
   - **Een pagina zonder script gebruikt statische rails:** dezelfde bollen en inspringing, met desnoods een statische verticale lijn (border-l of een vaste SVG-lijn) op de rail-x — de scroll-getekende draad is exclusief voor pagina's die het script dragen. Zonder JavaScript is er geen draad, maar alle inhoud blijft volledig zichtbaar en de bollen blijven staan.
 - **Rasterdiscipline met verspringing:** de veerpanelen staan op een 12-kolomsraster (`grid-cols-12`) met bewuste overlap: col-span-7/5/6 met verschillende col-start en negatieve topmarges (sm:-mt-12, sm:-mt-8) zodat ze elkaar als veren overlappen. Nooit drie gelijke kolommen naast elkaar.
 - **Responsief:** mobiel stapelt alles op col-span-12 (of col-span-11 met kleine inspringing); de speelurenrij wordt op ≥sm een `grid-cols-[8rem_16rem_1fr]` baseline-grid; de navigatie klapt onder lg samen in een checkbox-gestuurd hamburgermenu (geen JS nodig; de balk telt acht items en past met logo en marges pas vanaf ~893px, dus op een tablet van 768px draagt de hamburger hem); de hero-SVG is `w-[max(100%,75rem)]` zodat de verenkrans op smalle schermen niet verschrompelt en het kurkpunt via `calc(max(100%,75rem)/18)` op de geometrie blijft zitten. De vluchtdraad heeft onder md een eigen baan door de marges (zie de draadgrammatica); de wisselbreedte ligt op 768px, waar de herotekst met `md:ml-[22%]` inspringt en er weer ruimte is voor de diagonaal.
-- **Motoriek (hoort bij de wereld):** twee easings — `--ease-lancering` (cubic-bezier(0.16,1,0.3,1): explosief uit, dan hangen; voor verschijnen, hover-lifts, schaal) en `--ease-drop` (cubic-bezier(0.55,0,0.55,1): de val; voor de transform van landende elementen). Elementen dalen neer als een shuttle: `.vlucht` start op `opacity:0; translateY(-1.25rem)` en landt (`.geland`, gezet door een IntersectionObserver op threshold 0.2) in 0.45s/0.6s. Dit alles is dubbel gegate: achter een `.js`-klasse op `<html>` (inline gezet in de head — zonder JS is alles gewoon zichtbaar) én achter `prefers-reduced-motion: no-preference`. Bij reduced motion wordt de draad niet getekend maar volledig getoond. Hovers zijn kort en fysiek: `hover:-translate-y-2` op panelen, `hover:translate-x-2` op railrijen, `hover:scale-110` op het kurkpunt, pijlen schuiven 1 eenheid mee (300ms, ease-lancering).
+- **Motoriek (hoort bij de wereld):** twee easings — `--ease-launch` (cubic-bezier(0.16,1,0.3,1): explosief uit, dan hangen; voor verschijnen, hover-lifts, schaal) en `--ease-drop` (cubic-bezier(0.55,0,0.55,1): de val; voor de transform van landende elementen). Elementen dalen neer als een shuttle: `.flight` start op `opacity:0; translateY(-1.25rem)` en landt (`.landed`, gezet door een IntersectionObserver op threshold 0.2) in 0.45s/0.6s. Dit alles is dubbel gegate: achter een `.js`-klasse op `<html>` (inline gezet in de head — zonder JS is alles gewoon zichtbaar) én achter `prefers-reduced-motion: no-preference`. Bij reduced motion wordt de draad niet getekend maar volledig getoond. Hovers zijn kort en fysiek: `hover:-translate-y-2` op panelen, `hover:translate-x-2` op railrijen, `hover:scale-110` op het kurkpunt, pijlen schuiven 1 eenheid mee (300ms, ease-launch).
 
 ## Elevation & Depth
 
@@ -171,47 +171,47 @@ Vlak. De wereld gebruikt geen schaduwen als ontwerpmiddel: diepte komt uit kleur
 
 - **Scherp gesneden vlakken (0px):** secties en panelen hebben geen border-radius. Veerpanelen en de slotfoto worden schuin afgesneden met `clip-path: polygon(...)` — één of twee randen hellen 8–10% (bv. `polygon(0 10%, 100% 0, 100% 100%, 0 100%)`), als veerbladen. Elk veerpaneel roteert licht en afwisselend van teken: -1° / 1.25° / -0.75°; blijf binnen ±1.5°.
 - **Volrond (9999px) voor alles wat een shuttle-onderdeel is:** knoppen (pillen), het kurk-CTA-punt (cirkel, 7rem mobiel / 9rem ≥sm, kurkring eromheen), meetpuntbollen, de statuspunt van het eerstvolgende speelmoment.
-- **Hairlines:** scheidingslijnen zijn inkt-950 op 10% opaciteit (1px); de verenkrans-stralen 1.5px op 8–10%; de skirtbogen gestreepte cirkels (stroke-dasharray "3 10" / "3 14") op 6–8%.
+- **Hairlines:** scheidingslijnen zijn ink-950 op 10% opaciteit (1px); de verenkrans-stralen 1.5px op 8–10%; de skirtbogen gestreepte cirkels (stroke-dasharray "3 10" / "3 14") op 6–8%.
 - **Getekende geometrie:** de verenkrans is code-berekende SVG (16 stralen vanuit het kurkpunt, drie gevulde veerdriehoeken op lage opaciteit, twee gestreepte skirtbogen); de shuttle-glyph op het hangmoment is het clublogo zelf: vanaf 900px het volledige logo (`logo-bc1.svg` — pluim mét de getekende clubnaam, rechtop, w-44), daaronder de losse pluim (`logo-pluim.svg`, w-20/w-28, -rotate-12). De naam heeft die maat nodig — op pluimmaat wordt ze een veeg — en die 900px is nagemeten: de herokop springt vanaf md in met `ml-[22%]` en meet op text-6xl zo'n 470px, dus pas daar ligt de rechterbovenhoek vrij. In beide bestanden staat de pluim op dezelfde plek in het kader, dus het hangmoment van de draad verschuift niet mee.
 - **Focus:** 2px clubrood outline, 3px offset, 2px radius — overal, gedefinieerd op `:focus-visible`.
 
 ## Components
 
 ### Buttons
-Alle knoppen zijn `.stem-baan`-pillen; ze veranderen bij hover alleen van kleur (300ms), nooit van vorm.
+Alle knoppen zijn `.type-label`-pillen; ze veranderen bij hover alleen van kleur (300ms), nooit van vorm.
 - **Shape:** volrond (rounded-full).
 - **Primair:** clubrood diep ({colors.club-600}) met witte tekst, px-7 py-3.5; hover gaat dieper ({colors.club-700}). Op donkere grond (slot): hover wordt lichter ({colors.club-400}).
-- **Omtrek:** transparant met 2px inkt-950-rand en inkt-950-tekst, px-7 py-3; hover: rand en tekst naar club-600. Op donkere grond: rand veer-200/40, tekst veer-50; hover rand club-400, tekst club-300.
+- **Omtrek:** transparant met 2px ink-950-rand en ink-950-tekst, px-7 py-3; hover: rand en tekst naar club-600. Op donkere grond: rand feather-200/40, tekst feather-50; hover rand club-400, tekst club-300.
 - **Invers (op rode band):** witte grond, club-600-tekst; hover club-50-grond.
-- **Kurk-CTA (signatuur, alleen hero):** cirkel van 7rem (≥sm 9rem), clubrood, witte baan-tekst, `ring-4 ring-kurk-400 ring-offset-4 ring-offset-veer-50`, verankerd op het kurkpunt van de verenkrans; hover `scale-110` met ease-lancering.
+- **Kurk-CTA (signatuur, alleen hero):** cirkel van 7rem (≥sm 9rem), clubrood, witte baan-tekst, `ring-4 ring-cork-400 ring-offset-4 ring-offset-feather-50`, verankerd op het kurkpunt van de verenkrans; hover `scale-110` met ease-launch.
 
 ### Cards / Containers
-- **Veerpanelen (signatuur):** géén gelijke kaarten. Schuin geknipte, licht geroteerde, overlappende vlakken op het 12-kolomsraster; elk paneel een andere kleurbaan (inkt-950 met veer-50-tekst / club-500 met inkt-950-bodytekst en witte kop / veer-200 met inkt-950-tekst). Interne padding p-8 (≥sm p-10). Het hele paneel is de link; hover tilt het op (-translate-y-2, ease-lancering) en kleurt de kop (op inkt: naar club-300).
+- **Veerpanelen (signatuur):** géén gelijke kaarten. Schuin geknipte, licht geroteerde, overlappende vlakken op het 12-kolomsraster; elk paneel een andere kleurbaan (ink-950 met feather-50-tekst / club-500 met ink-950-bodytekst en witte kop / feather-200 met ink-950-tekst). Interne padding p-8 (≥sm p-10). Het hele paneel is de link; hover tilt het op (-translate-y-2, ease-launch) en kleurt de kop (op inkt: naar club-300).
 - **Rode band:** full-bleed sectie in club-600 met `border-y-8 border-club-800` — op een club-600-vlak is een club-700-rand niet meer te zien. Display-kop in wit, vette witte subregel (text-xl bold), inverse knop rechts, secundaire link in vol wit. Eén per pagina, hooguit.
-- **Zwart slot:** inkt-950-sectie met veer-50/veer-200-tekst, twee knoppen (primair + omtrek-donker) en de clubfoto in een clip-path-figuur; de draadstaart landt op de foto.
+- **Zwart slot:** ink-950-sectie met feather-50/feather-200-tekst, twee knoppen (primair + omtrek-donker) en de clubfoto in een clip-path-figuur; de draadstaart landt op de foto.
 
 ### Lijsten op de rail
-- **Railrij (speeluren, events):** pl-10, meetpuntbol op de rail-x, hairline-scheiding, `stem-baan`-daglabel in club-700, `stem-cijfer`-uren in inkt-950, omschrijving bold met doelgroep in inkt-500. Hover: de rij-inhoud schuift 2 eenheden naar rechts; de bol blijft op de draad en schaalt 125%. Sectiekoppen en intro's boven een rail-lijst staan mee op de rail-inspringing (pl-10), zodat de draad links van de letters loopt.
+- **Railrij (speeluren, events):** pl-10, meetpuntbol op de rail-x, hairline-scheiding, `type-label`-daglabel in club-700, `type-numeral`-uren in ink-950, omschrijving bold met doelgroep in ink-500. Hover: de rij-inhoud schuift 2 eenheden naar rechts; de bol blijft op de draad en schaalt 125%. Sectiekoppen en intro's boven een rail-lijst staan mee op de rail-inspringing (pl-10), zodat de draad links van de letters loopt.
 - **Stille regel (1987):** één railpunt zonder lijst — bol, cijfer, één paragraaf, één baan-link. Voor enkelvoudige feiten op de draad.
 
 ### Navigation
-- **Header:** sticky, veer-50 op 95% met backdrop-blur, hairline onderrand. Logo (monochroom zwart SVG) + clubnaam in stem-baan. Links: text-sm font-semibold, hover naar club-600; actief: `border-b-2 border-club-500` + club-600-tekst. "Word lid!" staat als primaire pil rechts in de nav. Mobiel én tablet (onder lg): checkbox-hamburger (CSS-only) met uitklappaneel; submenu Club op desktop als hover/focus-within-dropdown op veer-50.
-- **Footer:** inkt-950 met veer-200-tekst; sponsorlogo's op veer-50-tegels (hover: ring-2 club-500); kolomkopjes in stem-baan wit; links hoveren naar club-300.
+- **Header:** sticky, feather-50 op 95% met backdrop-blur, hairline onderrand. Logo (monochroom zwart SVG) + clubnaam in type-label. Links: text-sm font-semibold, hover naar club-600; actief: `border-b-2 border-club-500` + club-600-tekst. "Word lid!" staat als primaire pil rechts in de nav. Mobiel én tablet (onder lg): checkbox-hamburger (CSS-only) met uitklappaneel; submenu Club op desktop als hover/focus-within-dropdown op feather-50.
+- **Footer:** ink-950 met feather-200-tekst; sponsorlogo's op feather-50-tegels (hover: ring-2 club-500); kolomkopjes in type-label wit; links hoveren naar club-300.
 
 ### Iconen
 Iconen zijn altijd inline getekende SVG's (stroke currentColor, stroke-width 2–2.5, round caps), 16–24px: hamburger/kruis, chevron, en de pijl `M4 12h16m0 0l-6-6m6 6l-6 6`. Pijlen bewegen mee met hover (translate-x-1).
 
 ### App-iconen (PWA)
-De iconen in `public/icons/` zijn geen apart merkteken: ze zijn gerenderd uit het clublogo (`public/images/logo-bc1.svg`) door `scripts/genereer-iconen.mjs`, dat bij een logo- of kleurwijziging opnieuw moet lopen. Twee smaken, want een launcher behandelt ze verschillend. **any** (192 en 512): logo in inkt-950 op veerwit, 78% dekking — de rustige variant tussen de app-iconen. **maskable** (512): het beeldmerk in veerwit op een vlak clubrood dat tot in de rand loopt, logo op 56% zodat het binnen de veilige zone blijft wanneer het systeem er een cirkel of squircle uit knipt. Rood is hier bewust: het beginscherm is de enige plek waar de club naast vreemde merken staat, en daar bezit clubrood het vlak zoals het dat op de site in hele banen doet. De themakleur van de app is daarentegen veerwit (#faf7f1), gelijk aan de header, zodat de statusbalk naadloos in de pagina doorloopt.
+De iconen in `public/icons/` zijn geen apart merkteken: ze zijn gerenderd uit het clublogo (`public/images/logo-bc1.svg`) door `scripts/generate-icons.mjs`, dat bij een logo- of kleurwijziging opnieuw moet lopen. Twee smaken, want een launcher behandelt ze verschillend. **any** (192 en 512): logo in ink-950 op veerwit, 78% dekking — de rustige variant tussen de app-iconen. **maskable** (512): het beeldmerk in veerwit op een vlak clubrood dat tot in de rand loopt, logo op 56% zodat het binnen de veilige zone blijft wanneer het systeem er een cirkel of squircle uit knipt. Rood is hier bewust: het beginscherm is de enige plek waar de club naast vreemde merken staat, en daar bezit clubrood het vlak zoals het dat op de site in hele banen doet. De themakleur van de app is daarentegen veerwit (#faf7f1), gelijk aan de header, zodat de statusbalk naadloos in de pagina doorloopt.
 
-Daarnaast drie **snelkoppeling-iconen** (192, `snelkoppeling-*.png`) voor wat een lange druk op het app-icoon geeft. Die komen niet uit het logo maar zijn getekend in het icoonidioom hierboven — 24-grid, stroke-width 2.5, round caps — en staan als paden in `scripts/genereer-iconen.mjs`: een kalenderblad, oplopende staven voor de intraclubstand, en een schild als ploegembleem voor de competitie. Alle drie inkt-950 op veerwit, gelijk aan het rustige app-icoon, op 52% van de zijde zodat ze een ronde uitsnede overleven. De rij snelkoppelingen leest zo als familie ónder het rode beeldmerk in plaats van ernaast te schreeuwen. Ze zijn op één 24-grid getekend en dus onderling even groot; een nieuwe snelkoppeling hoort op datzelfde grid.
+Daarnaast drie **snelkoppeling-iconen** (192, `shortcut-*.png`) voor wat een lange druk op het app-icoon geeft. Die komen niet uit het logo maar zijn getekend in het icoonidioom hierboven — 24-grid, stroke-width 2.5, round caps — en staan als paden in `scripts/generate-icons.mjs`: een kalenderblad, oplopende staven voor de intraclubstand, en een schild als ploegembleem voor de competitie. Alle drie ink-950 op veerwit, gelijk aan het rustige app-icoon, op 52% van de zijde zodat ze een ronde uitsnede overleven. De rij snelkoppelingen leest zo als familie ónder het rode beeldmerk in plaats van ernaast te schreeuwen. Ze zijn op één 24-grid getekend en dus onderling even groot; een nieuwe snelkoppeling hoort op datzelfde grid.
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** laat elke nieuwe pagina met echte tijdsdata (uren, datums, standen) op de rail aansluiten: pl-10, meetpuntbollen (h-3.5 w-3.5, club-500, ring-4 veer-50) op de rail-x, hairline-rijen, stem-cijfer voor de data. Zonder eigen script: statische rail, geen scroll-draad.
+- **Do** laat elke nieuwe pagina met echte tijdsdata (uren, datums, standen) op de rail aansluiten: pl-10, meetpuntbollen (h-3.5 w-3.5, club-500, ring-4 feather-50) op de rail-x, hairline-rijen, type-numeral voor de data. Zonder eigen script: statische rail, geen scroll-draad.
 - **Do** geef clubrood hele banen (een rode band-sectie of een rood paneel), kies club-600 zodra er witte tekst op komt, en gebruik club-700 voor alle kleine rode tekst op lichte grond.
-- **Do** gate alle beweging dubbel: achter `.js` op `<html>` én `prefers-reduced-motion`; gebruik uitsluitend --ease-lancering en --ease-drop en houd de duur ≤ 0.6s.
+- **Do** gate alle beweging dubbel: achter `.js` op `<html>` én `prefers-reduced-motion`; gebruik uitsluitend --ease-launch en --ease-drop en houd de duur ≤ 0.6s.
 - **Do** snijd panelen met clip-path (8–10% helling) en roteer ze licht (±1.5°, afwisselend teken) op het 12-kolomsraster met bewuste overlap.
 - **Do** laat lege secties stil verdwijnen (hidden tot data er is), zoals de events-sectie — echt boven mooi.
 
@@ -225,4 +225,4 @@ Daarnaast drie **snelkoppeling-iconen** (192, `snelkoppeling-*.png`) voor wat ee
 
 ---
 
-*Status van de migratie: alle pagina's leven in De Shuttle. De paginakop op de statische rail (bol + korte vaste draad + eindpunt) is een component: `src/components/RailKop.astro`; contentblokken eronder staan mee op de rail-inspringing (pl-10). De kalender toont hoe chroom van derden (FullCalendar) de wereldtokens overneemt: baan-pillen als knoppen, display-maandtitel, club-700 dagkoppen, tabulaire dagcijfers, hairline-raster. Het detailpaneel van een activiteit is de railgrammatica in popovervorm: een kopband in de categoriekleur (dezelfde kleur als de legende), daaronder baan-dag, cijfer-uren, vette omschrijving en stille plaats; onder 640px wordt het een blad onderaan de viewport. De intraclub-paginas tonen de datagrammatica: stem-baan tabelkoppen in club-700, stem-cijfer cellen, SVG-driehoekjes voor stijgen/dalen (dalen = club-700, stijgen = inkt-950), laden als pulserende meetpuntbol, fouten als scherp club-50-vlak met club-500-rand. Lopende tekst is handgezet (space-y-4, inkt-700, links in club-700 met underline) — de prose-plugin is geen onderdeel van de wereld en PageHeader.astro is verwijderd.*
+*Status van de migratie: alle pagina's leven in De Shuttle. De paginakop op de statische rail (bol + korte vaste draad + eindpunt) is een component: `src/components/RailHeading.astro`; contentblokken eronder staan mee op de rail-inspringing (pl-10). De kalender toont hoe chroom van derden (FullCalendar) de wereldtokens overneemt: baan-pillen als knoppen, display-maandtitel, club-700 dagkoppen, tabulaire dagcijfers, hairline-raster. Het detailpaneel van een activiteit is de railgrammatica in popovervorm: een kopband in de categoriekleur (dezelfde kleur als de legende), daaronder baan-dag, cijfer-uren, vette omschrijving en stille plaats; onder 640px wordt het een blad onderaan de viewport. De intraclub-paginas tonen de datagrammatica: type-label tabelkoppen in club-700, type-numeral cellen, SVG-driehoekjes voor stijgen/dalen (dalen = club-700, stijgen = ink-950), laden als pulserende meetpuntbol, fouten als scherp club-50-vlak met club-500-rand. Lopende tekst is handgezet (space-y-4, ink-700, links in club-700 met underline) — de prose-plugin is geen onderdeel van de wereld en PageHeader.astro is verwijderd.*

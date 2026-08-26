@@ -1,4 +1,4 @@
-// Bevriest één echte intraclub-speeldag als src/data/intraclub-voorbeeld.json,
+// Bevriest één echte intraclub-speeldag als src/data/intraclub-example.json,
 // het werkvoorbeeld waarop /intraclub/zo-werkt-het/ draait.
 //
 // Draaien met:
@@ -17,11 +17,11 @@ import { writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const API = 'https://www.bclandegem.be/intra-app/api/index.php';
-const uitvoerPad = fileURLToPath(new URL('../src/data/intraclub-voorbeeld.json', import.meta.url));
+const outputPath = fileURLToPath(new URL('../src/data/intraclub-example.json', import.meta.url));
 
-async function haal(pad) {
-  const res = await fetch(`${API}${pad}`);
-  if (!res.ok) throw new Error(`${pad}: HTTP ${res.status}`);
+async function fetchJson(path) {
+  const res = await fetch(`${API}${path}`);
+  if (!res.ok) throw new Error(`${path}: HTTP ${res.status}`);
   return res.json();
 }
 
@@ -30,45 +30,45 @@ async function haal(pad) {
  * (intra-app/js/helpers.js, calculateBonusPoints). Hoger dubbelklassement
  * betekent zwakker, dus meer voorsprong.
  */
-function bonuspunten(speler) {
+function bonusPoints(player) {
   let bonus = 0;
-  if (speler.gender === 'Woman') bonus += 2;
-  if (Number(speler.playsCompetition) === 0) {
+  if (player.gender === 'Woman') bonus += 2;
+  if (Number(player.playsCompetition) === 0) {
     bonus += 5;
   } else {
-    const dubbel = Number(speler.doubleRanking);
-    if (dubbel > 10) bonus += 4;
-    else if (dubbel > 8) bonus += 3;
-    else if (dubbel > 6) bonus += 2;
-    else if (dubbel > 4) bonus += 1;
+    const doubleRanking = Number(player.doubleRanking);
+    if (doubleRanking > 10) bonus += 4;
+    else if (doubleRanking > 8) bonus += 3;
+    else if (doubleRanking > 6) bonus += 2;
+    else if (doubleRanking > 4) bonus += 1;
   }
   return bonus;
 }
 
-/** Draait maximaal `gelijktijdig` taken tegelijk — de API is een gedeelde host. */
-async function inBatches(items, gelijktijdig, taak) {
-  const uit = [];
-  for (let i = 0; i < items.length; i += gelijktijdig) {
-    uit.push(...(await Promise.all(items.slice(i, i + gelijktijdig).map(taak))));
+/** Draait maximaal `concurrency` taken tegelijk — de API is een gedeelde host. */
+async function inBatches(items, concurrency, task) {
+  const out = [];
+  for (let i = 0; i < items.length; i += concurrency) {
+    out.push(...(await Promise.all(items.slice(i, i + concurrency).map(task))));
   }
-  return uit;
+  return out;
 }
 
-const [speeldag, spelerslijst, rankings] = await Promise.all([
-  haal('/rounds/latestCalculated'),
-  haal('/players'),
-  haal('/rankings'),
+const [matchday, playerList, rankings] = await Promise.all([
+  fetchJson('/rounds/latestCalculated'),
+  fetchJson('/players'),
+  fetchJson('/rankings'),
 ]);
 
-if (!speeldag || !speeldag.id) throw new Error('Geen berekende speeldag gevonden');
+if (!matchday || !matchday.id) throw new Error('Geen berekende speeldag gevonden');
 
-const stand = rankings.general;
-const standOp = new Map(stand.map((rij) => [String(rij.id), rij]));
-const eigenschappenOp = new Map(spelerslijst.map((sp) => [String(sp.id), sp]));
+const ranking = rankings.general;
+const rankingById = new Map(ranking.map((row) => [String(row.id), row]));
+const propertiesById = new Map(playerList.map((p) => [String(p.id), p]));
 
 // De spelers die er die avond écht waren: precies wie in een baan stond.
-const banen = speeldag.matches.map((match) => ({
-  spelers: [match.firstPlayer, match.secondPlayer, match.thirdPlayer, match.fourthPlayer].map((p) =>
+const courts = matchday.matches.map((match) => ({
+  players: [match.firstPlayer, match.secondPlayer, match.thirdPlayer, match.fourthPlayer].map((p) =>
     String(p.id),
   ),
   sets: [
@@ -78,30 +78,30 @@ const banen = speeldag.matches.map((match) => ({
   ],
 }));
 
-const aanwezigeIds = [...new Set(banen.flatMap((baan) => baan.spelers))];
+const presentIds = [...new Set(courts.flatMap((court) => court.players))];
 
-const baanVan = new Map();
-for (const baan of banen) for (const id of baan.spelers) baanVan.set(id, baan);
+const courtById = new Map();
+for (const court of courts) for (const id of court.players) courtById.set(id, court);
 
 /** Terugschalen boven 21, zoals Utilities::trimSets in de API. */
-const trim = (eigen, ander) => (Math.max(eigen, ander) > 21 ? (21 / Math.max(eigen, ander)) * eigen : eigen);
+const trim = (own, other) => (Math.max(own, other) > 21 ? (21 / Math.max(own, other)) * own : own);
 
 /** Wie met wie per set: 1+2, 1+3, 1+4 aan de thuiskant. */
-const SETINDELING = [
+const SET_LINEUP = [
   [0, 1],
   [0, 2],
   [0, 3],
 ];
 
 /** Het speeldagcijfer van één speler: zijn gemiddeld aantal punten per set. */
-function dagcijferVan(id) {
-  const baan = baanVan.get(id);
-  const plek = baan.spelers.indexOf(id);
-  const punten = SETINDELING.map((thuis, set) => {
-    const [thuisScore, uitScore] = baan.sets[set];
-    return thuis.includes(plek) ? trim(thuisScore, uitScore) : trim(uitScore, thuisScore);
+function dayScoreOf(id) {
+  const court = courtById.get(id);
+  const spot = court.players.indexOf(id);
+  const points = SET_LINEUP.map((home, set) => {
+    const [homeScore, awayScore] = court.sets[set];
+    return home.includes(spot) ? trim(homeScore, awayScore) : trim(awayScore, homeScore);
   });
-  return punten.reduce((som, p) => som + p, 0) / punten.length;
+  return points.reduce((sum, p) => sum + p, 0) / points.length;
 }
 
 // Het gemiddelde ná de vorige speeldag is nodig om de stand te kunnen
@@ -116,80 +116,80 @@ function dagcijferVan(id) {
 // stand en het exacte speeldagcijfer, zodat de som op de pagina precies uitkomt
 // op het getal dat de bezoeker in het klassement ziet. De afgeronde waarde uit de
 // API dient nog als controle.
-const historieken = await inBatches(aanwezigeIds, 6, async (id) => {
-  const detail = await haal(`/players/${encodeURIComponent(id)}`);
-  const geschiedenis = detail.statistics.rankingHistory ?? [];
-  const vorige = geschiedenis[geschiedenis.length - 2];
-  return [id, vorige ? vorige.average : null];
+const histories = await inBatches(presentIds, 6, async (id) => {
+  const detail = await fetchJson(`/players/${encodeURIComponent(id)}`);
+  const history = detail.statistics.rankingHistory ?? [];
+  const previous = history[history.length - 2];
+  return [id, previous ? previous.average : null];
 });
-const gemeldVorigOp = new Map(historieken);
-const speeldagen = Number(speeldag.number);
+const reportedPreviousById = new Map(histories);
+const matchdays = Number(matchday.number);
 
-let grootsteAfwijking = 0;
-const vorigOp = new Map(
-  aanwezigeIds.map((id) => {
-    const gepubliceerd = standOp.get(id).average;
-    const afgeleid = (gepubliceerd * (speeldagen + 1) - dagcijferVan(id)) / speeldagen;
-    const gemeld = gemeldVorigOp.get(id);
-    if (gemeld != null) grootsteAfwijking = Math.max(grootsteAfwijking, Math.abs(afgeleid - gemeld));
-    return [id, afgeleid];
+let largestDeviation = 0;
+const previousById = new Map(
+  presentIds.map((id) => {
+    const published = rankingById.get(id).average;
+    const derived = (published * (matchdays + 1) - dayScoreOf(id)) / matchdays;
+    const reported = reportedPreviousById.get(id);
+    if (reported != null) largestDeviation = Math.max(largestDeviation, Math.abs(derived - reported));
+    return [id, derived];
   }),
 );
-if (grootsteAfwijking > 0.05) {
+if (largestDeviation > 0.05) {
   throw new Error(
-    `Afgeleide tussenstand wijkt ${grootsteAfwijking.toFixed(3)} af van wat de API meldt — ` +
+    `Afgeleide tussenstand wijkt ${largestDeviation.toFixed(3)} af van wat de API meldt — ` +
       'controleer of de rekenregels in de applicatie veranderd zijn.',
   );
 }
 
-const spelers = aanwezigeIds
+const players = presentIds
   .map((id) => {
-    const standRij = standOp.get(id);
-    const eigenschappen = eigenschappenOp.get(id);
-    if (!standRij || !eigenschappen) throw new Error(`Speler ${id} ontbreekt in stand of spelerslijst`);
+    const rankingRow = rankingById.get(id);
+    const properties = propertiesById.get(id);
+    if (!rankingRow || !properties) throw new Error(`Speler ${id} ontbreekt in stand of spelerslijst`);
     return {
       id,
       // De ledenadministratie bevat hier en daar een spatie te veel.
-      voornaam: standRij.firstName.trim(),
-      naam: standRij.name.trim(),
-      rang: standRij.rank,
-      gemiddelde: standRij.average,
-      verschil: standRij.difference,
-      vorigGemiddelde: vorigOp.get(id),
-      bonus: bonuspunten(eigenschappen),
+      firstName: rankingRow.firstName.trim(),
+      name: rankingRow.name.trim(),
+      rank: rankingRow.rank,
+      average: rankingRow.average,
+      difference: rankingRow.difference,
+      previousAverage: previousById.get(id),
+      bonus: bonusPoints(properties),
     };
   })
-  .sort((a, b) => a.rang - b.rang);
+  .sort((a, b) => a.rank - b.rank);
 
 // De loting van die avond werkte met de stand ná de vórige speeldag — de
-// speeldag zelf was toen nog niet berekend. Sorteren op `gemiddelde` (ná deze
+// speeldag zelf was toen nog niet berekend. Sorteren op `average` (ná deze
 // speeldag) geeft een net andere volgorde en verklaart de echte banen niet:
-// met `vorigGemiddelde` vallen 11 van de 12 banen zuiver binnen één band, de
+// met `previousAverage` vallen 11 van de 12 banen zuiver binnen één band, de
 // twaalfde is de restbaan uit het algoritme. Vandaar dit aparte veld.
-const opAvondVolgorde = [...spelers].sort((a, b) => b.vorigGemiddelde - a.vorigGemiddelde);
-opAvondVolgorde.forEach((speler, i) => {
-  speler.rangOpAvond = i + 1;
+const eveningOrder = [...players].sort((a, b) => b.previousAverage - a.previousAverage);
+eveningOrder.forEach((player, i) => {
+  player.rankOnEvening = i + 1;
 });
 
 const snapshot = {
   // Vastgelegd op deze datum; de spelregels die de pagina uitlegt veranderen niet.
-  bevrorenOp: new Date().toISOString().slice(0, 10),
-  seizoenId: rankings.seasonId,
+  frozenOn: new Date().toISOString().slice(0, 10),
+  seasonId: rankings.seasonId,
   // Aantal speeldagen tot en met deze; het basispunt telt als extra deler mee.
-  speeldagenGespeeld: Number(speeldag.number),
-  spelersInStand: stand.length,
-  speeldag: {
-    id: String(speeldag.id),
-    nummer: Number(speeldag.number),
-    datum: speeldag.date.slice(0, 10),
-    gemiddeldeAfwezig: Number(speeldag.averageAbsent),
+  matchdaysPlayed: Number(matchday.number),
+  playersInRanking: ranking.length,
+  matchday: {
+    id: String(matchday.id),
+    number: Number(matchday.number),
+    date: matchday.date.slice(0, 10),
+    averageAbsent: Number(matchday.averageAbsent),
   },
-  spelers,
-  banen,
+  players,
+  courts,
 };
 
-writeFileSync(uitvoerPad, JSON.stringify(snapshot, null, 1) + '\n');
+writeFileSync(outputPath, JSON.stringify(snapshot, null, 1) + '\n');
 console.log(
-  `intraclub-voorbeeld.json geschreven: speeldag ${snapshot.speeldag.nummer} ` +
-    `(${snapshot.speeldag.datum}), ${spelers.length} spelers, ${banen.length} banen`,
+  `intraclub-example.json geschreven: speeldag ${snapshot.matchday.number} ` +
+    `(${snapshot.matchday.date}), ${players.length} spelers, ${courts.length} banen`,
 );

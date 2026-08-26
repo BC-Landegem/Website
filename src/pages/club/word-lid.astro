@@ -1,15 +1,15 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import Kop from '../../components/Kop.astro';
+import Heading from '../../components/Heading.astro';
 import Link from '../../components/Link.astro';
-import RailKop from '../../components/RailKop.astro';
+import RailHeading from '../../components/RailHeading.astro';
 import { url } from '../../lib/url';
-import trainingen from '../../data/trainingen.json';
+import trainings from '../../data/trainings.json';
 
-const { locatie, lidgeld } = trainingen;
+const { location, membership } = trainings;
 
 // Wat de club te bieden heeft — het rijtje uit de clubfolder.
-const aanbod = [
+const offerings = [
   'Recreatief en competitief badminton',
   'Intraclubcompetitie',
   'Liga- en PBO-competitie',
@@ -26,7 +26,7 @@ const aanbod = [
   description="Wanneer we spelen, wat je meebrengt, wat het lidgeld kost en hoe je inschrijft bij BC Landegem. Nieuwe spelers mogen drie keer gratis meespelen."
 >
   <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
-    <RailKop
+    <RailHeading
       title="Word lid!"
       intro="Bij BC Landegem begint iedereen op dezelfde manier. Je komt drie keer gratis meespelen. Pas daarna beslis je of je lid wordt."
     >
@@ -35,7 +35,7 @@ const aanbod = [
       <p class="mt-4">
         <a
           href="#inschrijven"
-          class="stem-baan inline-flex items-center gap-2 text-xs text-club-700 transition-colors hover:text-club-800 hover:underline"
+          class="type-label inline-flex items-center gap-2 text-xs text-club-700 transition-colors hover:text-club-800 hover:underline"
         >
           <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7" />
@@ -43,20 +43,20 @@ const aanbod = [
           Al drie keer meegespeeld? Naar het inschrijvingsformulier
         </a>
       </p>
-    </RailKop>
+    </RailHeading>
 
     {/* Vier stappen als meetpunten op de rail; het vierde meetpunt is de rode
          band onderaan, die de inschrijfactie draagt. */}
     <ol class="relative mt-14">
       <span class="absolute bottom-12 left-[6px] top-12 w-1 -translate-x-1/2 rounded-full bg-club-500" aria-hidden="true"></span>
 
-      <li class="relative border-b border-inkt-950/10 py-10 pl-10 first:border-t">
-        <span class="stem-cijfer absolute left-[6px] top-12 flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full bg-club-600 text-sm text-white ring-4 ring-veer-50" aria-hidden="true">1</span>
-        <Kop bovenkop="Stap 1">Kom gewoon eens meespelen</Kop>
+      <li class="relative border-b border-ink-950/10 py-10 pl-10 first:border-t">
+        <span class="type-numeral absolute left-[6px] top-12 flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full bg-club-600 text-sm text-white ring-4 ring-feather-50" aria-hidden="true">1</span>
+        <Heading eyebrow="Stap 1">Kom gewoon eens meespelen</Heading>
 
-        <div class="mt-5 max-w-3xl space-y-4 leading-relaxed text-inkt-700">
+        <div class="mt-5 max-w-3xl space-y-4 leading-relaxed text-ink-700">
           <p>
-            Ben je nog nergens aangesloten, dan mag je <strong class="text-inkt-950">drie keer
+            Ben je nog nergens aangesloten, dan mag je <strong class="text-ink-950">drie keer
             gratis komen meespelen</strong> voor je lidgeld betaalt. Bevalt het niet, dan stopt het
             daar en heb je niets betaald.
           </p>
@@ -71,86 +71,86 @@ const aanbod = [
           </p>
         </div>
 
-        <h3 class="stem-baan mt-10 text-xs text-club-700">Wanneer je terechtkan</h3>
+        <h3 class="type-label mt-10 text-xs text-club-700">Wanneer je terechtkan</h3>
         <ol class="mt-4">
-          {trainingen.momenten.map((moment) => (
-            <li class="border-b border-inkt-950/10 py-4 first:border-t sm:grid sm:grid-cols-[7rem_13rem_1fr] sm:items-baseline sm:gap-6">
-              <p class="stem-baan text-xs text-club-700">{moment.dag}</p>
-              <p class="stem-cijfer mt-1 text-2xl text-inkt-950 sm:mt-0">{moment.uren}</p>
+          {trainings.sessions.map((session) => (
+            <li class="border-b border-ink-950/10 py-4 first:border-t sm:grid sm:grid-cols-[7rem_13rem_1fr] sm:items-baseline sm:gap-6">
+              <p class="type-label text-xs text-club-700">{session.day}</p>
+              <p class="type-numeral mt-1 text-2xl text-ink-950 sm:mt-0">{session.hours}</p>
               <div class="mt-1 sm:mt-0">
-                <p class="font-bold">{moment.omschrijving}</p>
-                <p class="text-sm text-inkt-500">{moment.doelgroep}</p>
-                {moment.opmerking && <p class="text-sm text-inkt-500">{moment.opmerking}</p>}
+                <p class="font-bold">{session.description}</p>
+                <p class="text-sm text-ink-500">{session.audience}</p>
+                {session.note && <p class="text-sm text-ink-500">{session.note}</p>}
               </div>
             </li>
           ))}
         </ol>
 
-        <p class="mt-6 max-w-3xl leading-relaxed text-inkt-700">
-          Alles gaat door in <strong class="text-inkt-950">{locatie.naam}</strong>, {locatie.adres},
-          {locatie.gemeente} —
-          <Link href={locatie.kaart}>bekijk op de kaart</Link>.
+        <p class="mt-6 max-w-3xl leading-relaxed text-ink-700">
+          Alles gaat door in <strong class="text-ink-950">{location.name}</strong>, {location.address},
+          {location.municipality} —
+          <Link href={location.map}>bekijk op de kaart</Link>.
           De exacte data, ook wanneer er uitzonderlijk niet gespeeld wordt, vind je
           <Link href={url('/kalender/')}>in de kalender</Link>.
         </p>
       </li>
 
-      <li class="relative border-b border-inkt-950/10 py-10 pl-10">
-        <span class="stem-cijfer absolute left-[6px] top-12 flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full bg-club-600 text-sm text-white ring-4 ring-veer-50" aria-hidden="true">2</span>
-        <Kop bovenkop="Stap 2">Wat je meebrengt</Kop>
+      <li class="relative border-b border-ink-950/10 py-10 pl-10">
+        <span class="type-numeral absolute left-[6px] top-12 flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full bg-club-600 text-sm text-white ring-4 ring-feather-50" aria-hidden="true">2</span>
+        <Heading eyebrow="Stap 2">Wat je meebrengt</Heading>
 
         <ul class="mt-5 max-w-3xl space-y-4">
-          <li class="grid grid-cols-[1.25rem_1fr] items-baseline gap-2 leading-relaxed text-inkt-700">
+          <li class="grid grid-cols-[1.25rem_1fr] items-baseline gap-2 leading-relaxed text-ink-700">
             <span class="text-club-500" aria-hidden="true">—</span>
             <span>
-              <strong class="text-inkt-950">Sportschoenen met een niet-afgevende zool.</strong>
+              <strong class="text-ink-950">Sportschoenen met een niet-afgevende zool.</strong>
               Daar is de zaal streng in: schoenen die strepen nalaten of buiten gedragen zijn,
               mogen niet op het parket.
             </span>
           </li>
-          <li class="grid grid-cols-[1.25rem_1fr] items-baseline gap-2 leading-relaxed text-inkt-700">
+          <li class="grid grid-cols-[1.25rem_1fr] items-baseline gap-2 leading-relaxed text-ink-700">
             <span class="text-club-500" aria-hidden="true">—</span>
             <span>
-              <strong class="text-inkt-950">Gewone sportkledij.</strong>
+              <strong class="text-ink-950">Gewone sportkledij.</strong>
               Er is geen dresscode en clubkledij is nergens verplicht.
             </span>
           </li>
-          <li class="grid grid-cols-[1.25rem_1fr] items-baseline gap-2 leading-relaxed text-inkt-700">
+          <li class="grid grid-cols-[1.25rem_1fr] items-baseline gap-2 leading-relaxed text-ink-700">
             <span class="text-club-500" aria-hidden="true">—</span>
             <span>
-              <strong class="text-inkt-950">Je eigen racket.</strong>
+              <strong class="text-ink-950">Je eigen racket.</strong>
               Heb je er nog geen, leen er dan een van iemand die al speelt. Een eenvoudig racket om
               mee te starten kost trouwens niet veel. Weet je niet wat kopen, vraag het gerust:
               we helpen je aan een racket dat bij je past. Lukt het echt niet om iets te vinden voor
               je eerste keer, laat het dan vooraf weten.
             </span>
           </li>
-          <li class="grid grid-cols-[1.25rem_1fr] items-baseline gap-2 leading-relaxed text-inkt-700">
+          <li class="grid grid-cols-[1.25rem_1fr] items-baseline gap-2 leading-relaxed text-ink-700">
             <span class="text-club-500" aria-hidden="true">—</span>
             <span>
-              <strong class="text-inkt-950">Shuttles hoef je niet mee te brengen.</strong>
+              <strong class="text-ink-950">Shuttles hoef je niet mee te brengen.</strong>
               We spelen met clubshuttles en die zitten in het lidgeld.
             </span>
           </li>
         </ul>
       </li>
 
-      <li class="relative border-b border-inkt-950/10 py-10 pl-10">
-        <span class="stem-cijfer absolute left-[6px] top-12 flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full bg-club-600 text-sm text-white ring-4 ring-veer-50" aria-hidden="true">3</span>
-        <Kop bovenkop="Stap 3">Wat het kost</Kop>
+      <li class="relative border-b border-ink-950/10 py-10 pl-10">
+        <span class="type-numeral absolute left-[6px] top-12 flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full bg-club-600 text-sm text-white ring-4 ring-feather-50" aria-hidden="true">3</span>
+        <Heading eyebrow="Stap 3">Wat het kost</Heading>
 
-        <p class="mt-5 max-w-3xl leading-relaxed text-inkt-700">
+        <p class="mt-5 max-w-3xl leading-relaxed text-ink-700">
           Wat je betaalt, hangt af van hoe vaak je komt spelen. In elk tarief zitten de
           clubshuttles inbegrepen.
         </p>
 
         <ul class="mt-6 max-w-3xl">
-          {lidgeld.tarieven.map((tarief) => (
-            <li class="grid grid-cols-[5rem_1fr] items-baseline gap-4 border-b border-inkt-950/10 py-4 first:border-t">
-              <span class="stem-cijfer text-2xl text-club-700">{tarief.prijs}</span>
+          {membership.rates.map((rate) => (
+            <li class="grid grid-cols-[5rem_1fr] items-baseline gap-4 border-b border-ink-950/10 py-4 first:border-t">
+              <span class="type-numeral text-2xl text-club-700">{rate.price}</span>
               <span>
-                <span class="block font-bold text-inkt-950">{tarief.titel}</span>
-                <span class="block text-sm text-inkt-500">{tarief.detail}</span>
+                <span class="block font-bold text-ink-950">{rate.title}</span>
+                <span class="block text-sm text-ink-500">{rate.detail}</span>
               </span>
             </li>
           ))}
@@ -158,15 +158,15 @@ const aanbod = [
 
         {/* De kwartaalregel is de vraag die het vaakst per mail binnenkomt:
              expliciet zeggen dat de nieuwkomer zelf niets moet uitrekenen. */}
-        <div class="mt-8 max-w-3xl border-l-4 border-club-700 bg-veer-100 px-6 py-6">
-          <h3 class="stem-display text-xl text-inkt-950">Stap je later in het jaar in?</h3>
-          <div class="mt-3 space-y-3 leading-relaxed text-inkt-700">
+        <div class="mt-8 max-w-3xl border-l-4 border-club-700 bg-feather-100 px-6 py-6">
+          <h3 class="type-display text-xl text-ink-950">Stap je later in het jaar in?</h3>
+          <div class="mt-3 space-y-3 leading-relaxed text-ink-700">
             <p>
               Het lidgeld loopt per kalenderjaar en wordt per kwartaal verrekend. Hoe later op het
               jaar je lid wordt, hoe minder je betaalt. Wie vanaf oktober begint, betaalt dat
               laatste kwartaal samen met het lidgeld voor het jaar erna.
             </p>
-            <p class="font-bold text-inkt-950">
+            <p class="font-bold text-ink-950">
               Zelf rekenen hoeft niet. Na je inschrijving krijg je van ons het juiste bedrag en de
               betaalgegevens.
             </p>
@@ -177,11 +177,11 @@ const aanbod = [
 
     {/* Ouders lezen deze pagina met een andere vraag dan volwassen spelers. */}
     <section class="mt-14 max-w-3xl pl-10">
-      <Kop maat="klein">Gaat het over een kind?</Kop>
-      <div class="mt-3 space-y-4 leading-relaxed text-inkt-700">
+      <Heading size="small">Gaat het over een kind?</Heading>
+      <div class="mt-3 space-y-4 leading-relaxed text-ink-700">
         <p>
           Jeugdspelers zijn welkom vanaf 8 jaar. Nieuwe spelers starten
-          op <strong class="text-inkt-950">woensdagavond</strong>: samen opwarmen en daarna vrij
+          op <strong class="text-ink-950">woensdagavond</strong>: samen opwarmen en daarna vrij
           spelen, zonder selectie. De trainingen op zaterdag zijn voor wie de slagen al wat onder de
           knie heeft. De trainers kijken op woensdag wie daar klaar voor is, voor nieuwe spelers in
           de loop van september.
@@ -200,19 +200,19 @@ const aanbod = [
   <section id="inschrijven" class="border-y-8 border-club-800 bg-club-600 text-white">
     <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-6 px-4 py-12">
       <div class="flex-[1_1_24rem]">
-        {/* Op de club-600-band is álle tekst wit: inkt-950 haalt daar geen 4,5:1. Rangorde komt van grootte en gewicht. */}
-        <p class="stem-baan text-xs text-white">Stap 4</p>
-        <Kop kleur="erft" class="mt-1">Schrijf je in</Kop>
+        {/* Op de club-600-band is álle tekst wit: ink-950 haalt daar geen 4,5:1. Rangorde komt van grootte en gewicht. */}
+        <p class="type-label text-xs text-white">Stap 4</p>
+        <Heading color="inherit" class="mt-1">Schrijf je in</Heading>
         <p class="mt-2 max-w-xl text-xl font-bold text-white">
           Vul het online formulier in. Daarna krijg je van ons het bedrag en de betaalgegevens,
           en pas dan betaal je.
         </p>
       </div>
       <a
-        href={trainingen.inschrijfformulier}
+        href={trainings.registrationForm}
         target="_blank"
         rel="noopener"
-        class="stem-baan inline-flex max-w-full items-center gap-2 rounded-full bg-white px-5 py-3.5 text-xs text-club-600 transition-colors hover:bg-club-50 sm:px-7 sm:text-sm"
+        class="type-label inline-flex max-w-full items-center gap-2 rounded-full bg-white px-5 py-3.5 text-xs text-club-600 transition-colors hover:bg-club-50 sm:px-7 sm:text-sm"
       >
         Naar het inschrijvingsformulier
         {/* shrink-0: als de tekst op een smal scherm over twee regels breekt,
@@ -226,9 +226,9 @@ const aanbod = [
 
   <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
     <section class="pl-10">
-      <Kop maat="klein">Wat je bij ons kan doen</Kop>
-      <ul class="mt-5 grid max-w-3xl gap-2 leading-relaxed text-inkt-700 sm:grid-cols-2">
-        {aanbod.map((item) => (
+      <Heading size="small">Wat je bij ons kan doen</Heading>
+      <ul class="mt-5 grid max-w-3xl gap-2 leading-relaxed text-ink-700 sm:grid-cols-2">
+        {offerings.map((item) => (
           <li class="grid grid-cols-[1.25rem_1fr] items-baseline">
             <span class="text-club-500" aria-hidden="true">—</span>
             <span>{item}</span>
@@ -236,7 +236,7 @@ const aanbod = [
         ))}
       </ul>
 
-      <p class="mt-8 max-w-3xl leading-relaxed text-inkt-700">
+      <p class="mt-8 max-w-3xl leading-relaxed text-ink-700">
         Staat je vraag hier niet bij? Mail
         <Link href="mailto:info@bclandegem.be">info@bclandegem.be</Link>,
         we antwoorden graag.
@@ -245,7 +245,7 @@ const aanbod = [
       <p class="mt-8">
         <a
           href={url('/folder/bc-landegem-folder-2026.pdf')}
-          class="stem-baan inline-flex items-center gap-2 text-xs text-club-700 transition-colors hover:text-club-800 hover:underline"
+          class="type-label inline-flex items-center gap-2 text-xs text-club-700 transition-colors hover:text-club-800 hover:underline"
         >
           <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v11m0 0l-5-5m5 5l5-5M5 20h14" />

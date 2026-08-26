@@ -1,120 +1,120 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import Kop from '../../components/Kop.astro';
-import Pil from '../../components/Pil.astro';
-import Punt from '../../components/Punt.astro';
-import RailKop from '../../components/RailKop.astro';
+import Heading from '../../components/Heading.astro';
+import Pill from '../../components/Pill.astro';
+import Dot from '../../components/Dot.astro';
+import RailHeading from '../../components/RailHeading.astro';
 import { url } from '../../lib/url';
-import voorbeeld from '../../data/intraclub-voorbeeld.json';
+import example from '../../data/intraclub-example.json';
 import {
-  afwezigencijfer,
-  banden,
-  dagcijfer,
-  komma,
-  nieuweStand,
-  SETINDELING,
-  staatThuis,
-  tegenpunten,
+  absenteeScore,
+  bands,
+  dayScore,
+  formatComma,
+  newAverage,
+  SET_LINEUP,
+  isHomeSide,
+  opponentPoints,
   trimSet,
-  voorsprong,
-  volledigeNaam,
-  type Baan,
-  type Speler,
-} from '../../lib/intra-uitleg';
+  lead,
+  fullName,
+  type Court,
+  type Player,
+} from '../../lib/intra-explainer';
 
-// Alles op deze pagina komt uit één bevroren speeldag: src/data/intraclub-voorbeeld.json,
+// Alles op deze pagina komt uit één bevroren speeldag: src/data/intraclub-example.json,
 // geschreven door scripts/intra-snapshot.mjs. Echte spelers, echte loting, echte
 // uitslagen. Er gaat geen enkel request uit — de pagina is volledig gerenderd en
 // alle interactie is rekenwerk op die data, ook zonder bereik in de sporthal.
 // Zonder JavaScript blijft precies dit startbeeld staan: één speler, set 1, de
 // echte uitslag. Daarom worden alle cijfers hieronder ook hier al berekend.
-const spelers = voorbeeld.spelers as Speler[];
-const banen = voorbeeld.banen as Baan[];
-const { speeldag, speeldagenGespeeld, spelersInStand } = voorbeeld;
+const players = example.players as Player[];
+const courts = example.courts as Court[];
+const { matchday, matchdaysPlayed, playersInRanking } = example;
 
 // Voor de loting telt de volgorde van de avond zelf: de stand ná de vórige speeldag.
-const opSterkte = [...spelers].sort((a, b) => a.rangOpAvond - b.rangOpAvond);
-const aantal = opSterkte.length;
-const { totBoven, vanOnder } = banden(aantal);
-const plaatsOp = new Map(opSterkte.map((speler, i) => [speler.id, i]));
-const spelerOp = new Map(spelers.map((speler) => [speler.id, speler]));
+const byStrength = [...players].sort((a, b) => a.rankOnEvening - b.rankOnEvening);
+const count = byStrength.length;
+const { upperEnd, lowerStart } = bands(count);
+const positionById = new Map(byStrength.map((player, i) => [player.id, i]));
+const playerById = new Map(players.map((player) => [player.id, player]));
 
-const groepen = [
-  { soort: 'boven', kop: 'Alleen de bovenste groep', spelers: opSterkte.slice(0, vanOnder) },
-  { soort: 'overlap', kop: 'In beide groepen', spelers: opSterkte.slice(vanOnder, totBoven) },
-  { soort: 'onder', kop: 'Alleen de onderste groep', spelers: opSterkte.slice(totBoven) },
+const groups = [
+  { kind: 'upper', heading: 'Alleen de bovenste groep', players: byStrength.slice(0, lowerStart) },
+  { kind: 'overlap', heading: 'In beide groepen', players: byStrength.slice(lowerStart, upperEnd) },
+  { kind: 'lower', heading: 'Alleen de onderste groep', players: byStrength.slice(upperEnd) },
 ] as const;
 
-const baanVan = new Map<string, Baan>();
-for (const baan of banen) for (const id of baan.spelers) baanVan.set(id, baan);
+const courtById = new Map<string, Court>();
+for (const court of courts) for (const id of court.players) courtById.set(id, court);
 
 /** Uit welke band een échte baan van die avond getrokken is. */
-function bronVan(baan: Baan) {
-  const plaatsen = baan.spelers.map((id) => plaatsOp.get(id)!);
-  if (plaatsen.every((p) => p < totBoven)) return 'boven';
-  if (plaatsen.every((p) => p >= vanOnder)) return 'onder';
+function sourceOf(court: Court) {
+  const positions = court.players.map((id) => positionById.get(id)!);
+  if (positions.every((p) => p < upperEnd)) return 'upper';
+  if (positions.every((p) => p >= lowerStart)) return 'lower';
   return 'rest';
 }
-const echteBronnen = banen.map(bronVan);
-const restbaanNummer = echteBronnen.indexOf('rest') + 1;
-const heeftRestbaan = restbaanNummer > 0;
+const actualSources = courts.map(sourceOf);
+const restCourtNumber = actualSources.indexOf('rest') + 1;
+const hasRestCourt = restCourtNumber > 0;
 
 // De speler die het verhaal draagt tot je zelf iemand kiest: iemand uit de
 // overlapband — die laat zien dat je naar boven én naar onder geloot kan worden —
 // die bovendien een set in verlenging speelde, want daarop draait stap 4.
-const inOverlap = new Set(groepen[1].spelers.map((s) => s.id));
+const inOverlap = new Set(groups[1].players.map((s) => s.id));
 const start =
-  opSterkte.find(
-    (s) => inOverlap.has(s.id) && baanVan.get(s.id)!.sets.some(([t, u]) => t > 21 || u > 21),
-  ) ?? opSterkte[0];
+  byStrength.find(
+    (s) => inOverlap.has(s.id) && courtById.get(s.id)!.sets.some(([h, a]) => h > 21 || a > 21),
+  ) ?? byStrength[0];
 
-const startBaan = baanVan.get(start.id)!;
-const startBaanNummer = banen.indexOf(startBaan) + 1;
-const startPlek = startBaan.spelers.indexOf(start.id);
-const startBaanSpelers = startBaan.spelers.map((id) => spelerOp.get(id)!);
-const startBonussen = startBaanSpelers.map((s) => s.bonus);
+const startCourt = courtById.get(start.id)!;
+const startCourtNumber = courts.indexOf(startCourt) + 1;
+const startPosition = startCourt.players.indexOf(start.id);
+const startCourtPlayers = startCourt.players.map((id) => playerById.get(id)!);
+const startBonuses = startCourtPlayers.map((s) => s.bonus);
 
 // Stap 3, set 1: wie met wie, en met welke voorsprong.
-const duoNamen = (plekken: readonly number[]) =>
-  plekken.map((p) => volledigeNaam(startBaanSpelers[p])).join(' & ');
-const startVoorsprong = voorsprong(startBonussen, 0);
-const startVerschil = Math.max(startVoorsprong.thuis, startVoorsprong.uit);
-const startVoorNaam =
-  startVoorsprong.thuis > 0
-    ? duoNamen(SETINDELING[0].thuis)
-    : startVoorsprong.uit > 0
-      ? duoNamen(SETINDELING[0].uit)
+const pairNames = (positions: readonly number[]) =>
+  positions.map((p) => fullName(startCourtPlayers[p])).join(' & ');
+const startLead = lead(startBonuses, 0);
+const startGap = Math.max(startLead.home, startLead.away);
+const startLeadingPair =
+  startLead.home > 0
+    ? pairNames(SET_LINEUP[0].home)
+    : startLead.away > 0
+      ? pairNames(SET_LINEUP[0].away)
       : null;
 
 // Stap 4: de echte sets van deze speler, en wat ze opleveren.
 const startSets = [0, 1, 2].map((set) => {
-  const [thuis, uit] = startBaan.sets[set];
-  const eigen = staatThuis(startPlek, set) ? thuis : uit;
-  const ander = staatThuis(startPlek, set) ? uit : thuis;
-  return { gewonnen: eigen > ander, punten: eigen, telt: trimSet(eigen, ander) };
+  const [home, away] = startCourt.sets[set];
+  const own = isHomeSide(startPosition, set) ? home : away;
+  const other = isHomeSide(startPosition, set) ? away : home;
+  return { won: own > other, points: own, counted: trimSet(own, other) };
 });
-const startCijfer = dagcijfer(startSets.map((s) => s.telt));
-const startStand = nieuweStand(start.vorigGemiddelde, startCijfer, speeldagenGespeeld);
+const startScore = dayScore(startSets.map((s) => s.counted));
+const startAverage = newAverage(start.previousAverage, startScore, matchdaysPlayed);
 
-const afwezig = afwezigencijfer(banen);
-const datumTekst = new Date(speeldag.datum).toLocaleDateString('nl-BE', {
+const absent = absenteeScore(courts);
+const dateText = new Date(matchday.date).toLocaleDateString('nl-BE', {
   day: 'numeric',
   month: 'long',
   year: 'numeric',
 });
 
-const bonusRegels = [
-  { wie: 'Dame', punten: '+2' },
-  { wie: 'Speelt geen competitie', punten: '+5' },
-  { wie: 'Dubbelklassement 11 of 12', punten: '+4' },
-  { wie: 'Dubbelklassement 9 of 10', punten: '+3' },
-  { wie: 'Dubbelklassement 7 of 8', punten: '+2' },
-  { wie: 'Dubbelklassement 5 of 6', punten: '+1' },
-  { wie: 'Dubbelklassement 1 tot 4', punten: '0' },
+const bonusRules = [
+  { who: 'Dame', points: '+2' },
+  { who: 'Speelt geen competitie', points: '+5' },
+  { who: 'Dubbelklassement 11 of 12', points: '+4' },
+  { who: 'Dubbelklassement 9 of 10', points: '+3' },
+  { who: 'Dubbelklassement 7 of 8', points: '+2' },
+  { who: 'Dubbelklassement 5 of 6', points: '+1' },
+  { who: 'Dubbelklassement 1 tot 4', points: '0' },
 ];
 
-const bronLabel = { boven: 'bovenste groep', onder: 'onderste groep', rest: 'restbaan' } as const;
-const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
+const sourceLabel = { upper: 'bovenste groep', lower: 'onderste groep', rest: 'restbaan' } as const;
+const arrowPath = 'M4 12h16m0 0l-6-6m6 6l-6 6';
 ---
 
 <Layout
@@ -122,16 +122,16 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
   description="Hoe de loting, de bonuspunten en het klassement van de intraclub werken. Uitgelegd met de namen en de uitslagen van een echte speeldag."
 >
   <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
-    <RailKop
+    <RailHeading
       title="Zo werkt intraclub"
-      intro={`Om de twee weken is het woensdag intraclub. Je wordt bij drie andere spelers geloot, je speelt drie sets met telkens een andere partner, en achteraf wordt je plaats in het klassement bijgewerkt. Hieronder staat wat er die avond gebeurt, met de cijfers van speeldag ${speeldag.nummer}.`}
-      doorlopend
+      intro={`Om de twee weken is het woensdag intraclub. Je wordt bij drie andere spelers geloot, je speelt drie sets met telkens een andere partner, en achteraf wordt je plaats in het klassement bijgewerkt. Hieronder staat wat er die avond gebeurt, met de cijfers van speeldag ${matchday.number}.`}
+      continuous
     >
-      <p class="mt-4 max-w-2xl text-sm text-inkt-500">
-        Alle namen, uitslagen en cijfers hieronder komen van {datumTekst}: {aantal} spelers,
-         {banen.length} banen. Verzet gerust wat je wil, aan de echte stand verandert er niets.
+      <p class="mt-4 max-w-2xl text-sm text-ink-500">
+        Alle namen, uitslagen en cijfers hieronder komen van {dateText}: {count} spelers,
+         {courts.length} banen. Verzet gerust wat je wil, aan de echte stand verandert er niets.
       </p>
-    </RailKop>
+    </RailHeading>
 
     {/* De container is max-w-6xl zoals elke andere pagina, zodat de rail links op
         dezelfde lijn staat. De inhoud zelf blijft smaller en lijnt links uit. */}
@@ -139,36 +139,36 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
       {/* ─────────────────────────── STAP 1 ─────────────────────────── */}
       <section class="relative pl-10">
         <span class="absolute -top-16 bottom-0 left-[6px] w-1 -translate-x-1/2 bg-club-500" aria-hidden="true"></span>
-        <Punt top="top-2" />
+        <Dot top="top-2" />
 
-        <Kop bovenkop="Stap 1 · vóór 20u30">Je meldt je aan</Kop>
-        <p class="mt-4 max-w-2xl text-inkt-700">
+        <Heading eyebrow="Stap 1 · vóór 20u30">Je meldt je aan</Heading>
+        <p class="mt-4 max-w-2xl text-ink-700">
           In de sporthal staat een tablet. Wie meespeelt, tikt zijn naam aan. Om 20u30 gaat de lijst
           dicht en staat vast wie er die avond bij is.
         </p>
 
         {/* De tablet uit de sporthal, en meteen de spelerkiezer: kies je eigen naam
              en de rest van de pagina rekent verder met jou. */}
-        <div class="mt-8 max-w-md border-2 border-inkt-950 bg-white p-1.5 shadow-[6px_6px_0_0_var(--color-inkt-950)]">
-          <div class="border border-inkt-950/10 bg-veer-50 p-5">
-            <p class="stem-baan text-xs text-club-700">Aanwezig op {datumTekst}</p>
-            <p class="stem-display mt-1 text-4xl text-inkt-950">
-              {aantal}<span class="text-2xl text-inkt-500"> spelers</span>
+        <div class="mt-8 max-w-md border-2 border-ink-950 bg-white p-1.5 shadow-[6px_6px_0_0_var(--color-ink-950)]">
+          <div class="border border-ink-950/10 bg-feather-50 p-5">
+            <p class="type-label text-xs text-club-700">Aanwezig op {dateText}</p>
+            <p class="type-display mt-1 text-4xl text-ink-950">
+              {count}<span class="text-2xl text-ink-500"> spelers</span>
             </p>
-            <label for="speler-keuze" class="stem-baan mt-5 block text-xs text-inkt-500">
+            <label for="player-select" class="type-label mt-5 block text-xs text-ink-500">
               Speel je zelf mee? Kies je naam
             </label>
             <select
-              id="speler-keuze"
-              class="mt-2 w-full border-2 border-inkt-950/20 bg-white px-3 py-2.5 text-sm text-inkt-950 transition-colors hover:border-club-600 focus:border-club-500"
+              id="player-select"
+              class="mt-2 w-full border-2 border-ink-950/20 bg-white px-3 py-2.5 text-sm text-ink-950 transition-colors hover:border-club-600 focus:border-club-500"
             >
-              {opSterkte.map((speler) => (
-                <option value={speler.id} selected={speler.id === start.id}>
-                  {volledigeNaam(speler)}
+              {byStrength.map((player) => (
+                <option value={player.id} selected={player.id === start.id}>
+                  {fullName(player)}
                 </option>
               ))}
             </select>
-            <p class="mt-3 text-xs text-inkt-500">
+            <p class="mt-3 text-xs text-ink-500">
               Staat je naam er niet bij, dan speelde je die avond niet mee. Lees gewoon verder met de
               speler die er staat.
             </p>
@@ -179,15 +179,15 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
       {/* ─────────────────────────── STAP 2 ─────────────────────────── */}
       <section class="relative pl-10">
         <span class="absolute -top-16 bottom-0 left-[6px] w-1 -translate-x-1/2 bg-club-500" aria-hidden="true"></span>
-        <Punt top="top-2" />
+        <Dot top="top-2" />
 
-        <Kop bovenkop="Stap 2 · 20u30">De loting</Kop>
-        <p class="mt-4 max-w-2xl text-inkt-700">
+        <Heading eyebrow="Stap 2 · 20u30">De loting</Heading>
+        <p class="mt-4 max-w-2xl text-ink-700">
           De aanwezigen worden op sterkte gezet en in twee groepen verdeeld. Elke groep beslaat 60% van
           de aanwezigen: de eerste groep vanaf de best gerangschikte speler naar beneden, de tweede groep vanaf de laatst gerangschikte speler naar boven. Wie in de middelste
           20% valt, zit dus in allebei de groepen en kan naar boven én naar onder geloot worden.
         </p>
-        <p class="mt-3 max-w-2xl text-inkt-700">
+        <p class="mt-3 max-w-2xl text-ink-700">
           Daarna trekt de computer beurtelings vier namen uit de bovenste groep en vier uit de onderste,
           tot er in geen van beide groepen nog vier namen overblijven. Wie geloot is, verdwijnt uit
           allebei de groepen. Zo speel je zelden ver boven of onder je eigen niveau, en sta je toch
@@ -196,38 +196,38 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
 
         {/* De pot: iedereen die aanwezig was, op sterkte, met de overlap als eigen baan. */}
         <div class="mt-8">
-          <p class="stem-baan text-xs text-inkt-500">
-            De {aantal} aanwezigen, op rangschikking
-            <span class="text-inkt-950/40">· de stand zoals die vóór deze speeldag was</span>
+          <p class="type-label text-xs text-ink-500">
+            De {count} aanwezigen, op rangschikking
+            <span class="text-ink-950/40">· de stand zoals die vóór deze speeldag was</span>
           </p>
-          <p class="mt-1 text-xs text-inkt-500">
+          <p class="mt-1 text-xs text-ink-500">
             Wijs een baan aan of tik erop om te zien waar die vier spelers vandaan komen.
           </p>
-          <div class="mt-3 border border-inkt-950/10">
-            {groepen.map((groep) => (
+          <div class="mt-3 border border-ink-950/10">
+            {groups.map((group) => (
               <div
                 class:list={[
                   'px-3 py-3',
-                  groep.soort === 'overlap' ? 'border-y-2 border-club-500/30 bg-club-50' : 'bg-white',
+                  group.kind === 'overlap' ? 'border-y-2 border-club-500/30 bg-club-50' : 'bg-white',
                 ]}
               >
-                <p class="stem-baan text-[0.65rem] text-club-700">
-                  {groep.kop}
-                  <span class="text-inkt-500">
-                    {' · '}plaats {groep.spelers[0].rangOpAvond}–{groep.spelers[groep.spelers.length - 1].rangOpAvond}
+                <p class="type-label text-[0.65rem] text-club-700">
+                  {group.heading}
+                  <span class="text-ink-500">
+                    {' · '}plaats {group.players[0].rankOnEvening}–{group.players[group.players.length - 1].rankOnEvening}
                   </span>
                 </p>
                 <div class="mt-2 flex flex-wrap gap-1">
-                  {groep.spelers.map((speler) => (
+                  {group.players.map((player) => (
                     <span
-                      data-chip={speler.id}
+                      data-chip={player.id}
                       class:list={[
                         'border px-2 py-1 text-xs leading-tight transition-colors',
-                        speler.id === start.id
-                          ? 'border-club-500 bg-club-100 font-bold text-inkt-950'
-                          : 'border-inkt-950/15 bg-white text-inkt-700',
+                        player.id === start.id
+                          ? 'border-club-500 bg-club-100 font-bold text-ink-950'
+                          : 'border-ink-950/15 bg-white text-ink-700',
                       ]}
-                    ><span class="stem-cijfer text-club-700">{speler.rangOpAvond}.</span> {volledigeNaam(speler)}</span>
+                    ><span class="type-numeral text-club-700">{player.rankOnEvening}.</span> {fullName(player)}</span>
                   ))}
                 </div>
               </div>
@@ -237,9 +237,9 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
 
         <div class="mt-6 flex flex-wrap items-center gap-3">
           <button
-            id="loot-opnieuw"
+            id="draw-again"
             type="button"
-            class="stem-baan inline-flex items-center gap-2 rounded-full bg-club-600 px-6 py-3 text-sm text-white transition-colors hover:bg-club-700"
+            class="type-label inline-flex items-center gap-2 rounded-full bg-club-600 px-6 py-3 text-sm text-white transition-colors hover:bg-club-700"
           >
             <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h5M20 20v-5h-5M20 9A8 8 0 006.3 5.3M4 15a8 8 0 0013.7 3.7" />
@@ -247,39 +247,39 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
             Loot opnieuw
           </button>
           <button
-            id="toon-echte"
+            id="show-actual"
             type="button"
-            class="stem-baan rounded-full border-2 border-inkt-950/20 px-6 py-2.5 text-sm text-inkt-700 transition-colors hover:border-club-600 hover:text-club-600"
+            class="type-label rounded-full border-2 border-ink-950/20 px-6 py-2.5 text-sm text-ink-700 transition-colors hover:border-club-600 hover:text-club-600"
           >
             Toon de echte loting
           </button>
         </div>
 
-        <p id="loting-bijschrift" class="mt-4 text-sm text-inkt-500" aria-live="polite">
-          Zo zag de loting van {datumTekst} er echt uit.
+        <p id="draw-caption" class="mt-4 text-sm text-ink-500" aria-live="polite">
+          Zo zag de loting van {dateText} er echt uit.
         </p>
 
         <div class="mt-5 grid gap-2 sm:grid-cols-2">
-          {banen.map((baan, i) => (
+          {courts.map((court, i) => (
             <div
-              data-baan={i}
+              data-court={i}
               tabindex="0"
               role="button"
               aria-pressed="false"
-              class="vlucht geland cursor-pointer border border-inkt-950/10 bg-white p-3 transition-colors hover:border-club-500 focus-visible:border-club-500"
+              class="flight landed cursor-pointer border border-ink-950/10 bg-white p-3 transition-colors hover:border-club-500 focus-visible:border-club-500"
             >
               <p class="flex items-baseline justify-between gap-2">
-                <span class="stem-baan text-[0.65rem] text-club-700">Baan {i + 1}</span>
-                <span data-bron class="stem-baan text-[0.65rem] text-inkt-500">{bronLabel[echteBronnen[i]]}</span>
+                <span class="type-label text-[0.65rem] text-club-700">Baan {i + 1}</span>
+                <span data-source class="type-label text-[0.65rem] text-ink-500">{sourceLabel[actualSources[i]]}</span>
               </p>
-              <p class="mt-1.5 text-[0.8rem] leading-snug text-inkt-700">
-                {baan.spelers.map((id, plek) => (
+              <p class="mt-1.5 text-[0.8rem] leading-snug text-ink-700">
+                {court.players.map((id, position) => (
                   <>
-                    {plek > 0 && <span class="text-inkt-950/30"> · </span>}
+                    {position > 0 && <span class="text-ink-950/30"> · </span>}
                     <span
-                      data-plek={plek}
+                      data-position={position}
                       class:list={id === start.id ? 'font-bold text-club-700' : undefined}
-                    >{volledigeNaam(spelerOp.get(id)!)}</span>
+                    >{fullName(playerById.get(id)!)}</span>
                   </>
                 ))}
               </p>
@@ -287,19 +287,19 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
           ))}
         </div>
 
-        <p class="mt-5 max-w-2xl text-sm text-inkt-500">
+        <p class="mt-5 max-w-2xl text-sm text-ink-500">
           De twee groepen lopen zelden gelijk leeg. De spelers uit de middelste 20% worden nu eens naar
           boven, dan weer naar onder geloot, en daardoor blijft er op de meeste speeldagen een handvol
           namen over — ook wanneer het aantal aanwezigen netjes door vier deelt. Die komen samen op de
-          <strong class="font-bold text-inkt-700">restbaan</strong>, de enige baan waar de sterkste en
+          <strong class="font-bold text-ink-700">restbaan</strong>, de enige baan waar de sterkste en
           de zwakste van de zaal naast elkaar kunnen staan.
-          {heeftRestbaan ? (
-            <> Op {datumTekst} was dat baan {restbaanNummer}.</>
+          {hasRestCourt ? (
+            <> Op {dateText} was dat baan {restCourtNumber}.</>
           ) : (
-            <> Op {datumTekst} viel dat niet voor: alle {aantal} aanwezigen pasten precies op banen.</>
+            <> Op {dateText} viel dat niet voor: alle {count} aanwezigen pasten precies op banen.</>
           )}
         </p>
-        <p class="mt-3 max-w-2xl text-sm text-inkt-500">
+        <p class="mt-3 max-w-2xl text-sm text-ink-500">
           Blijven er minder dan vier namen over, dan wordt de baan aangevuld door iemand die al gespeeld
           heeft. Die tweede match telt niet mee voor de rangschikking: wie de baan mee helpt vol maken,
           speelt voor het plezier.
@@ -309,38 +309,38 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
       {/* ─────────────────────────── STAP 3 ─────────────────────────── */}
       <section class="relative pl-10">
         <span class="absolute -top-16 bottom-0 left-[6px] w-1 -translate-x-1/2 bg-club-500" aria-hidden="true"></span>
-        <Punt top="top-2" />
+        <Dot top="top-2" />
 
-        <Kop bovenkop="Stap 3 · op de baan">Drie sets, elke keer een ander duo</Kop>
-        <p class="mt-4 max-w-2xl text-inkt-700">
+        <Heading eyebrow="Stap 3 · op de baan">Drie sets, elke keer een ander duo</Heading>
+        <p class="mt-4 max-w-2xl text-ink-700">
           Op je baan staan vier spelers en er worden drie sets gespeeld. Met elk van de drie anderen
           speel je één set samen, tegen elk van hen speel je twee sets. Wie je partner is, weegt dus
           even zwaar door als wie tegenover je staat.
         </p>
-        <p class="mt-3 max-w-2xl text-inkt-700">
+        <p class="mt-3 max-w-2xl text-ink-700">
           Elke speler brengt ook bonuspunten mee. Per duo worden die samengeteld en het verschil tussen
           de twee duo's is de voorsprong waarmee de set begint. Omdat de duo's elke set veranderen,
           verandert die voorsprong mee: dezelfde vier spelers starten drie keer anders.
         </p>
 
-        <div class="mt-8 border border-inkt-950/10 bg-white">
-          <div class="border-b border-inkt-950/10 bg-veer-50 px-4 py-3">
-            <p class="stem-baan text-[0.65rem] text-inkt-500">
-              <span id="baan-titel">Baan {startBaanNummer}</span> · {datumTekst}
+        <div class="mt-8 border border-ink-950/10 bg-white">
+          <div class="border-b border-ink-950/10 bg-feather-50 px-4 py-3">
+            <p class="type-label text-[0.65rem] text-ink-500">
+              <span id="court-title">Baan {startCourtNumber}</span> · {dateText}
             </p>
             <div class="mt-2 flex flex-wrap gap-1.5">
-              {startBaanSpelers.map((speler, plek) => (
+              {startCourtPlayers.map((player, position) => (
                 <span
-                  data-baanspeler={plek}
+                  data-court-player={position}
                   class:list={[
                     'border px-2 py-1 text-[0.8rem] leading-tight',
-                    speler.id === start.id
-                      ? 'border-club-500 bg-club-100 font-bold text-inkt-950'
-                      : 'border-inkt-950/15 text-inkt-700',
+                    player.id === start.id
+                      ? 'border-club-500 bg-club-100 font-bold text-ink-950'
+                      : 'border-ink-950/15 text-ink-700',
                   ]}
                 >
-                  <span data-baannaam>{volledigeNaam(speler)}</span>
-                  <span data-baanbonus class="stem-cijfer ml-1 text-club-700">{speler.bonus}</span>
+                  <span data-name>{fullName(player)}</span>
+                  <span data-bonus class="type-numeral ml-1 text-club-700">{player.bonus}</span>
                 </span>
               ))}
             </div>
@@ -349,71 +349,71 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
           <div class="px-4 py-5">
             <div class="flex flex-wrap gap-2" role="tablist" aria-label="Set">
               {[0, 1, 2].map((set) => (
-                <Pil
+                <Pill
                   role="tab"
                   data-set-tab={set}
                   aria-selected={set === 0 ? 'true' : 'false'}
                 >
                   Set {set + 1}
-                </Pil>
+                </Pill>
               ))}
             </div>
 
             {/* Het scorebord: twee duo's met hun opgetelde bonus, en de stand waarmee ze starten. */}
             <div class="mt-6 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3">
               <div class="text-right">
-                <p id="duo-thuis" class="text-sm leading-snug text-inkt-950">{duoNamen(SETINDELING[0].thuis)}</p>
-                <p class="stem-baan mt-1 text-[0.65rem] text-inkt-500">
-                  bonus <span id="bonus-thuis" class="stem-cijfer text-club-700">{startVoorsprong.thuisBonus}</span>
+                <p id="pair-home" class="text-sm leading-snug text-ink-950">{pairNames(SET_LINEUP[0].home)}</p>
+                <p class="type-label mt-1 text-[0.65rem] text-ink-500">
+                  bonus <span id="bonus-home" class="type-numeral text-club-700">{startLead.homeBonus}</span>
                 </p>
               </div>
-              <p class="stem-cijfer bg-veer-100 px-4 py-2 text-center text-2xl text-inkt-950">
-                <span id="start-thuis">{startVoorsprong.thuis}</span><span class="text-inkt-950/30"> – </span><span id="start-uit">{startVoorsprong.uit}</span>
+              <p class="type-numeral bg-feather-100 px-4 py-2 text-center text-2xl text-ink-950">
+                <span id="start-home">{startLead.home}</span><span class="text-ink-950/30"> – </span><span id="start-away">{startLead.away}</span>
               </p>
               <div>
-                <p id="duo-uit" class="text-sm leading-snug text-inkt-950">{duoNamen(SETINDELING[0].uit)}</p>
-                <p class="stem-baan mt-1 text-[0.65rem] text-inkt-500">
-                  bonus <span id="bonus-uit" class="stem-cijfer text-club-700">{startVoorsprong.uitBonus}</span>
+                <p id="pair-away" class="text-sm leading-snug text-ink-950">{pairNames(SET_LINEUP[0].away)}</p>
+                <p class="type-label mt-1 text-[0.65rem] text-ink-500">
+                  bonus <span id="bonus-away" class="type-numeral text-club-700">{startLead.awayBonus}</span>
                 </p>
               </div>
             </div>
-            <p id="voorsprong-uitleg" class="mt-3 text-center text-sm text-inkt-500">
-              {startVoorNaam
-                ? `${startVoorsprong.thuisBonus} tegen ${startVoorsprong.uitBonus} bonuspunten: ${startVoorNaam} begint ${startVerschil} punt${startVerschil === 1 ? '' : 'en'} voor.`
+            <p id="lead-explainer" class="mt-3 text-center text-sm text-ink-500">
+              {startLeadingPair
+                ? `${startLead.homeBonus} tegen ${startLead.awayBonus} bonuspunten: ${startLeadingPair} begint ${startGap} punt${startGap === 1 ? '' : 'en'} voor.`
                 : 'Even veel bonuspunten aan beide kanten: deze set begint op nul.'}
             </p>
 
-            <p class="stem-baan mt-6 text-[0.65rem] text-inkt-500">De echte uitslag van deze set</p>
+            <p class="type-label mt-6 text-[0.65rem] text-ink-500">De echte uitslag van deze set</p>
             <p class="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-              <span id="echte-uitslag" class="stem-cijfer text-2xl text-inkt-950">
-                {startBaan.sets[0][0]} – {startBaan.sets[0][1]}
+              <span id="actual-result" class="type-numeral text-2xl text-ink-950">
+                {startCourt.sets[0][0]} – {startCourt.sets[0][1]}
               </span>
-              <span id="echte-winnaar" class="text-sm text-inkt-500">
-                {duoNamen(startBaan.sets[0][0] > startBaan.sets[0][1] ? SETINDELING[0].thuis : SETINDELING[0].uit)} wonnen
+              <span id="actual-winner" class="text-sm text-ink-500">
+                {pairNames(startCourt.sets[0][0] > startCourt.sets[0][1] ? SET_LINEUP[0].home : SET_LINEUP[0].away)} wonnen
               </span>
             </p>
           </div>
         </div>
 
         <details class="mt-5 max-w-2xl border-l-2 border-club-500/30 pl-4">
-          <summary class="stem-baan cursor-pointer text-xs text-club-700 hover:text-club-800">
+          <summary class="type-label cursor-pointer text-xs text-club-700 hover:text-club-800">
             Waar komt dat bonuscijfer vandaan?
           </summary>
-          <p class="mt-3 text-sm text-inkt-700">
+          <p class="mt-3 text-sm text-ink-700">
             Wie op papier zwakker staat, begint elke set met een voorsprong. Zo blijft het voor alle
             vier spelers spannend. De club telt op:
           </p>
           <table class="mt-3 w-full max-w-sm text-left text-sm">
             <tbody>
-              {bonusRegels.map((regel) => (
-                <tr class="border-b border-inkt-950/10">
-                  <td class="py-1.5 pr-3 text-inkt-700">{regel.wie}</td>
-                  <td class="stem-cijfer py-1.5 text-right text-inkt-950">{regel.punten}</td>
+              {bonusRules.map((rule) => (
+                <tr class="border-b border-ink-950/10">
+                  <td class="py-1.5 pr-3 text-ink-700">{rule.who}</td>
+                  <td class="type-numeral py-1.5 text-right text-ink-950">{rule.points}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-          <p class="mt-3 text-sm text-inkt-500">
+          <p class="mt-3 text-sm text-ink-500">
             Het dubbelklassement is dat van Badminton Vlaanderen, waarbij een hoger cijfer een lager
             niveau betekent. Een dame die geen competitie speelt komt zo aan 7 bonuspunten, het
             hoogste dat voorkomt. Hierboven staat alleen het totaal per speler.
@@ -424,40 +424,40 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
       {/* ─────────────────────────── STAP 4 ─────────────────────────── */}
       <section class="relative pl-10">
         <span class="absolute -top-16 bottom-0 left-[6px] w-1 -translate-x-1/2 bg-club-500" aria-hidden="true"></span>
-        <Punt top="top-2" />
+        <Dot top="top-2" />
 
-        <Kop bovenkop="Stap 4 · na de laatste shuttle">Van uitslag naar stand</Kop>
-        <p class="mt-4 max-w-2xl text-inkt-700">
+        <Heading eyebrow="Stap 4 · na de laatste shuttle">Van uitslag naar stand</Heading>
+        <p class="mt-4 max-w-2xl text-ink-700">
           De uitslagen gaan in de tablet en daarna wordt de hele stand opnieuw berekend. Niet op
           gewonnen matchen, wel op <strong class="font-bold">punten per set</strong>: je cijfer voor
           een speeldag is het gemiddelde van wat je in je drie sets bij elkaar speelde.
         </p>
-        <p class="mt-3 max-w-2xl text-inkt-700">
+        <p class="mt-3 max-w-2xl text-ink-700">
           Een set die in verlenging gaat, telt niet zwaarder mee: alles boven 21 wordt teruggerekend.
           Wie wint krijgt dus altijd 21, of de set nu op 21–5 of op 30–29 eindigde. Alleen als je
           verliest, maakt het uit hoeveel punten je haalde.
         </p>
 
-        <div class="mt-8 border border-inkt-950/10 bg-white p-4 sm:p-6">
-          <p class="stem-baan text-[0.65rem] text-inkt-500">
-            Verzet de sets van <span id="rekenaar-naam" class="text-club-700">{volledigeNaam(start)}</span>
+        <div class="mt-8 border border-ink-950/10 bg-white p-4 sm:p-6">
+          <p class="type-label text-[0.65rem] text-ink-500">
+            Verzet de sets van <span id="calculator-name" class="text-club-700">{fullName(start)}</span>
           </p>
 
           <div class="mt-4 space-y-4">
-            {startSets.map((setstand, set) => (
-              <div class="grid grid-cols-[3rem_minmax(0,1fr)] items-center gap-x-3 gap-y-2 border-b border-inkt-950/5 pb-4 last:border-0 last:pb-0 sm:grid-cols-[3rem_9rem_minmax(0,1fr)_8rem]">
-                <span class="stem-baan text-xs text-inkt-500">Set {set + 1}</span>
+            {startSets.map((setResult, set) => (
+              <div class="grid grid-cols-[3rem_minmax(0,1fr)] items-center gap-x-3 gap-y-2 border-b border-ink-950/5 pb-4 last:border-0 last:pb-0 sm:grid-cols-[3rem_9rem_minmax(0,1fr)_8rem]">
+                <span class="type-label text-xs text-ink-500">Set {set + 1}</span>
 
                 <div class="flex flex-wrap gap-1 justify-self-start" role="group" aria-label={`Uitslag set ${set + 1}`}>
-                  {['gewonnen', 'verloren'].map((soort) => (
-                    <Pil
-                      maat="klein"
-                      data-uitslag={set}
-                      data-soort={soort}
-                      aria-pressed={(soort === 'gewonnen') === setstand.gewonnen ? 'true' : 'false'}
+                  {['won', 'lost'].map((kind) => (
+                    <Pill
+                      size="small"
+                      data-result={set}
+                      data-kind={kind}
+                      aria-pressed={(kind === 'won') === setResult.won ? 'true' : 'false'}
                     >
-                      {soort === 'gewonnen' ? 'Gewonnen' : 'Verloren'}
-                    </Pil>
+                      {kind === 'won' ? 'Gewonnen' : 'Verloren'}
+                    </Pill>
                   ))}
                 </div>
 
@@ -465,22 +465,22 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
                   <span class="sr-only">Jouw punten in set {set + 1}</span>
                   <input
                     type="range"
-                    data-punten={set}
+                    data-points={set}
                     min="0"
                     max="28"
                     step="1"
-                    value={setstand.gewonnen ? 21 : setstand.punten}
-                    disabled={setstand.gewonnen}
-                    class="h-1 w-full min-w-32 cursor-pointer appearance-none rounded-full bg-inkt-950/15 accent-club-500 disabled:cursor-not-allowed disabled:opacity-30"
+                    value={setResult.won ? 21 : setResult.points}
+                    disabled={setResult.won}
+                    class="h-1 w-full min-w-32 cursor-pointer appearance-none rounded-full bg-ink-950/15 accent-club-500 disabled:cursor-not-allowed disabled:opacity-30"
                   />
                 </label>
 
                 <p class="col-start-2 justify-self-start sm:col-start-4 sm:justify-self-end">
-                  <span data-score={set} class="stem-cijfer text-sm text-inkt-500">
-                    {setstand.gewonnen ? 'gewonnen' : `${setstand.punten} – ${tegenpunten(setstand.punten)}`}
+                  <span data-score={set} class="type-numeral text-sm text-ink-500">
+                    {setResult.won ? 'gewonnen' : `${setResult.points} – ${opponentPoints(setResult.points)}`}
                   </span>
-                  <span data-telt={set} class="stem-cijfer ml-2 bg-veer-100 px-2 py-0.5 text-sm text-inkt-950">
-                    {komma(setstand.telt)}
+                  <span data-counted={set} class="type-numeral ml-2 bg-feather-100 px-2 py-0.5 text-sm text-ink-950">
+                    {formatComma(setResult.counted)}
                   </span>
                 </p>
               </div>
@@ -488,59 +488,59 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
           </div>
 
           <button
-            id="herstel-uitslag"
+            id="restore-result"
             type="button"
-            class="stem-baan mt-5 text-[0.65rem] text-club-700 underline hover:text-club-800"
+            class="type-label mt-5 text-[0.65rem] text-club-700 underline hover:text-club-800"
           >
             Herstel de echte uitslag
           </button>
 
           {/* De rekensom, van drie sets naar één plaats in het klassement. */}
-          <div class="mt-6 border-t-2 border-inkt-950 pt-5">
+          <div class="mt-6 border-t-2 border-ink-950 pt-5">
             <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-              <p class="stem-baan text-xs text-inkt-500">Je cijfer voor deze speeldag</p>
-              <p id="dagcijfer" class="stem-cijfer text-3xl text-inkt-950">{komma(startCijfer)}</p>
+              <p class="type-label text-xs text-ink-500">Je cijfer voor deze speeldag</p>
+              <p id="day-score" class="type-numeral text-3xl text-ink-950">{formatComma(startScore)}</p>
             </div>
-            <p id="dagcijfer-som" class="mt-1 text-sm text-inkt-500">
-              ({startSets.map((s) => komma(s.telt)).join(' + ')}) ÷ 3 — je gemiddeld aantal punten per set.
+            <p id="day-score-sum" class="mt-1 text-sm text-ink-500">
+              ({startSets.map((s) => formatComma(s.counted)).join(' + ')}) ÷ 3 — je gemiddeld aantal punten per set.
             </p>
 
             <div class="mt-5 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-              <p class="stem-baan text-xs text-inkt-500">Je stand na deze speeldag</p>
-              <p class="stem-cijfer text-3xl text-inkt-950">
-                <span id="stand-vorig" class="text-lg text-inkt-500">{komma(start.vorigGemiddelde)}</span>
-                <span class="text-lg text-inkt-950/30"> → </span>
-                <span id="stand-nieuw">{komma(startStand)}</span>
+              <p class="type-label text-xs text-ink-500">Je stand na deze speeldag</p>
+              <p class="type-numeral text-3xl text-ink-950">
+                <span id="average-previous" class="text-lg text-ink-500">{formatComma(start.previousAverage)}</span>
+                <span class="text-lg text-ink-950/30"> → </span>
+                <span id="average-new">{formatComma(startAverage)}</span>
               </p>
             </div>
-            <p id="stand-som" class="mt-1 text-sm text-inkt-500">
-              ({komma(start.vorigGemiddelde)} × {speeldagenGespeeld} + {komma(startCijfer)}) ÷ {speeldagenGespeeld + 1}
-               — het gemiddelde van je basispunt en al je {speeldagenGespeeld} speeldagcijfers.
+            <p id="average-sum" class="mt-1 text-sm text-ink-500">
+              ({formatComma(start.previousAverage)} × {matchdaysPlayed} + {formatComma(startScore)}) ÷ {matchdaysPlayed + 1}
+               — het gemiddelde van je basispunt en al je {matchdaysPlayed} speeldagcijfers.
             </p>
           </div>
         </div>
 
         <div class="mt-6 max-w-2xl border-l-4 border-club-500 bg-club-50 p-4">
-          <p class="stem-baan text-[0.65rem] text-club-700">En als je er niet bij was?</p>
-          <p class="mt-2 text-sm text-inkt-700">
+          <p class="type-label text-[0.65rem] text-club-700">En als je er niet bij was?</p>
+          <p class="mt-2 text-sm text-ink-700">
             Dan krijg je geen nul, maar het gemiddelde van alle verliezende duo's van die avond.
-            Op {datumTekst} was dat
-             <strong class="stem-cijfer font-bold text-inkt-950">{komma(afwezig)}</strong>, terwijl de
-            top van de stand rond {komma(spelers[0].gemiddelde, 1)} zit. Sta je hoger dan dat cijfer,
+            Op {dateText} was dat
+             <strong class="type-numeral font-bold text-ink-950">{formatComma(absent)}</strong>, terwijl de
+            top van de stand rond {formatComma(players[0].average, 1)} zit. Sta je hoger dan dat cijfer,
             dan kost elke gemiste speeldag je een beetje.
           </p>
         </div>
 
         <details class="mt-5 max-w-2xl border-l-2 border-club-500/30 pl-4">
-          <summary class="stem-baan cursor-pointer text-xs text-club-700 hover:text-club-800">
+          <summary class="type-label cursor-pointer text-xs text-club-700 hover:text-club-800">
             Voor de rekenaars
           </summary>
-          <ul class="mt-3 space-y-3 text-sm text-inkt-700">
+          <ul class="mt-3 space-y-3 text-sm text-ink-700">
             <li>
               <strong class="font-bold">Het basispunt.</strong> Bij de start van een seizoen krijgt
               iedereen 19,000 als eerste waarde. Je stand is het gemiddelde van dat basispunt en al
-              je speeldagcijfers, dus na {speeldagenGespeeld} speeldagen weegt het nog één
-              {speeldagenGespeeld + 1}de mee. Vroeg in het seizoen springt je stand daardoor flink,
+              je speeldagcijfers, dus na {matchdaysPlayed} speeldagen weegt het nog één
+              {matchdaysPlayed + 1}de mee. Vroeg in het seizoen springt je stand daardoor flink,
               later verschuift ze nog nauwelijks.
             </li>
             <li>
@@ -552,7 +552,7 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
             <li>
               <strong class="font-bold">Terugschalen.</strong> Bij een set boven 21 wordt elke score
               vermenigvuldigd met 21 gedeeld door de hoogste score. Bij 24–22 geeft dat 21 en
-              21⁄24 × 22 = {komma((21 / 24) * 22)}.
+              21⁄24 × 22 = {formatComma((21 / 24) * 22)}.
             </li>
             <li>
               <strong class="font-bold">De code.</strong> De loting, de puntenberekening en de hele
@@ -567,47 +567,47 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
       {/* ─────────────────────────── SLOT ─────────────────────────── */}
       <section class="relative pl-10">
         <span class="absolute -top-16 bottom-2 left-[6px] w-1 -translate-x-1/2 rounded-full bg-club-500" aria-hidden="true"></span>
-        <Punt top="top-2" />
+        <Dot top="top-2" />
         <span class="absolute bottom-0 left-[6px] h-2 w-2 -translate-x-1/2 rounded-full bg-club-500" aria-hidden="true"></span>
 
-        <Kop>En nu?</Kop>
+        <Heading>En nu?</Heading>
 
         <div class="mt-6 grid gap-4 pb-10 sm:grid-cols-2">
-          <div class="border-2 border-inkt-950 p-5">
-            <p class="stem-baan text-xs text-club-700">Je speelt al mee</p>
-            <p class="mt-2 text-sm text-inkt-700">
-              Dit seizoen staan er {spelersInStand} spelers in het klassement. Bekijk de stand, je eigen
+          <div class="border-2 border-ink-950 p-5">
+            <p class="type-label text-xs text-club-700">Je speelt al mee</p>
+            <p class="mt-2 text-sm text-ink-700">
+              Dit seizoen staan er {playersInRanking} spelers in het klassement. Bekijk de stand, je eigen
               verloop over de speeldagen en alle uitslagen.
             </p>
             <div class="mt-4 flex flex-col items-start gap-2">
-              <a href={url('/intraclub/')} class="stem-baan inline-flex items-center gap-2 text-xs text-club-700 hover:text-club-800 hover:underline">
+              <a href={url('/intraclub/')} class="type-label inline-flex items-center gap-2 text-xs text-club-700 hover:text-club-800 hover:underline">
                 Naar de stand
                 <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" d={pijl} />
+                  <path stroke-linecap="round" stroke-linejoin="round" d={arrowPath} />
                 </svg>
               </a>
               <a
-                id="link-eigen-verloop"
+                id="link-own-progression"
                 href={url(`/intraclub/speler/?id=${start.id}`)}
-                class="stem-baan inline-flex items-center gap-2 text-xs text-club-700 hover:text-club-800 hover:underline"
+                class="type-label inline-flex items-center gap-2 text-xs text-club-700 hover:text-club-800 hover:underline"
               >
-                <span id="link-eigen-tekst">Het verloop van {volledigeNaam(start)}</span>
+                <span id="link-own-text">Het verloop van {fullName(start)}</span>
                 <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" d={pijl} />
+                  <path stroke-linecap="round" stroke-linejoin="round" d={arrowPath} />
                 </svg>
               </a>
-              <a href={url(`/intraclub/speeldag/?id=${speeldag.id}`)} class="stem-baan inline-flex items-center gap-2 text-xs text-club-700 hover:text-club-800 hover:underline">
-                Alle uitslagen van speeldag {speeldag.nummer}
+              <a href={url(`/intraclub/speeldag/?id=${matchday.id}`)} class="type-label inline-flex items-center gap-2 text-xs text-club-700 hover:text-club-800 hover:underline">
+                Alle uitslagen van speeldag {matchday.number}
                 <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" d={pijl} />
+                  <path stroke-linecap="round" stroke-linejoin="round" d={arrowPath} />
                 </svg>
               </a>
             </div>
           </div>
 
-          {/* Kleine tekst op clubrood is inkt-950 (kleine-letter-regel uit DESIGN.md) */}
-          <div class="bg-club-500 p-5 text-inkt-950">
-            <p class="stem-baan text-xs">Nog nooit meegedaan?</p>
+          {/* Kleine tekst op clubrood is ink-950 (kleine-letter-regel uit DESIGN.md) */}
+          <div class="bg-club-500 p-5 text-ink-950">
+            <p class="type-label text-xs">Nog nooit meegedaan?</p>
             <p class="mt-2 text-sm font-medium">
               Je hoeft er niets voor te kunnen. Door de groepen speel je tegen je eigen niveau, en met de
               bonuspunten klopt een recreant geregeld een competitiespeler. Kom gewoon eens langs op
@@ -615,11 +615,11 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
             </p>
             <a
               href={url('/club/word-lid/')}
-              class="stem-baan mt-4 inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-xs text-club-600 transition-colors hover:bg-club-50"
+              class="type-label mt-4 inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-xs text-club-600 transition-colors hover:bg-club-50"
             >
               Word lid
               <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" d={pijl} />
+                <path stroke-linecap="round" stroke-linejoin="round" d={arrowPath} />
               </svg>
             </a>
           </div>
@@ -630,347 +630,347 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
 </Layout>
 
 <script>
-  import voorbeeld from '../../data/intraclub-voorbeeld.json';
+  import example from '../../data/intraclub-example.json';
   import {
-    banden,
-    dagcijfer,
-    komma,
-    loot,
-    nieuweStand,
-    SETINDELING,
-    staatThuis,
-    tegenpunten,
+    bands,
+    dayScore,
+    formatComma,
+    draw,
+    newAverage,
+    SET_LINEUP,
+    isHomeSide,
+    opponentPoints,
     trimSet,
-    voorsprong,
-    volledigeNaam,
-    type Baan,
-    type Baanbron,
-    type GelooteBaan,
-    type Speler,
-  } from '../../lib/intra-uitleg';
+    lead,
+    fullName,
+    type Court,
+    type CourtSource,
+    type DrawnCourt,
+    type Player,
+  } from '../../lib/intra-explainer';
 
-  const spelers = voorbeeld.spelers as Speler[];
-  const banen = voorbeeld.banen as Baan[];
-  const speeldagen = voorbeeld.speeldagenGespeeld;
+  const players = example.players as Player[];
+  const courts = example.courts as Court[];
+  const matchdaysPlayed = example.matchdaysPlayed;
 
-  const spelerOp = new Map(spelers.map((s) => [s.id, s]));
-  const opSterkte = [...spelers].sort((a, b) => a.rangOpAvond - b.rangOpAvond);
-  const { totBoven, vanOnder } = banden(opSterkte.length);
-  const plaatsOp = new Map(opSterkte.map((s, i) => [s.id, i]));
-  const baanVan = new Map<string, Baan>();
-  for (const baan of banen) for (const id of baan.spelers) baanVan.set(id, baan);
+  const playerById = new Map(players.map((p) => [p.id, p]));
+  const byStrength = [...players].sort((a, b) => a.rankOnEvening - b.rankOnEvening);
+  const { upperEnd, lowerStart } = bands(byStrength.length);
+  const positionById = new Map(byStrength.map((p, i) => [p.id, i]));
+  const courtById = new Map<string, Court>();
+  for (const court of courts) for (const id of court.players) courtById.set(id, court);
 
   const el = (id: string) => document.getElementById(id)!;
-  const keuze = el('speler-keuze') as HTMLSelectElement;
-  let huidige = spelerOp.get(keuze.value)!;
-  let actieveSet = 0;
+  const picker = el('player-select') as HTMLSelectElement;
+  let current = playerById.get(picker.value)!;
+  let activeSet = 0;
 
   /** Zet de opmaak van "dit ben jij" op één element. */
-  function markeer(element: HTMLElement, isJij: boolean, gewoon: string[]) {
-    element.classList.toggle('border-club-500', isJij);
-    element.classList.toggle('bg-club-100', isJij);
-    element.classList.toggle('font-bold', isJij);
-    element.classList.toggle('text-inkt-950', isJij);
-    for (const klasse of gewoon) element.classList.toggle(klasse, !isJij);
+  function mark(element: HTMLElement, isYou: boolean, normal: string[]) {
+    element.classList.toggle('border-club-500', isYou);
+    element.classList.toggle('bg-club-100', isYou);
+    element.classList.toggle('font-bold', isYou);
+    element.classList.toggle('text-ink-950', isYou);
+    for (const cls of normal) element.classList.toggle(cls, !isYou);
   }
 
   /* ── Stap 2: de loting ─────────────────────────────────────────────── */
 
   const chips = Array.from(document.querySelectorAll<HTMLElement>('[data-chip]'));
-  const baanRijen = Array.from(document.querySelectorAll<HTMLElement>('[data-baan]'));
-  const bijschrift = el('loting-bijschrift');
+  const courtRows = Array.from(document.querySelectorAll<HTMLElement>('[data-court]'));
+  const caption = el('draw-caption');
 
-  const bronNaam: Record<Baanbron, string> = {
-    boven: 'bovenste groep',
-    onder: 'onderste groep',
+  const sourceName: Record<CourtSource, string> = {
+    upper: 'bovenste groep',
+    lower: 'onderste groep',
     rest: 'restbaan',
-    uitgeloot: 'uitgeloot',
+    drawnOut: 'uitgeloot',
   };
 
   /** De echte loting van die avond, in hetzelfde formaat als een simulatie. */
-  function echteLoting(): GelooteBaan[] {
-    return banen.map((baan) => {
-      const plaatsen = baan.spelers.map((id) => plaatsOp.get(id)!);
-      const bron: Baanbron = plaatsen.every((p) => p < totBoven)
-        ? 'boven'
-        : plaatsen.every((p) => p >= vanOnder)
-          ? 'onder'
+  function actualDraw(): DrawnCourt[] {
+    return courts.map((court) => {
+      const positions = court.players.map((id) => positionById.get(id)!);
+      const source: CourtSource = positions.every((p) => p < upperEnd)
+        ? 'upper'
+        : positions.every((p) => p >= lowerStart)
+          ? 'lower'
           : 'rest';
-      return { bron, spelers: baan.spelers.map((id) => spelerOp.get(id)!) };
+      return { source, players: court.players.map((id) => playerById.get(id)!) };
     });
   }
 
-  let huidigeLoting = echteLoting();
+  let currentDraw = actualDraw();
 
   /**
    * Zet een loting in de vaste rijen die al in de HTML staan — alleen hun inhoud
    * verandert. Met 48 aanwezigen levert elke loting precies 12 banen op; komt er
    * ooit een snapshot met een ander aantal, dan blijven overtollige rijen leeg.
    */
-  function toonLoting(loting: GelooteBaan[], animeer: boolean) {
-    huidigeLoting = loting;
+  function renderDraw(drawnCourts: DrawnCourt[], animate: boolean) {
+    currentDraw = drawnCourts;
 
-    baanRijen.forEach((rij, i) => {
-      const baan = loting[i];
-      rij.hidden = !baan;
-      if (!baan) return;
-      rij.querySelector('[data-bron]')!.textContent = bronNaam[baan.bron];
-      baan.spelers.forEach((speler, plek) => {
-        const naam = rij.querySelector<HTMLElement>(`[data-plek="${plek}"]`);
-        if (!naam) return;
-        naam.textContent = volledigeNaam(speler);
-        naam.classList.toggle('font-bold', speler.id === huidige.id);
-        naam.classList.toggle('text-club-700', speler.id === huidige.id);
+    courtRows.forEach((row, i) => {
+      const court = drawnCourts[i];
+      row.hidden = !court;
+      if (!court) return;
+      row.querySelector('[data-source]')!.textContent = sourceName[court.source];
+      court.players.forEach((player, position) => {
+        const nameEl = row.querySelector<HTMLElement>(`[data-position="${position}"]`);
+        if (!nameEl) return;
+        nameEl.textContent = fullName(player);
+        nameEl.classList.toggle('font-bold', player.id === current.id);
+        nameEl.classList.toggle('text-club-700', player.id === current.id);
       });
-      if (animeer) {
-        rij.classList.remove('geland');
-        rij.style.transitionDelay = `${i * 110}ms`;
+      if (animate) {
+        row.classList.remove('landed');
+        row.style.transitionDelay = `${i * 110}ms`;
       }
     });
 
     for (const chip of chips) {
-      markeer(chip, chip.dataset.chip === huidige.id, [
-        'border-inkt-950/15',
+      mark(chip, chip.dataset.chip === current.id, [
+        'border-ink-950/15',
         'bg-white',
-        'text-inkt-700',
+        'text-ink-700',
       ]);
     }
 
-    werktChipHighlight();
-    werktBaanSelectie();
+    updateChipHighlight();
+    updateCourtSelection();
 
-    if (animeer) {
+    if (animate) {
       requestAnimationFrame(() =>
-        requestAnimationFrame(() => baanRijen.forEach((rij) => rij.classList.add('geland'))),
+        requestAnimationFrame(() => courtRows.forEach((row) => row.classList.add('landed'))),
       );
     } else {
-      for (const rij of baanRijen) {
-        rij.style.transitionDelay = '';
-        rij.classList.add('geland');
+      for (const row of courtRows) {
+        row.style.transitionDelay = '';
+        row.classList.add('landed');
       }
     }
   }
 
-  el('loot-opnieuw').addEventListener('click', () => {
-    toonLoting(loot(opSterkte), true);
-    const nummer = huidigeLoting.findIndex((baan) => baan.spelers.some((s) => s.id === huidige.id));
-    const baan = huidigeLoting[nummer];
-    bijschrift.textContent =
-      `Zo had het er die avond ook kunnen uitzien. ${huidige.voornaam} komt op baan ${nummer + 1} terecht` +
-      (baan.bron === 'rest' ? ', in de restbaan.' : `, uit de ${bronNaam[baan.bron]}.`);
+  el('draw-again').addEventListener('click', () => {
+    renderDraw(draw(byStrength), true);
+    const index = currentDraw.findIndex((court) => court.players.some((p) => p.id === current.id));
+    const court = currentDraw[index];
+    caption.textContent =
+      `Zo had het er die avond ook kunnen uitzien. ${current.firstName} komt op baan ${index + 1} terecht` +
+      (court.source === 'rest' ? ', in de restbaan.' : `, uit de ${sourceName[court.source]}.`);
   });
 
-  el('toon-echte').addEventListener('click', () => {
-    toonLoting(echteLoting(), true);
-    bijschrift.textContent = 'Zo zag de loting van die avond er echt uit.';
+  el('show-actual').addEventListener('click', () => {
+    renderDraw(actualDraw(), true);
+    caption.textContent = 'Zo zag de loting van die avond er echt uit.';
   });
 
   // Een baan aanwijzen licht zijn vier spelers op in de lijst hierboven: zo zie je
   // meteen uit welk deel van de zaal ze geplukt zijn.
-  const chipOp = new Map(chips.map((chip) => [chip.dataset.chip!, chip]));
-  let geselecteerdeBaan: number | null = null;
-  let hoverBaan: number | null = null;
+  const chipById = new Map(chips.map((chip) => [chip.dataset.chip!, chip]));
+  let selectedCourt: number | null = null;
+  let hoveredCourt: number | null = null;
 
-  function werktChipHighlight() {
-    const actief = hoverBaan ?? geselecteerdeBaan;
+  function updateChipHighlight() {
+    const active = hoveredCourt ?? selectedCourt;
     for (const chip of chips) chip.classList.remove('ring-2', 'ring-club-500');
-    if (actief === null) return;
-    for (const speler of huidigeLoting[actief]?.spelers ?? []) {
-      chipOp.get(speler.id)?.classList.add('ring-2', 'ring-club-500');
+    if (active === null) return;
+    for (const player of currentDraw[active]?.players ?? []) {
+      chipById.get(player.id)?.classList.add('ring-2', 'ring-club-500');
     }
   }
 
-  function werktBaanSelectie() {
-    baanRijen.forEach((rij, i) => {
-      const geselecteerd = i === geselecteerdeBaan;
-      rij.classList.toggle('border-2', geselecteerd);
-      rij.classList.toggle('border-club-600', geselecteerd);
-      rij.classList.toggle('border-inkt-950/10', !geselecteerd);
-      rij.classList.toggle('bg-club-50', geselecteerd);
-      rij.setAttribute('aria-pressed', String(geselecteerd));
+  function updateCourtSelection() {
+    courtRows.forEach((row, i) => {
+      const selected = i === selectedCourt;
+      row.classList.toggle('border-2', selected);
+      row.classList.toggle('border-club-600', selected);
+      row.classList.toggle('border-ink-950/10', !selected);
+      row.classList.toggle('bg-club-50', selected);
+      row.setAttribute('aria-pressed', String(selected));
     });
   }
 
-  function kiesBaan(index: number) {
-    geselecteerdeBaan = geselecteerdeBaan === index ? null : index;
-    werktBaanSelectie();
-    werktChipHighlight();
+  function selectCourt(index: number) {
+    selectedCourt = selectedCourt === index ? null : index;
+    updateCourtSelection();
+    updateChipHighlight();
   }
 
-  baanRijen.forEach((rij, i) => {
-    rij.addEventListener('click', () => kiesBaan(i));
-    rij.addEventListener('keydown', (e) => {
+  courtRows.forEach((row, i) => {
+    row.addEventListener('click', () => selectCourt(i));
+    row.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        kiesBaan(i);
+        selectCourt(i);
       }
     });
-    rij.addEventListener('mouseenter', () => {
-      hoverBaan = i;
-      werktChipHighlight();
+    row.addEventListener('mouseenter', () => {
+      hoveredCourt = i;
+      updateChipHighlight();
     });
-    rij.addEventListener('mouseleave', () => {
-      hoverBaan = null;
-      werktChipHighlight();
+    row.addEventListener('mouseleave', () => {
+      hoveredCourt = null;
+      updateChipHighlight();
     });
-    rij.addEventListener('focus', () => {
-      hoverBaan = i;
-      werktChipHighlight();
+    row.addEventListener('focus', () => {
+      hoveredCourt = i;
+      updateChipHighlight();
     });
-    rij.addEventListener('blur', () => {
-      hoverBaan = null;
-      werktChipHighlight();
+    row.addEventListener('blur', () => {
+      hoveredCourt = null;
+      updateChipHighlight();
     });
   });
 
   /* ── Stap 3: duo's en voorsprongen ─────────────────────────────────── */
 
-  const baanSpelers = Array.from(document.querySelectorAll<HTMLElement>('[data-baanspeler]'));
+  const courtPlayerEls = Array.from(document.querySelectorAll<HTMLElement>('[data-court-player]'));
   const setTabs = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-set-tab]'));
 
-  function toonBaan() {
-    const baan = baanVan.get(huidige.id)!;
-    el('baan-titel').textContent = `Baan ${banen.indexOf(baan) + 1}`;
-    baan.spelers.forEach((id, plek) => {
-      const speler = spelerOp.get(id)!;
-      const vak = baanSpelers[plek];
-      vak.querySelector('[data-baannaam]')!.textContent = volledigeNaam(speler);
-      vak.querySelector('[data-baanbonus]')!.textContent = String(speler.bonus);
-      markeer(vak, id === huidige.id, ['border-inkt-950/15', 'text-inkt-700']);
+  function renderCourt() {
+    const court = courtById.get(current.id)!;
+    el('court-title').textContent = `Baan ${courts.indexOf(court) + 1}`;
+    court.players.forEach((id, position) => {
+      const player = playerById.get(id)!;
+      const box = courtPlayerEls[position];
+      box.querySelector('[data-name]')!.textContent = fullName(player);
+      box.querySelector('[data-bonus]')!.textContent = String(player.bonus);
+      mark(box, id === current.id, ['border-ink-950/15', 'text-ink-700']);
     });
-    toonSet();
+    renderSet();
   }
 
-  function toonSet() {
-    const baan = baanVan.get(huidige.id)!;
-    const opBaan = baan.spelers.map((id) => spelerOp.get(id)!);
-    const { thuis, uit } = SETINDELING[actieveSet];
-    const v = voorsprong(opBaan.map((s) => s.bonus), actieveSet);
-    const namen = (plekken: readonly number[]) =>
-      plekken.map((p) => volledigeNaam(opBaan[p])).join(' & ');
+  function renderSet() {
+    const court = courtById.get(current.id)!;
+    const onCourt = court.players.map((id) => playerById.get(id)!);
+    const { home, away } = SET_LINEUP[activeSet];
+    const v = lead(onCourt.map((p) => p.bonus), activeSet);
+    const names = (positions: readonly number[]) =>
+      positions.map((p) => fullName(onCourt[p])).join(' & ');
 
-    el('duo-thuis').textContent = namen(thuis);
-    el('duo-uit').textContent = namen(uit);
-    el('bonus-thuis').textContent = String(v.thuisBonus);
-    el('bonus-uit').textContent = String(v.uitBonus);
-    el('start-thuis').textContent = String(v.thuis);
-    el('start-uit').textContent = String(v.uit);
+    el('pair-home').textContent = names(home);
+    el('pair-away').textContent = names(away);
+    el('bonus-home').textContent = String(v.homeBonus);
+    el('bonus-away').textContent = String(v.awayBonus);
+    el('start-home').textContent = String(v.home);
+    el('start-away').textContent = String(v.away);
 
-    const voor = v.thuis > 0 ? namen(thuis) : v.uit > 0 ? namen(uit) : null;
-    const verschil = Math.max(v.thuis, v.uit);
-    el('voorsprong-uitleg').textContent = voor
-      ? `${v.thuisBonus} tegen ${v.uitBonus} bonuspunten: ${voor} begint ${verschil} punt${verschil === 1 ? '' : 'en'} voor.`
+    const ahead = v.home > 0 ? names(home) : v.away > 0 ? names(away) : null;
+    const gap = Math.max(v.home, v.away);
+    el('lead-explainer').textContent = ahead
+      ? `${v.homeBonus} tegen ${v.awayBonus} bonuspunten: ${ahead} begint ${gap} punt${gap === 1 ? '' : 'en'} voor.`
       : 'Even veel bonuspunten aan beide kanten: deze set begint op nul.';
 
-    const [thuisScore, uitScore] = baan.sets[actieveSet];
-    el('echte-uitslag').textContent = `${thuisScore} – ${uitScore}`;
-    el('echte-winnaar').textContent = `${namen(thuisScore > uitScore ? thuis : uit)} wonnen`;
+    const [homeScore, awayScore] = court.sets[activeSet];
+    el('actual-result').textContent = `${homeScore} – ${awayScore}`;
+    el('actual-winner').textContent = `${names(homeScore > awayScore ? home : away)} wonnen`;
 
     for (const tab of setTabs) {
-      tab.setAttribute('aria-selected', String(Number(tab.dataset.setTab) === actieveSet));
+      tab.setAttribute('aria-selected', String(Number(tab.dataset.setTab) === activeSet));
     }
   }
 
   for (const tab of setTabs) {
     tab.addEventListener('click', () => {
-      actieveSet = Number(tab.dataset.setTab);
-      toonSet();
+      activeSet = Number(tab.dataset.setTab);
+      renderSet();
     });
   }
 
   /* ── Stap 4: van uitslag naar stand ────────────────────────────────── */
 
   // Per set: won je hem (dan telt hij altijd als 21), of verloor je met zoveel punten?
-  type Setstand = { gewonnen: boolean; punten: number };
-  let setstanden: Setstand[] = [];
+  type SetResult = { won: boolean; points: number };
+  let setResults: SetResult[] = [];
 
-  const schuivers = Array.from(document.querySelectorAll<HTMLInputElement>('[data-punten]'));
-  const uitslagKnoppen = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-uitslag]'));
+  const sliders = Array.from(document.querySelectorAll<HTMLInputElement>('[data-points]'));
+  const resultButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-result]'));
 
   /** De echte uitslag van deze speler, als startpunt van de rekenmachine. */
-  function echteSetstanden(): Setstand[] {
-    const baan = baanVan.get(huidige.id)!;
-    const plek = baan.spelers.indexOf(huidige.id);
+  function actualSetResults(): SetResult[] {
+    const court = courtById.get(current.id)!;
+    const position = court.players.indexOf(current.id);
     return [0, 1, 2].map((set) => {
-      const [thuis, uit] = baan.sets[set];
-      const eigen = staatThuis(plek, set) ? thuis : uit;
-      const ander = staatThuis(plek, set) ? uit : thuis;
-      return { gewonnen: eigen > ander, punten: eigen };
+      const [home, away] = court.sets[set];
+      const own = isHomeSide(position, set) ? home : away;
+      const other = isHomeSide(position, set) ? away : home;
+      return { won: own > other, points: own };
     });
   }
 
-  function toonRekenaar() {
-    el('rekenaar-naam').textContent = volledigeNaam(huidige);
+  function renderCalculator() {
+    el('calculator-name').textContent = fullName(current);
 
-    const telt = setstanden.map((stand) =>
-      stand.gewonnen ? 21 : trimSet(stand.punten, tegenpunten(stand.punten)),
+    const counted = setResults.map((result) =>
+      result.won ? 21 : trimSet(result.points, opponentPoints(result.points)),
     );
 
-    setstanden.forEach((stand, set) => {
-      const schuiver = schuivers[set];
-      schuiver.disabled = stand.gewonnen;
-      schuiver.value = String(stand.gewonnen ? 21 : stand.punten);
+    setResults.forEach((result, set) => {
+      const slider = sliders[set];
+      slider.disabled = result.won;
+      slider.value = String(result.won ? 21 : result.points);
 
-      for (const knop of uitslagKnoppen) {
-        if (Number(knop.dataset.uitslag) !== set) continue;
-        knop.setAttribute('aria-pressed', String((knop.dataset.soort === 'gewonnen') === stand.gewonnen));
+      for (const button of resultButtons) {
+        if (Number(button.dataset.result) !== set) continue;
+        button.setAttribute('aria-pressed', String((button.dataset.kind === 'won') === result.won));
       }
 
-      document.querySelector(`[data-score="${set}"]`)!.textContent = stand.gewonnen
+      document.querySelector(`[data-score="${set}"]`)!.textContent = result.won
         ? 'gewonnen'
-        : `${stand.punten} – ${tegenpunten(stand.punten)}`;
-      document.querySelector(`[data-telt="${set}"]`)!.textContent = komma(telt[set]);
+        : `${result.points} – ${opponentPoints(result.points)}`;
+      document.querySelector(`[data-counted="${set}"]`)!.textContent = formatComma(counted[set]);
     });
 
-    const cijfer = dagcijfer(telt);
-    el('dagcijfer').textContent = komma(cijfer);
-    el('dagcijfer-som').textContent =
-      `(${telt.map((p) => komma(p)).join(' + ')}) ÷ 3 — je gemiddeld aantal punten per set.`;
+    const score = dayScore(counted);
+    el('day-score').textContent = formatComma(score);
+    el('day-score-sum').textContent =
+      `(${counted.map((p) => formatComma(p)).join(' + ')}) ÷ 3 — je gemiddeld aantal punten per set.`;
 
-    const nieuw = nieuweStand(huidige.vorigGemiddelde, cijfer, speeldagen);
-    el('stand-vorig').textContent = komma(huidige.vorigGemiddelde);
-    el('stand-nieuw').textContent = komma(nieuw);
-    el('stand-som').textContent =
-      `(${komma(huidige.vorigGemiddelde)} × ${speeldagen} + ${komma(cijfer)}) ÷ ${speeldagen + 1} — ` +
-      `het gemiddelde van je basispunt en al je ${speeldagen} speeldagcijfers.`;
+    const next = newAverage(current.previousAverage, score, matchdaysPlayed);
+    el('average-previous').textContent = formatComma(current.previousAverage);
+    el('average-new').textContent = formatComma(next);
+    el('average-sum').textContent =
+      `(${formatComma(current.previousAverage)} × ${matchdaysPlayed} + ${formatComma(score)}) ÷ ${matchdaysPlayed + 1} — ` +
+      `het gemiddelde van je basispunt en al je ${matchdaysPlayed} speeldagcijfers.`;
   }
 
-  for (const schuiver of schuivers) {
-    schuiver.addEventListener('input', () => {
-      setstanden[Number(schuiver.dataset.punten)] = { gewonnen: false, punten: Number(schuiver.value) };
-      toonRekenaar();
-    });
-  }
-
-  for (const knop of uitslagKnoppen) {
-    knop.addEventListener('click', () => {
-      const set = Number(knop.dataset.uitslag);
-      const gewonnen = knop.dataset.soort === 'gewonnen';
-      setstanden[set] = { gewonnen, punten: gewonnen ? 21 : Math.min(setstanden[set].punten, 19) };
-      toonRekenaar();
+  for (const slider of sliders) {
+    slider.addEventListener('input', () => {
+      setResults[Number(slider.dataset.points)] = { won: false, points: Number(slider.value) };
+      renderCalculator();
     });
   }
 
-  el('herstel-uitslag').addEventListener('click', () => {
-    setstanden = echteSetstanden();
-    toonRekenaar();
+  for (const button of resultButtons) {
+    button.addEventListener('click', () => {
+      const set = Number(button.dataset.result);
+      const won = button.dataset.kind === 'won';
+      setResults[set] = { won, points: won ? 21 : Math.min(setResults[set].points, 19) };
+      renderCalculator();
+    });
+  }
+
+  el('restore-result').addEventListener('click', () => {
+    setResults = actualSetResults();
+    renderCalculator();
   });
 
   /* ── De spelerkeuze bindt alles samen ───────────────────────────────── */
 
-  function kiesSpeler(id: string) {
-    huidige = spelerOp.get(id)!;
-    actieveSet = 0;
-    setstanden = echteSetstanden();
-    toonLoting(huidigeLoting, false);
-    toonBaan();
-    toonRekenaar();
+  function selectPlayer(id: string) {
+    current = playerById.get(id)!;
+    activeSet = 0;
+    setResults = actualSetResults();
+    renderDraw(currentDraw, false);
+    renderCourt();
+    renderCalculator();
 
-    const link = el('link-eigen-verloop') as HTMLAnchorElement;
-    link.href = link.href.replace(/id=[^&]*/, `id=${huidige.id}`);
-    el('link-eigen-tekst').textContent = `Het verloop van ${volledigeNaam(huidige)}`;
+    const link = el('link-own-progression') as HTMLAnchorElement;
+    link.href = link.href.replace(/id=[^&]*/, `id=${current.id}`);
+    el('link-own-text').textContent = `Het verloop van ${fullName(current)}`;
   }
 
-  keuze.addEventListener('change', () => kiesSpeler(keuze.value));
-  kiesSpeler(keuze.value);
+  picker.addEventListener('change', () => selectPlayer(picker.value));
+  selectPlayer(picker.value);
 </script>

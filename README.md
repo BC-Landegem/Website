@@ -59,12 +59,12 @@ aanraken.
 
 | Wil je dit wijzigen | Bewerk | Wat er verandert |
 | --- | --- | --- |
-| Speeluren, sporthal, inschrijflink | `src/data/trainingen.json` | Homepage, `/jeugd/`, `/club/word-lid/` en de footer |
+| Speeluren, sporthal, inschrijflink | `src/data/trainings.json` | Homepage, `/jeugd/`, `/club/word-lid/` en de footer |
 | Competitieploegen, seizoen | `src/data/teams.json` | `/competitie/` én de ploeglinks in de navigatie (`Header.astro`) |
 | Sponsors | `src/data/sponsors.json` + logo in `src/assets/sponsors/` | De sponsorbalk in de footer |
 | Fotoalbums | `src/data/media.ts` | `/media/` én de fotostrook op de homepage — pas na een sync, zie Databronnen |
-| Facebook-/Instagram-links | `src/data/sociaal.ts` | De knoppen "Volg de club" in de footer — leeg = het blok verdwijnt |
-| Kalenderbronnen en -kleuren | `src/data/kalender.ts` | `/kalender/` en de events op de homepage |
+| Facebook-/Instagram-links | `src/data/social.ts` | De knoppen "Volg de club" in de footer — leeg = het blok verdwijnt |
+| Kalenderbronnen en -kleuren | `src/data/calendar.ts` | `/kalender/` en de events op de homepage |
 | App-naam, offline schil, snelkoppelingen | `src/data/pwa.ts` | Manifest en service worker (iconen genereer je apart) |
 | Kleuren en typografie | `src/styles/global.css` (`@theme`) | De hele site — voor het clubrood eerst het kleurlab, zie hieronder |
 | Losse tekst | De `.astro`-pagina zelf | Alleen die pagina |
@@ -74,13 +74,13 @@ aanraken.
 Vijf bronnen leven buiten deze repo. Ze verschillen in *wanneer* ze opgehaald
 worden en in *wat er gebeurt als ze falen* — dat verschil is bewust.
 
-**Google Calendar** — geconfigureerd in `src/data/kalender.ts`, opgehaald in de
+**Google Calendar** — geconfigureerd in `src/data/calendar.ts`, opgehaald in de
 browser van de bezoeker. Faalt een bron of is ze leeg, dan wordt ze stil
 genegeerd en verdwijnt de eventssectie op de homepage; de rest van de pagina
 blijft staan. De sleutel in dat bestand is een publieke, referrer-restricted
 browser-key: die hoort in de broncode. Roteer je hem, zet de referrer-restrictie
-dan mee — zonder restrictie is het geen publieke sleutel meer. De `kleur`- en
-`tekst`-velden van `categorieen` belanden rechtstreeks als CSS-kleur in een
+dan mee — zonder restrictie is het geen publieke sleutel meer. De `color`- en
+`text`-velden van `categories` belanden rechtstreeks als CSS-kleur in een
 inline stijl (legende, eventblokken, detailpaneel): een hex mag, een token als
 `var(--color-club-600)` ook — de events staan bewust op dat token zodat ze
 meekleuren wanneer het clubrood wijzigt. Zet er iets dat geen geldige CSS-kleur
@@ -103,20 +103,20 @@ foto van de site halen doe je in het Google Photos-album zelf.
 API draait op het oude domein: verdwijnt hij, dan vallen de intraclub-pagina's
 stil. Houd daar rekening mee bij de domeinswitch (zie PRODUCT.md).
 `/intraclub/zo-werkt-het/` is de uitzondering — die draait op een bevroren
-snapshot in `src/data/intraclub-voorbeeld.json` en doet geen enkel request.
+snapshot in `src/data/intraclub-example.json` en doet geen enkel request.
 
 **Twizzit** — het inschrijfformulier is één externe link in
-`src/data/trainingen.json`. Geen integratie, geen sleutel.
+`src/data/trainings.json`. Geen integratie, geen sleutel.
 
 **De oude Joomla-site** — de enige bron die *eenmalig* is en een vervaldatum heeft.
 De databasedump staat in `scraped/` en blijft **buiten git** (zie `.gitignore`): hij
 bevat de wachtwoordhashes van 74 ledenaccounts, plus e-mailadressen en IP-adressen
 uit de reacties. Alleen de uitvoer van de conversie hoort in de repo, nooit de bron.
 
-`scripts/archief-beelden.mjs` leest die dump, zoekt elke `<img>` en elke link naar
+`scripts/archive-images.mjs` leest die dump, zoekt elke `<img>` en elke link naar
 een beeld of document in de oude artikels op, en haalt op wat nog bestaat. Resultaat:
 de bestanden in `public/archief/beelden/` en een manifest in
-`src/data/archief-beelden.json` dat per bron-URL vastlegt welk bestand het werd — of
+`src/data/archive-images.json` dat per bron-URL vastlegt welk bestand het werd — of
 waarom er geen is (`404`, `403`, timeout, imgur-placeholder). De conversie leest dat
 manifest later om `<img src>` te herschrijven of de tag weg te halen.
 
@@ -139,8 +139,8 @@ het werk:
 Jaar en onderwerp delen bewust één route: ze zitten op dezelfde plek in de URL, en
 twee dynamische mappen naast elkaar kan Astro niet uit elkaar houden.
 
-**Kurk in plaats van clubrood.** Het hele archief draait op `kurk-*` en `veer-100`
-waar de levende site `club-*` en `veer-50` gebruikt. Dat is geen versiering maar
+**Kurk in plaats van clubrood.** Het hele archief draait op `cork-*` en `feather-100`
+waar de levende site `club-*` en `feather-50` gebruikt. Dat is geen versiering maar
 het afgesproken signaal: rood betekent "dit geldt nu", kurk betekent "dit gold
 toen". Elk artikel draagt daarbovenop een expliciete band. Nodig, want een deel
 van deze artikels léést als nieuws — *"Nu woensdag is er intraclub, graag om
@@ -170,7 +170,7 @@ het aanzette — zonder de parameter wordt `public/kleurlab.js` niet eens
 opgehaald.
 
 Is er een winnaar, dan plak je het blok uit "Kopieer CSS" in het `@theme`-blok
-van `src/styles/global.css`. Daarna mag het lab eruit: `KleurLab.astro`,
+van `src/styles/global.css`. Daarna mag het lab eruit: `ColorLab.astro`,
 `public/kleurlab.js` en de import in `Layout.astro`.
 
 De vier contrastregels in het paneel volgen de twee-roden-regel uit DESIGN.md:
@@ -185,21 +185,21 @@ Handmatig te draaien, geen onderdeel van de build. Elk script legt in zijn kop
 uit waarom het bestaat en wanneer je het opnieuw draait.
 
 ```bash
-node scripts/genereer-iconen.mjs   # PWA-iconen uit het logo — na een logo- of kleurwijziging
+node scripts/generate-icons.mjs    # PWA-iconen uit het logo — na een logo- of kleurwijziging
 node scripts/scrape-media.mjs      # media.json lokaal bijwerken (doet de workflow 's nachts ook)
 node scripts/intra-snapshot.mjs    # nieuw voorbeeld voor /intraclub/zo-werkt-het/
-node scripts/archief-beelden.mjs   # beelden uit de oude Joomla-artikels redden — zie Databronnen
-node scripts/archief-conversie.mjs # die artikels omzetten naar src/content/archief/ (--dry om te proefdraaien)
+node scripts/archive-images.mjs    # beelden uit de oude Joomla-artikels redden — zie Databronnen
+node scripts/archive-conversion.mjs # die artikels omzetten naar src/content/archief/ (--dry om te proefdraaien)
 ```
 
-`archief-beelden.mjs` is idempotent: wat al in `public/archief/beelden/` staat wordt
+`archive-images.mjs` is idempotent: wat al in `public/archief/beelden/` staat wordt
 overgeslagen, dus opnieuw draaien pikt alleen op wat nog ontbreekt. Het heeft de
 SQL-dump nodig en stopt met een foutmelding als die er niet is.
 
-`archief-conversie.mjs` is dat **niet**: het gooit `src/content/archief/` weg en
+`archive-conversion.mjs` is dat **niet**: het gooit `src/content/archief/` weg en
 schrijft alles opnieuw. Draai eerst met `--dry`. Het leunt op `turndown`
 (devDependency, draait alleen hier — komt nooit in de browser) en op het manifest
-van `archief-beelden.mjs`, dus draai dat eerst. Onderaan zijn uitvoer staat een
+van `archive-images.mjs`, dus draai dat eerst. Onderaan zijn uitvoer staat een
 eindcontrole die klaagt over alles wat nog naar Joomla ruikt: overgebleven
 plugintags, smileycodes, `<span>`-restanten, beelden buiten `/archief/beelden/`.
 Blijft die stil, dan is de conversie schoon.
@@ -224,17 +224,17 @@ workflows triggert.
   hangt.
 - **`public/icons/` is gegenereerde uitvoer die tóch in git staat.** Bewerk de
   PNG's niet met de hand — pas het logo of de kleuren aan en draai
-  `genereer-iconen.mjs` opnieuw.
+  `generate-icons.mjs` opnieuw.
 - **`src/content/archief/` is na de eerste conversie de bron van waarheid.**
   De 837 markdownbestanden zijn ooit uit de dump gegenereerd, maar
-  `archief-conversie.mjs` opnieuw draaien **wist de map en schrijft alles over** —
+  `archive-conversion.mjs` opnieuw draaien **wist de map en schrijft alles over** —
   handmatige correcties in een artikel zijn dan weg. Verbeter een typo in het
   `.md`-bestand, niet in het script.
 - **`public/archief/beelden/` ziet er gegenereerd uit, maar is onvervangbaar.**
   Anders dan `public/icons/` kun je deze bestanden niet opnieuw maken: hun bron
   verdwijnt met de domeinswitch. Gooi ze niet weg om ze "opnieuw te laten
   ophalen" — dan zijn ze weg. Hetzelfde geldt voor
-  `src/data/archief-beelden.json`: dat is uitvoer van het script en bewerk je niet
+  `src/data/archive-images.json`: dat is uitvoer van het script en bewerk je niet
   met de hand, maar het bijhouden ervan is wél hoe je weet wat er ontbreekt.
 - **Service workers houden vast.** Test je de PWA lokaal, ruim dan af en toe je
   registratie op in DevTools → Application; anders debug je een oude cache.
@@ -249,7 +249,7 @@ terwijl README.md ongemoeid bleef.
 Bewaakt worden `src/data/`, `scripts/`, `.github/workflows/`, `astro.config.mjs`,
 `package.json`, `src/lib/url.ts`, `src/lib/intra.ts` en `src/styles/global.css`.
 Bewust niet: `src/pages/` en `src/components/` (de README somt geen pagina's op),
-en de twee gegenereerde bestanden `media.json` en `intraclub-voorbeeld.json`.
+en de twee gegenereerde bestanden `media.json` en `intraclub-example.json`.
 
 Los van Claude Code draaien kan ook:
 

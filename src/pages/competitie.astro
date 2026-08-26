@@ -1,9 +1,9 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import Kop from '../components/Kop.astro';
-import Punt from '../components/Punt.astro';
-import ArchiefLink from '../components/ArchiefLink.astro';
-import RailKop from '../components/RailKop.astro';
+import Heading from '../components/Heading.astro';
+import Dot from '../components/Dot.astro';
+import ArchiveLink from '../components/ArchiveLink.astro';
+import RailHeading from '../components/RailHeading.astro';
 import teams from '../data/teams.json';
 
 const types = ['Heren', 'Gemengd', 'Dames'];
@@ -11,18 +11,18 @@ const types = ['Heren', 'Gemengd', 'Dames'];
 
 <Layout
   title="Competitie"
-  description={`De competitieploegen van BC Landegem in seizoen ${teams.seizoen}: klassementen en wedstrijdkalenders per ploeg.`}
+  description={`De competitieploegen van BC Landegem in seizoen ${teams.season}: klassementen en wedstrijdkalenders per ploeg.`}
 >
   <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
-    <RailKop
+    <RailHeading
       title="Competitie"
       intro="Wat ooit begon als noodzakelijk kwaad om vaste uren te verkrijgen, is uitgegroeid tot een belangrijk onderdeel van de club."
     />
 
-    <div class="mt-10 max-w-3xl space-y-4 pl-10 leading-relaxed text-inkt-700">
+    <div class="mt-10 max-w-3xl space-y-4 pl-10 leading-relaxed text-ink-700">
       <p>
         Het blijft allemaal natuurlijk voor 't plezier en iedereen kan meedoen met een
-        competitieploeg! Ondertussen dingen {teams.ploegen.length} ploegen mee naar een titel.
+        competitieploeg! Ondertussen dingen {teams.teams.length} ploegen mee naar een titel.
       </p>
       <p>
         Thuismatchen worden op zondag- en maandagavond, en af en toe ook op woensdag, afgewerkt.
@@ -31,10 +31,10 @@ const types = ['Heren', 'Gemengd', 'Dames'];
       </p>
     </div>
 
-    <Kop class="mt-14 pl-10">
-      Onze ploegen in seizoen {teams.seizoen}
-    </Kop>
-    <p class="mt-3 max-w-2xl pl-10 text-inkt-700">
+    <Heading class="mt-14 pl-10">
+      Onze ploegen in seizoen {teams.season}
+    </Heading>
+    <p class="mt-3 max-w-2xl pl-10 text-ink-700">
       Klik op een ploeg voor het klassement en de wedstrijdkalender op Badminton Vlaanderen.
     </p>
 
@@ -42,19 +42,19 @@ const types = ['Heren', 'Gemengd', 'Dames'];
     <ol class="relative mt-10">
       <span class="absolute bottom-6 left-[6px] top-6 w-1 -translate-x-1/2 rounded-full bg-club-500" aria-hidden="true"></span>
       {types.map((type) => (
-        <li class="relative border-b border-inkt-950/10 py-6 pl-10 first:border-t">
-          <Punt top="top-8" />
-          <h3 class="stem-baan text-xs text-club-700">{type}</h3>
+        <li class="relative border-b border-ink-950/10 py-6 pl-10 first:border-t">
+          <Dot top="top-8" />
+          <h3 class="type-label text-xs text-club-700">{type}</h3>
           <ul class="mt-4 flex flex-wrap gap-3">
-            {teams.ploegen.filter((p) => p.type === type).map((ploeg) => (
+            {teams.teams.filter((p) => p.type === type).map((team) => (
               <li>
                 <a
-                  href={ploeg.url}
+                  href={team.url}
                   target="_blank"
                   rel="noopener"
-                  class="stem-baan inline-flex items-center gap-2 rounded-full border-2 border-inkt-950 px-5 py-2.5 text-xs text-inkt-950 transition-colors hover:border-club-600 hover:text-club-600"
+                  class="type-label inline-flex items-center gap-2 rounded-full border-2 border-ink-950 px-5 py-2.5 text-xs text-ink-950 transition-colors hover:border-club-600 hover:text-club-600"
                 >
-                  {ploeg.naam}
+                  {team.name}
                   <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H18v4.5M18 6l-7.5 7.5M15 13.5V18H6V9h4.5" />
                   </svg>
@@ -68,10 +68,10 @@ const types = ['Heren', 'Gemengd', 'Dames'];
 
     <p class="mt-10 pl-10">
       <a
-        href={teams.clubkalender}
+        href={teams.clubCalendar}
         target="_blank"
         rel="noopener"
-        class="stem-baan inline-flex items-center gap-2 text-xs text-club-700 hover:text-club-800 hover:underline"
+        class="type-label inline-flex items-center gap-2 text-xs text-club-700 hover:text-club-800 hover:underline"
       >
         Alle clubwedstrijden op Badminton Vlaanderen
         <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
@@ -81,7 +81,7 @@ const types = ['Heren', 'Gemengd', 'Dames'];
     </p>
 
     <div class="pl-10">
-      <ArchiefLink groep="competitie" />
+      <ArchiveLink group="competitie" />
     </div>
   </div>
 </Layout>

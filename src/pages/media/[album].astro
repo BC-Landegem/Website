@@ -1,29 +1,29 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import RailKop from '../../components/RailKop.astro';
+import RailHeading from '../../components/RailHeading.astro';
 import { url } from '../../lib/url';
-import { zichtbareAlbums, fotodata, maandNaam, fotoOpBreedte, fotoGroot } from '../../lib/media';
+import { visibleAlbums, photoData, monthName, photoAtWidth, photoLarge } from '../../lib/media';
 
 export function getStaticPaths() {
-  return zichtbareAlbums.map((album) => ({ params: { album: album.slug }, props: { album } }));
+  return visibleAlbums.map((album) => ({ params: { album: album.slug }, props: { album } }));
 }
 
 const { album } = Astro.props;
-const { fotos } = fotodata[album.slug];
+const { photos } = photoData[album.slug];
 ---
 
 <Layout
-  title={album.titel}
-  description={`Foto's van ${album.titel} (${maandNaam(album.datum)}) — Badmintonclub Landegem.`}
+  title={album.title}
+  description={`Foto's van ${album.title} (${monthName(album.date)}) — Badmintonclub Landegem.`}
   noReferrer
 >
   <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
-    <RailKop title={album.titel} intro={`${maandNaam(album.datum)} · ${fotos.length} foto's`} />
+    <RailHeading title={album.title} intro={`${monthName(album.date)} · ${photos.length} foto's`} />
 
     <div class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4 pl-10">
       <a
         href={url('/media/')}
-        class="group stem-baan inline-flex items-center gap-2 text-xs text-club-700 transition-colors hover:text-club-800"
+        class="group type-label inline-flex items-center gap-2 text-xs text-club-700 transition-colors hover:text-club-800"
       >
         <svg class="h-4 w-4 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4m0 0l6-6m-6 6l6 6" />
@@ -34,7 +34,7 @@ const { fotos } = fotodata[album.slug];
         href={album.share}
         target="_blank"
         rel="noreferrer"
-        class="stem-baan inline-flex items-center gap-2 rounded-full border-2 border-inkt-950 px-6 py-2.5 text-xs text-inkt-950 transition-colors hover:border-club-600 hover:text-club-600"
+        class="type-label inline-flex items-center gap-2 rounded-full border-2 border-ink-950 px-6 py-2.5 text-xs text-ink-950 transition-colors hover:border-club-600 hover:text-club-600"
       >
         Bekijk in Google Photos
         <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
@@ -43,23 +43,23 @@ const { fotos } = fotodata[album.slug];
       </a>
     </div>
 
-    <div id="galerij" class="mt-10 columns-2 gap-3 pl-10 sm:columns-3 lg:columns-4">
-      {fotos.map((f, i) => {
-        const groot = fotoGroot(f);
+    <div id="gallery" class="mt-10 columns-2 gap-3 pl-10 sm:columns-3 lg:columns-4">
+      {photos.map((f, i) => {
+        const large = photoLarge(f);
         return (
           <a
-            href={groot.src}
+            href={large.src}
             target="_blank"
             rel="noreferrer"
-            data-pswp-width={groot.b}
-            data-pswp-height={groot.h}
+            data-pswp-width={large.w}
+            data-pswp-height={large.h}
             class="mb-3 block break-inside-avoid transition-transform duration-300 hover:-translate-y-1"
           >
             <img
-              src={fotoOpBreedte(f.url, 600)}
-              width={f.b}
+              src={photoAtWidth(f.url, 600)}
+              width={f.w}
               height={f.h}
-              alt={`Foto ${i + 1} van ${fotos.length} — ${album.titel}`}
+              alt={`Foto ${i + 1} van ${photos.length} — ${album.title}`}
               loading={i < 8 ? 'eager' : 'lazy'}
               decoding="async"
               class="h-auto w-full"
@@ -76,7 +76,7 @@ const { fotos } = fotodata[album.slug];
   import 'photoswipe/style.css';
 
   const lightbox = new PhotoSwipeLightbox({
-    gallery: '#galerij',
+    gallery: '#gallery',
     children: 'a',
     pswpModule: () => import('photoswipe'),
   });

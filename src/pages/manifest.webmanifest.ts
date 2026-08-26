@@ -4,21 +4,21 @@
 // naar bclandegem.be '/' — dan klopt dit bestand vanzelf nog.
 import type { APIRoute } from 'astro';
 import {
-  ACHTERGROND_KLEUR,
-  APP_BESCHRIJVING,
-  APP_KORTE_NAAM,
-  APP_NAAM,
-  THEMA_KLEUR,
+  BACKGROUND_COLOR,
+  APP_DESCRIPTION,
+  APP_SHORT_NAME,
+  APP_NAME,
+  THEME_COLOR,
 } from '../data/pwa';
 import { url } from '../lib/url';
 
-const snelkoppeling = (naam: string, beschrijving: string, pad: string, icoon: string) => ({
-  name: naam,
-  short_name: naam,
-  description: beschrijving,
-  url: url(pad),
+const shortcut = (name: string, description: string, path: string, icon: string) => ({
+  name,
+  short_name: name,
+  description,
+  url: url(path),
   icons: [
-    { src: url(`/icons/snelkoppeling-${icoon}.png`), sizes: '192x192', type: 'image/png' },
+    { src: url(`/icons/shortcut-${icon}.png`), sizes: '192x192', type: 'image/png' },
   ],
 });
 
@@ -30,16 +30,16 @@ export const GET: APIRoute = () => {
     // installatie. Op bclandegem.be wordt dat '/', net als bij de bestaande
     // PWA daar — die installaties werken dan bij in plaats van te verdubbelen.
     id: start,
-    name: APP_NAAM,
-    short_name: APP_KORTE_NAAM,
-    description: APP_BESCHRIJVING,
+    name: APP_NAME,
+    short_name: APP_SHORT_NAME,
+    description: APP_DESCRIPTION,
     lang: 'nl-BE',
     dir: 'ltr',
     start_url: start,
     scope: start,
     display: 'standalone',
-    background_color: ACHTERGROND_KLEUR,
-    theme_color: THEMA_KLEUR,
+    background_color: BACKGROUND_COLOR,
+    theme_color: THEME_COLOR,
     categories: ['sports'],
     icons: [
       { src: url('/icons/icon-192.png'), sizes: '192x192', type: 'image/png', purpose: 'any' },
@@ -60,9 +60,9 @@ export const GET: APIRoute = () => {
     // onderscheiden. De ?utm_source=pwa van de oude site laten we weg; er is
     // hier geen analytics die er iets mee doet.
     shortcuts: [
-      snelkoppeling('Kalender', 'Bekijk de kalender van BC Landegem', '/kalender/', 'kalender'),
-      snelkoppeling('Intraclub', 'Bekijk de intraclub tussenstand', '/intraclub/', 'intraclub'),
-      snelkoppeling('Competitie', 'Bekijk de ploegen en uitslagen', '/competitie/', 'competitie'),
+      shortcut('Kalender', 'Bekijk de kalender van BC Landegem', '/kalender/', 'kalender'),
+      shortcut('Intraclub', 'Bekijk de intraclub tussenstand', '/intraclub/', 'intraclub'),
+      shortcut('Competitie', 'Bekijk de ploegen en uitslagen', '/competitie/', 'competitie'),
     ],
   };
 

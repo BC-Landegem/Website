@@ -1,0 +1,37 @@
+---
+import { url } from '../lib/url';
+import { byGroup, type Group } from '../lib/archive';
+
+/**
+ * Zijdeur naar het archief, vanaf de pagina waar dat onderwerp leeft.
+ * Kurk in plaats van clubrood: dezelfde taal als /archief/ zelf, zodat de
+ * bezoeker vóór het klikken al ziet dat hij naar oude inhoud gaat.
+ */
+interface Props {
+  group: Group;
+  /** Overschrijft de standaardzin; gebruik als de pagina om een andere toon vraagt. */
+  text?: string;
+}
+
+const { group, text } = Astro.props;
+const articles = await byGroup(group);
+if (articles.length === 0) return new Response(null, { status: 404 });
+
+const oldest = articles[articles.length - 1].data.datum.getUTCFullYear();
+const newest = articles[0].data.datum.getUTCFullYear();
+---
+
+<a
+  href={url(`/archief/${group}/`)}
+  class="group mt-10 flex items-baseline justify-between gap-4 border-l-2 border-cork-400 bg-cork-300/15 px-5 py-4 transition-colors hover:bg-cork-300/30"
+>
+  <span>
+    <span class="type-label block text-[0.65rem] text-cork-600">Uit het archief</span>
+    <span class="mt-1 block text-sm text-ink-700">
+      {text ?? `${articles.length} oude artikels over dit onderwerp, van ${oldest} tot ${newest}.`}
+    </span>
+  </span>
+  <span class="type-label shrink-0 text-xs text-ink-950 group-hover:text-cork-600" aria-hidden="true">
+    Bekijk →
+  </span>
+</a>

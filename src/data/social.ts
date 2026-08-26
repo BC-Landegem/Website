@@ -8,17 +8,17 @@
 // Een leeg blok is een leeg blok: staat er niets in deze lijst, dan verdwijnt
 // de hele sectie uit de footer. Kanaal toevoegen = één regel hieronder.
 
-export type SociaalIcoon = 'facebook' | 'instagram';
+export type SocialIcon = 'facebook' | 'instagram';
 
-export interface SociaalKanaal {
+export interface SocialChannel {
   /** Naam zoals hij in de tooltip en voor schermlezers gebruikt wordt. */
-  naam: string;
+  name: string;
   /** Volledige URL van het profiel of de pagina. */
   url: string;
-  icoon: SociaalIcoon;
+  icon: SocialIcon;
 }
 
-export const kanalen: SociaalKanaal[] = [
-   { naam: 'BC Landegem op Facebook', url: 'https://www.facebook.com/BCLandegem', icoon: 'facebook' },
-   { naam: 'BC Landegem op Instagram', url: 'https://www.instagram.com/bclandegem', icoon: 'instagram' },
+export const channels: SocialChannel[] = [
+   { name: 'BC Landegem op Facebook', url: 'https://www.facebook.com/BCLandegem', icon: 'facebook' },
+   { name: 'BC Landegem op Instagram', url: 'https://www.instagram.com/bclandegem', icon: 'instagram' },
 ];

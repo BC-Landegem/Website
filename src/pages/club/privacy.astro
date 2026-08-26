@@ -1,6 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import RailKop from '../../components/RailKop.astro';
+import RailHeading from '../../components/RailHeading.astro';
 ---
 
 <Layout
@@ -8,7 +8,7 @@ import RailKop from '../../components/RailKop.astro';
   description="De privacyverklaring van BC Landegem: hoe wij omgaan met je persoonsgegevens volgens de GDPR."
 >
   <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
-    <RailKop
+    <RailHeading
       {/* PRIVACYVERKLARING past op geen enkele telefoon op één regel; het
           zachte afbreekstreepje legt de breuk op de naad van de samenstelling
           in plaats van midden in een lettergreep. */}
@@ -18,7 +18,7 @@ import RailKop from '../../components/RailKop.astro';
 
     {/* break-words: lange woorden en e-mailadressen (@skynet.be) duwden de
         pagina op een telefoon anders zijwaarts open. */}
-    <article class="privacy-tekst mt-12 max-w-3xl break-words pl-10 leading-relaxed text-inkt-700">
+    <article class="privacy-text mt-12 max-w-3xl break-words pl-10 leading-relaxed text-ink-700">
       <h2>Algemeen</h2>
       <p>
         In deze privacyverklaring willen we heldere en transparante informatie geven over hoe wij
@@ -288,7 +288,7 @@ import RailKop from '../../components/RailKop.astro';
 
 <style>
   /* Read-opmaak in de wereldstemmen, zonder de prose-plugin */
-  .privacy-tekst :global(h2) {
+  .privacy-text :global(h2) {
     font-variation-settings: "wdth" 125;
     font-weight: 900;
     text-transform: uppercase;
@@ -300,42 +300,42 @@ import RailKop from '../../components/RailKop.astro';
     hyphens: auto;
     font-size: 1.5rem;
     margin-top: 3rem;
-    color: var(--color-inkt-950);
+    color: var(--color-ink-950);
   }
-  .privacy-tekst :global(h3) {
+  .privacy-text :global(h3) {
     font-size: 1.125rem;
     font-weight: 700;
     margin-top: 2rem;
-    color: var(--color-inkt-950);
+    color: var(--color-ink-950);
   }
-  .privacy-tekst :global(p),
-  .privacy-tekst :global(ul),
-  .privacy-tekst :global(ol) {
+  .privacy-text :global(p),
+  .privacy-text :global(ul),
+  .privacy-text :global(ol) {
     margin-top: 1rem;
   }
-  .privacy-tekst :global(ul) {
+  .privacy-text :global(ul) {
     list-style: disc;
     padding-left: 1.25rem;
   }
-  .privacy-tekst :global(ol) {
+  .privacy-text :global(ol) {
     list-style: decimal;
     padding-left: 1.25rem;
   }
-  .privacy-tekst :global(li) {
+  .privacy-text :global(li) {
     margin-top: 0.5rem;
   }
-  .privacy-tekst :global(li::marker) {
-    color: var(--color-inkt-500);
+  .privacy-text :global(li::marker) {
+    color: var(--color-ink-500);
   }
-  .privacy-tekst :global(strong) {
-    color: var(--color-inkt-950);
+  .privacy-text :global(strong) {
+    color: var(--color-ink-950);
   }
-  .privacy-tekst :global(a) {
+  .privacy-text :global(a) {
     font-weight: 600;
     text-decoration: underline;
     color: var(--color-club-700);
   }
-  .privacy-tekst :global(a:hover) {
+  .privacy-text :global(a:hover) {
     color: var(--color-club-800);
   }
 </style>

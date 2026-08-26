@@ -16,11 +16,11 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { albums } from '../src/data/media.ts';
 
-const uitvoerPad = fileURLToPath(new URL('../src/data/media.json', import.meta.url));
+const outputPath = fileURLToPath(new URL('../src/data/media.json', import.meta.url));
 
-let vorige = {};
+let previous = {};
 try {
-  vorige = JSON.parse(readFileSync(uitvoerPad, 'utf8'));
+  previous = JSON.parse(readFileSync(outputPath, 'utf8'));
 } catch {
   // Geen bestaande media.json — eerste run.
 }
@@ -38,44 +38,44 @@ async function scrapeAlbum(album) {
   // Video's zijn in de share-HTML niet betrouwbaar van foto's te onderscheiden
   // en verschijnen dus als stilstaand beeld; de albumpagina linkt naar Google
   // Photos voor het volledige album.
-  const fotos = [];
-  const gezien = new Set();
+  const photos = [];
+  const seen = new Set();
   const itemRegex = /\["(https:\/\/lh3\.googleusercontent\.com\/[A-Za-z0-9\-_/]+)",(\d+),(\d+)/g;
   for (const m of html.matchAll(itemRegex)) {
-    const [, url, b, h] = m;
-    if (gezien.has(url)) continue;
-    gezien.add(url);
-    fotos.push({ url, b: Number(b), h: Number(h) });
+    const [, url, w, h] = m;
+    if (seen.has(url)) continue;
+    seen.add(url);
+    photos.push({ url, w: Number(w), h: Number(h) });
   }
-  if (fotos.length === 0) throw new Error('geen foto’s gevonden — share-paginastructuur gewijzigd?');
+  if (photos.length === 0) throw new Error('geen foto’s gevonden — share-paginastructuur gewijzigd?');
 
   // Albumcover: og:image (de gekozen cover in Google Photos), zonder maatsuffix.
   const og = html.match(/property="og:image" content="(https:\/\/lh3\.googleusercontent\.com\/[^"=]+)/);
-  const cover = og?.[1] ?? fotos[0].url;
+  const cover = og?.[1] ?? photos[0].url;
 
-  const titelGp = html.match(/<title>([^<]*?) - Google Photos<\/title>/)?.[1];
-  return { cover, titelGp, fotos };
+  const titleGp = html.match(/<title>([^<]*?) - Google Photos<\/title>/)?.[1];
+  return { cover, titleGp, photos };
 }
 
-const resultaat = {};
-let fouten = 0;
+const result = {};
+let errors = 0;
 
 for (const album of albums) {
   try {
     const data = await scrapeAlbum(album);
-    resultaat[album.slug] = data;
-    console.log(`ok    ${album.slug}: ${data.fotos.length} foto's (GP: "${data.titelGp ?? '?'}")`);
+    result[album.slug] = data;
+    console.log(`ok    ${album.slug}: ${data.photos.length} foto's (GP: "${data.titleGp ?? '?'}")`);
   } catch (err) {
-    fouten++;
-    if (vorige[album.slug]) {
-      resultaat[album.slug] = vorige[album.slug];
-      console.error(`FOUT  ${album.slug}: ${err.message} — vorige data behouden (${vorige[album.slug].fotos.length} foto's)`);
+    errors++;
+    if (previous[album.slug]) {
+      result[album.slug] = previous[album.slug];
+      console.error(`FOUT  ${album.slug}: ${err.message} — vorige data behouden (${previous[album.slug].photos.length} foto's)`);
     } else {
       console.error(`FOUT  ${album.slug}: ${err.message} — nog geen data, album verschijnt niet op de site`);
     }
   }
 }
 
-writeFileSync(uitvoerPad, JSON.stringify(resultaat, null, 1) + '\n');
-console.log(`\nmedia.json geschreven: ${Object.keys(resultaat).length} album(s), ${fouten} fout(en)`);
-process.exit(fouten > 0 ? 1 : 0);
+writeFileSync(outputPath, JSON.stringify(result, null, 1) + '\n');
+console.log(`\nmedia.json geschreven: ${Object.keys(result).length} album(s), ${errors} fout(en)`);
+process.exit(errors > 0 ? 1 : 0);

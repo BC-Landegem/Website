@@ -1,0 +1,138 @@
+---
+import { url } from '../lib/url';
+
+/**
+ * Zoeken in het archief, op Pagefind.
+ *
+ * Pagefind bouwt zijn index ná `astro build`, over de HTML in dist/ — zie het
+ * build-script in package.json. In dev bestaat die index dus niet; het veld
+ * zegt dat dan gewoon en blijft verder stil.
+ *
+ * Alleen archiefartikels worden geïndexeerd: zij dragen `data-pagefind-body`,
+ * en zodra één pagina dat attribuut heeft slaat Pagefind alle pagina's zonder
+ * over. De navigatie en footer van de site blijven zo uit de resultaten.
+ */
+const pagefindPath = url('/pagefind/pagefind.js');
+---
+
+<search class="mt-10">
+  <label for="archive-search" class="type-label block text-xs text-ink-500"> Zoek in 837 artikels </label>
+  <div class="relative mt-2">
+    <input
+      type="search"
+      id="archive-search"
+      autocomplete="off"
+      placeholder="een naam, een ploeg, een tegenstander…"
+      class="w-full border-b-2 border-ink-950/20 bg-transparent py-3 pr-10 text-lg text-ink-950 placeholder:text-ink-500/60 focus:border-cork-600 focus:outline-none"
+    />
+    <span
+      id="archive-search-busy"
+      hidden
+      class="absolute right-1 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin rounded-full border-2 border-cork-300 border-t-cork-600"
+      aria-hidden="true"></span>
+  </div>
+
+  <p id="archive-search-status" class="mt-3 text-sm text-ink-500" role="status" aria-live="polite"></p>
+  <ol id="archive-search-results" class="mt-6 space-y-6"></ol>
+</search>
+
+<style>
+  /* Pagefind zet <mark> rond de treffers; de standaard-geel van de browser
+     hoort niet in deze wereld. Kurk onderstreept in plaats van te overschilderen. */
+  #archive-search-results :global(mark) {
+    background: transparent;
+    color: var(--color-ink-950);
+    font-weight: 700;
+    box-shadow: inset 0 -0.35em 0 var(--color-cork-300);
+  }
+</style>
+
+<script is:inline define:vars={{ pagefindPath }}>
+  (() => {
+    const field = document.getElementById('archive-search');
+    const list = document.getElementById('archive-search-results');
+    const status = document.getElementById('archive-search-status');
+    const busy = document.getElementById('archive-search-busy');
+    if (!field) return;
+
+    let pagefind = null;
+    let loading = null;
+    let counter = 0;
+
+    // Pas laden bij de eerste toetsaanslag: de index is een paar honderd kB en
+    // wie alleen bladert heeft hem niet nodig.
+    const ensureIndex = () => {
+      loading ??= import(/* @vite-ignore */ pagefindPath)
+        .then(async (m) => {
+          await m.init();
+          pagefind = m;
+        })
+        .catch(() => {
+          pagefind = false;
+        });
+      return loading;
+    };
+
+    const clear = () => {
+      list.replaceChildren();
+      status.textContent = '';
+    };
+
+    const show = (results, query) => {
+      list.replaceChildren();
+      if (!results.length) {
+        status.textContent = `Niets gevonden voor "${query}".`;
+        return;
+      }
+      status.textContent = `${results.length === 40 ? '40+' : results.length} resultaten voor "${query}".`;
+      for (const r of results) {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = r.url;
+        a.className = 'group block border-l-2 border-cork-300 pl-4 hover:border-cork-600';
+        const title = document.createElement('span');
+        title.className = 'type-display block text-lg text-ink-950 group-hover:text-cork-600';
+        title.textContent = r.meta?.title || 'Zonder titel';
+        const meta = document.createElement('span');
+        meta.className = 'type-label mt-1 block text-[0.65rem] text-ink-500';
+        meta.textContent = [r.meta?.date, r.meta?.author].filter(Boolean).join(' · ');
+        const excerpt = document.createElement('p');
+        excerpt.className = 'mt-1 text-sm text-ink-700';
+        // Pagefind levert het uittreksel met <mark> rond de treffers; dat is
+        // zijn eigen opmaak, geen invoer van de bezoeker.
+        excerpt.innerHTML = r.excerpt;
+        a.append(title, meta, excerpt);
+        li.append(a);
+        list.append(li);
+      }
+    };
+
+    let debounce;
+    field.addEventListener('input', () => {
+      clearTimeout(debounce);
+      const query = field.value.trim();
+      if (query.length < 2) {
+        clear();
+        return;
+      }
+      debounce = setTimeout(async () => {
+        const turn = ++counter;
+        busy.hidden = false;
+        await ensureIndex();
+        if (turn !== counter) return;
+        if (!pagefind) {
+          busy.hidden = true;
+          status.textContent =
+            'Zoeken werkt pas in een echte build — de index wordt na het bouwen aangemaakt.';
+          return;
+        }
+        const search = await pagefind.search(query);
+        if (turn !== counter) return;
+        const data = await Promise.all(search.results.slice(0, 40).map((r) => r.data()));
+        if (turn !== counter) return;
+        busy.hidden = true;
+        show(data, query);
+      }, 180);
+    });
+  })();
+</script>

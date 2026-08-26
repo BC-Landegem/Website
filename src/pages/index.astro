@@ -1,64 +1,64 @@
 ---
 import { Image } from 'astro:assets';
-import Kop from '../components/Kop.astro';
-import Punt from '../components/Punt.astro';
+import Heading from '../components/Heading.astro';
+import Dot from '../components/Dot.astro';
 import Layout from '../layouts/Layout.astro';
-import Pijl from '../components/Pijl.astro';
+import Arrow from '../components/Arrow.astro';
 import { url } from '../lib/url';
-import trainingen from '../data/trainingen.json';
+import trainings from '../data/trainings.json';
 import hero from '../assets/hero.jpg';
-import { zichtbareAlbums, fotodata, maandNaam, coverUrl } from '../lib/media';
+import { visibleAlbums, photoData, monthName, coverUrl } from '../lib/media';
 
-const KURK = { x: 80, y: 700 };
-const straal = (hoekGraden: number, lengte: number) => ({
-  x: KURK.x + lengte * Math.cos((hoekGraden * Math.PI) / 180),
-  y: KURK.y - lengte * Math.sin((hoekGraden * Math.PI) / 180),
+const CORK = { x: 80, y: 700 };
+const ray = (angleDegrees: number, length: number) => ({
+  x: CORK.x + length * Math.cos((angleDegrees * Math.PI) / 180),
+  y: CORK.y - length * Math.sin((angleDegrees * Math.PI) / 180),
 });
 // Verenkrans: 16 stralen die vanuit het kurkpunt (80,700) openwaaieren, van 16° tot 82°
-const stralen = Array.from({ length: 16 }, (_, i) =>
-  straal(16 + i * (66 / 15), i % 4 === 0 ? 540 : i % 2 === 1 ? 400 : 470),
+const rays = Array.from({ length: 16 }, (_, i) =>
+  ray(16 + i * (66 / 15), i % 4 === 0 ? 540 : i % 2 === 1 ? 400 : 470),
 );
 // Drie gevulde veren tussen de stralen
-const veren = [
-  { a: straal(24, 500), b: straal(33, 500), fill: 'var(--color-veer-200)', opacity: 0.6 },
-  { a: straal(46, 540), b: straal(54, 540), fill: 'var(--color-kurk-300)', opacity: 0.35 },
-  { a: straal(66, 480), b: straal(73, 480), fill: 'var(--color-club-100)', opacity: 0.55 },
+const feathers = [
+  { a: ray(24, 500), b: ray(33, 500), fill: 'var(--color-feather-200)', opacity: 0.6 },
+  { a: ray(46, 540), b: ray(54, 540), fill: 'var(--color-cork-300)', opacity: 0.35 },
+  { a: ray(66, 480), b: ray(73, 480), fill: 'var(--color-club-100)', opacity: 0.55 },
 ];
 
 // Drie veren aan de draad: jeugd, recreatief, competitie. De class-strings
 // staan integraal in de data (Tailwind scant geen samengestelde namen).
-const kaarten = [
+const cards = [
   {
     href: '/jeugd/',
-    titel: 'Jeugd',
-    tekst: 'Vanaf 8 jaar. Vrij spel op woensdagavond, zonder selectie. Wie er klaar voor is, traint op zaterdag mee in groep 1 of 2.',
-    linkTekst: 'Alles over de jeugdwerking',
+    title: 'Jeugd',
+    text: 'Vanaf 8 jaar. Vrij spel op woensdagavond, zonder selectie. Wie er klaar voor is, traint op zaterdag mee in groep 1 of 2.',
+    linkText: 'Alles over de jeugdwerking',
     clip: 'polygon(0 10%, 100% 0, 100% 100%, 0 100%)',
-    kaartClass: 'col-span-12 -rotate-1 bg-inkt-950 text-veer-50 sm:col-span-7 sm:col-start-3 sm:p-10',
-    titelClass: 'text-4xl text-white transition-colors group-hover:text-club-300',
-    tekstClass: 'max-w-md text-veer-200',
+    cardClass: 'col-span-12 -rotate-1 bg-ink-950 text-feather-50 sm:col-span-7 sm:col-start-3 sm:p-10',
+    titleClass: 'text-4xl text-white transition-colors group-hover:text-club-300',
+    textClass: 'max-w-md text-feather-200',
     linkClass: 'text-club-300',
   },
   {
     href: '/recreatief/',
-    titel: 'Recreatief',
-    tekst: 'Vrij spel op maandag, woensdag en zondag. Je hoeft je niet in te schrijven voor een uur: je komt en je speelt.',
-    linkTekst: 'Alles over recreatief spelen',
+    title: 'Recreatief',
+    text: 'Vrij spel op maandag, woensdag en zondag. Je hoeft je niet in te schrijven voor een uur: je komt en je speelt.',
+    linkText: 'Alles over recreatief spelen',
     clip: 'polygon(0 0, 100% 10%, 100% 100%, 0 100%)',
-    kaartClass: 'col-span-11 col-start-2 rotate-[1.25deg] bg-club-500 text-inkt-950 sm:col-span-5 sm:col-start-8 sm:-mt-12',
-    titelClass: 'text-3xl text-white',
-    tekstClass: 'font-medium',
+    cardClass: 'col-span-11 col-start-2 rotate-[1.25deg] bg-club-500 text-ink-950 sm:col-span-5 sm:col-start-8 sm:-mt-12',
+    titleClass: 'text-3xl text-white',
+    textClass: 'font-medium',
     linkClass: '',
   },
   {
     href: '/competitie/',
-    titel: 'Competitie',
-    tekst: 'Onze ploegen spelen in de Liga- en PBO-competitie. Volg hun kalender, verslagen en standen.',
-    linkTekst: 'Naar de ploegen',
+    title: 'Competitie',
+    text: 'Onze ploegen spelen in de Liga- en PBO-competitie. Volg hun kalender, verslagen en standen.',
+    linkText: 'Naar de ploegen',
     clip: 'polygon(0 8%, 100% 0, 100% 96%, 0 100%)',
-    kaartClass: 'col-span-12 -rotate-[0.75deg] bg-veer-200 text-inkt-950 sm:col-span-6 sm:col-start-4 sm:-mt-8',
-    titelClass: 'text-3xl',
-    tekstClass: 'max-w-sm text-inkt-700',
+    cardClass: 'col-span-12 -rotate-[0.75deg] bg-feather-200 text-ink-950 sm:col-span-6 sm:col-start-4 sm:-mt-8',
+    titleClass: 'text-3xl',
+    textClass: 'max-w-sm text-ink-700',
     linkClass: 'text-club-700',
   },
 ];
@@ -66,17 +66,17 @@ const kaarten = [
 // Laatste foto's: de nieuwste albums dragen de homepage-strook. Ze komen uit
 // dezelfde nachtelijke sync als /media/ — geen redactie, geen dood blok: is er
 // niets gesynct, dan valt de sectie weg.
-const fotoAlbum = zichtbareAlbums[0];
-const laatsteFotos = fotoAlbum ? fotodata[fotoAlbum.slug].fotos.slice(0, 5) : [];
+const photoAlbum = visibleAlbums[0];
+const latestPhotos = photoAlbum ? photoData[photoAlbum.slug].photos.slice(0, 5) : [];
 // Veerblad-snedes, afwisselend per tegel (zie DESIGN.md).
-const fotoSnedes = [
+const photoCuts = [
   'polygon(0 8%, 100% 0, 100% 92%, 0 100%)',
   'polygon(0 0, 100% 8%, 100% 100%, 0 92%)',
 ];
 ---
 
 <Layout>
-  <div id="pagina" class="relative">
+  <div id="page" class="relative">
     {/* Hero: de shuttle lanceert vanuit het kurkpunt */}
     <section class="@container relative isolate flex min-h-[88vh] items-center overflow-hidden">
       {/* Natuurlijke aspectverhouding (geen max-h): zo blijft het kurkpunt exact op
@@ -88,24 +88,24 @@ const fotoSnedes = [
         aria-hidden="true"
       >
         {/* Skirtbogen van de verenkrans */}
-        <circle cx={KURK.x} cy={KURK.y} r="300" fill="none" stroke="var(--color-inkt-950)" stroke-opacity="0.08" stroke-width="1.5" stroke-dasharray="3 10" />
-        <circle cx={KURK.x} cy={KURK.y} r="440" fill="none" stroke="var(--color-inkt-950)" stroke-opacity="0.06" stroke-width="1.5" stroke-dasharray="3 14" />
+        <circle cx={CORK.x} cy={CORK.y} r="300" fill="none" stroke="var(--color-ink-950)" stroke-opacity="0.08" stroke-width="1.5" stroke-dasharray="3 10" />
+        <circle cx={CORK.x} cy={CORK.y} r="440" fill="none" stroke="var(--color-ink-950)" stroke-opacity="0.06" stroke-width="1.5" stroke-dasharray="3 14" />
         {/* Gevulde veren */}
-        {veren.map((veer) => (
+        {feathers.map((feather) => (
           <path
-            d={`M ${KURK.x} ${KURK.y} L ${veer.a.x} ${veer.a.y} L ${veer.b.x} ${veer.b.y} Z`}
-            fill={veer.fill}
-            opacity={veer.opacity}
+            d={`M ${CORK.x} ${CORK.y} L ${feather.a.x} ${feather.a.y} L ${feather.b.x} ${feather.b.y} Z`}
+            fill={feather.fill}
+            opacity={feather.opacity}
           />
         ))}
         {/* Stralen */}
-        {stralen.map((s) => (
-          <line x1={KURK.x} y1={KURK.y} x2={s.x} y2={s.y} stroke="var(--color-inkt-950)" stroke-opacity="0.1" stroke-width="1.5" />
+        {rays.map((s) => (
+          <line x1={CORK.x} y1={CORK.y} x2={s.x} y2={s.y} stroke="var(--color-ink-950)" stroke-opacity="0.1" stroke-width="1.5" />
         ))}
       </svg>
 
       {/* Het clublogo: statisch op het hangmoment, achter de hero-inhoud maar vóór
-           de rode vluchtlijn (zie z-index op #pagina). Vanaf 900px staat het
+           de rode vluchtlijn (zie z-index op #page). Vanaf 900px staat het
            volledige logo er — pluim mét de getekende clubnaam — zodat het
            hangmoment een clubsignatuur is en niet enkel een mikpunt voor de draad.
            Het moet daarvoor groot en rechtop staan: op pluimmaat wordt de
@@ -115,7 +115,7 @@ const fotoSnedes = [
            vrij. Smaller draagt de hero de losse pluim in zijn oude stand. In beide
            bestanden staat de pluim op dezelfde plek in het kader, dus het
            hangmoment verschuift niet mee. De draad landt op het midden van deze box
-           (zie lib/draad.ts) — dat midden ligt in de pluim, niet in de naam. */}
+           (zie lib/thread.ts) — dat midden ligt in de pluim, niet in de naam. */}
       <div
         id="shuttle-glyph"
         class="pointer-events-none absolute right-[5%] top-8 -z-[1] w-20 overflow-visible min-[900px]:top-16 min-[900px]:w-44"
@@ -135,9 +135,9 @@ const fotoSnedes = [
 
       {/* Het kurkpunt is de primaire actie: Word lid! zit op de kurk */}
       <a
-        id="kurk-cta"
+        id="cork-cta"
         href={url('/club/word-lid/')}
-        class="stem-baan absolute z-20 flex h-28 w-28 -translate-x-1/2 translate-y-1/2 items-center justify-center rounded-full bg-club-600 px-3 text-center text-xs leading-snug text-white ring-4 ring-kurk-400 ring-offset-4 ring-offset-veer-50 transition-transform duration-300 [transition-timing-function:var(--ease-lancering)] hover:scale-110 sm:h-36 sm:w-36 sm:text-sm"
+        class="type-label absolute z-20 flex h-28 w-28 -translate-x-1/2 translate-y-1/2 items-center justify-center rounded-full bg-club-600 px-3 text-center text-xs leading-snug text-white ring-4 ring-cork-400 ring-offset-4 ring-offset-feather-50 transition-transform duration-300 [transition-timing-function:var(--ease-launch)] hover:scale-110 sm:h-36 sm:w-36 sm:text-sm"
         style="left: calc(max(100cqw, 75rem) / 18); bottom: calc(max(100cqw, 75rem) / 18);"
       >
         Word lid!
@@ -150,31 +150,31 @@ const fotoSnedes = [
            en ligt de rechterbovenhoek horizontaal vrij (zie hierboven). */}
       <div class="mx-auto w-full max-w-6xl px-4 pb-44 pt-32 sm:pb-52 md:pb-24 min-[900px]:pt-24">
         <div class="max-w-3xl md:ml-[22%]">
-          <h1 class="stem-display text-inkt-950">
+          <h1 class="type-display text-ink-950">
             <span class="block text-[clamp(2rem,10.2vw,3rem)] sm:text-6xl lg:text-7xl">Badminton</span>
             <span class="block text-[clamp(1.25rem,6.4vw,1.875rem)] sm:text-4xl lg:text-5xl">voor jong en oud</span>
             <span class="block text-[clamp(2rem,10.2vw,3rem)] text-club-500 sm:text-6xl lg:text-7xl">in Nevele</span>
           </h1>
-          <p class="mt-6 max-w-xl text-lg text-inkt-700">
+          <p class="mt-6 max-w-xl text-lg text-ink-700">
             Vrij spel op maandag, woensdag en zondag, jeugdtraining op zaterdag. Nieuwe spelers
             mogen drie keer gratis meespelen voor ze beslissen.
           </p>
           <div class="mt-8 flex flex-wrap items-center gap-4">
             <a
               href={url('/kalender/')}
-              class="stem-baan rounded-full border-2 border-inkt-950 px-7 py-3 text-sm text-inkt-950 transition-colors hover:border-club-600 hover:text-club-600"
+              class="type-label rounded-full border-2 border-ink-950 px-7 py-3 text-sm text-ink-950 transition-colors hover:border-club-600 hover:text-club-600"
             >
               Bekijk de kalender
             </a>
           </div>
           {/* Ruimte vooraf gereserveerd (invisible i.p.v. hidden) zodat de hero
                niet verspringt wanneer de kalenderdata binnenkomt. */}
-          <div id="volgend-moment" class="invisible mt-8 min-h-[4.5rem] max-w-xl text-sm text-inkt-700">
+          <div id="next-moment" class="invisible mt-8 min-h-[4.5rem] max-w-xl text-sm text-ink-700">
             <p class="flex items-center gap-3">
               <span class="inline-block h-3 w-3 rounded-full bg-club-500" aria-hidden="true"></span>
-              <span>Eerstvolgend speelmoment:&nbsp;<strong id="volgend-moment-dag" class="stem-cijfer text-inkt-950"></strong></span>
+              <span>Eerstvolgend speelmoment:&nbsp;<strong id="next-moment-day" class="type-numeral text-ink-950"></strong></span>
             </p>
-            <ul id="volgend-moment-lijst" class="mt-2 space-y-1 pl-6"></ul>
+            <ul id="next-moment-list" class="mt-2 space-y-1 pl-6"></ul>
           </div>
         </div>
       </div>
@@ -182,26 +182,26 @@ const fotoSnedes = [
 
     {/* De rode band rond de kurk. Anker voor de draad: op smalle schermen
          verspringt hij ván de rechtermarge náár de rail ín deze band, waar rood
-         op rood onzichtbaar is (zie lib/draad.ts). */}
-    <section id="rode-band" class="border-y-8 border-club-800 bg-club-600 text-white">
+         op rood onzichtbaar is (zie lib/thread.ts). */}
+    <section id="red-band" class="border-y-8 border-club-800 bg-club-600 text-white">
       <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-6 px-4 py-12">
         <div class="flex-[1_1_28rem]">
-          <Kop kleur="erft">Drie keer gratis meespelen</Kop>
+          <Heading color="inherit">Drie keer gratis meespelen</Heading>
           <p class="mt-2 max-w-xl text-xl font-bold text-white">
-            Spring binnen tijdens een speelmoment in {trainingen.locatie.naam}. Afspreken hoeft niet, laten weten dat je komt is wel zo aangenaam.
+            Spring binnen tijdens een speelmoment in {trainings.location.name}. Afspreken hoeft niet, laten weten dat je komt is wel zo aangenaam.
           </p>
         </div>
         <div class="flex flex-col items-start gap-4">
           <a
             href={url('/club/word-lid/')}
-            class="stem-baan rounded-full bg-white px-7 py-3.5 text-sm text-club-600 transition-colors hover:bg-club-50"
+            class="type-label rounded-full bg-white px-7 py-3.5 text-sm text-club-600 transition-colors hover:bg-club-50"
           >
             Zo begin je
           </a>
-          {/* Op de club-600-band is álle tekst wit: inkt-950 haalt daar geen 4,5:1. Rangorde komt van grootte en gewicht. */}
+          {/* Op de club-600-band is álle tekst wit: ink-950 haalt daar geen 4,5:1. Rangorde komt van grootte en gewicht. */}
           <a
             href={url('/folder/bc-landegem-folder-2026.pdf')}
-            class="stem-baan inline-flex items-center gap-2 text-xs text-white transition-colors hover:underline"
+            class="type-label inline-flex items-center gap-2 text-xs text-white transition-colors hover:underline"
           >
             <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v11m0 0l-5-5m5 5l5-5M5 20h14" />
@@ -215,32 +215,32 @@ const fotoSnedes = [
     {/* Intra top-10: het interne klassement als meetpunt op de draad.
          Live uit de intra-API; skeletrijen reserveren de ruimte zodat de
          pagina niet verspringt. Onbereikbaar? Dan klapt de sectie dicht. */}
-    <section id="intra-sectie">
+    <section id="intra-section">
       <div class="mx-auto max-w-6xl px-4 py-20">
         <div class="grid gap-y-10 md:grid-cols-12 md:gap-x-12">
           <div class="relative pl-10 md:col-span-5">
-            <Punt id="punt-intra" top="top-2.5" />
-            <Kop maat="groot">Intra top-10</Kop>
-            <p class="mt-3 text-inkt-700">
+            <Dot id="dot-intra" top="top-2.5" />
+            <Heading size="large">Intra top-10</Heading>
+            <p class="mt-3 text-ink-700">
               Onze interne competitie: vier spelers per match, elke set een ander duo,
               het hele seizoen lang één klassement.
             </p>
-            <p id="intra-stand-na" class="stem-baan mt-4 min-h-4 text-xs text-club-700"></p>
+            <p id="intra-standing-after" class="type-label mt-4 min-h-4 text-xs text-club-700"></p>
             <a
               href={url('/intraclub/')}
-              class="stem-baan mt-8 inline-flex items-center gap-2 rounded-full border-2 border-inkt-950 px-7 py-3 text-sm text-inkt-950 transition-colors hover:border-club-600 hover:text-club-600"
+              class="type-label mt-8 inline-flex items-center gap-2 rounded-full border-2 border-ink-950 px-7 py-3 text-sm text-ink-950 transition-colors hover:border-club-600 hover:text-club-600"
             >
               Bekijk de volledige stand
-              <Pijl class="h-4 w-4 transition-transform duration-300" />
+              <Arrow class="h-4 w-4 transition-transform duration-300" />
             </a>
           </div>
           {/* Op mobiel dezelfde rail-inspringing als de rest, zodat de draad links van de nummers loopt */}
           <ol id="intra-top10" class="self-start pl-10 md:col-span-7 md:pl-0">
             {Array.from({ length: 10 }).map(() => (
-              <li class="skelet grid min-h-12 grid-cols-[2.5rem_1fr_auto] items-center gap-x-3 border-b border-inkt-950/10 py-2.5 first:border-t" aria-hidden="true">
-                <span class="h-4 w-5 animate-pulse rounded bg-inkt-950/10"></span>
-                <span class="h-4 w-2/3 max-w-48 animate-pulse rounded bg-inkt-950/10"></span>
-                <span class="h-4 w-10 animate-pulse rounded bg-inkt-950/10"></span>
+              <li class="skeleton grid min-h-12 grid-cols-[2.5rem_1fr_auto] items-center gap-x-3 border-b border-ink-950/10 py-2.5 first:border-t" aria-hidden="true">
+                <span class="h-4 w-5 animate-pulse rounded bg-ink-950/10"></span>
+                <span class="h-4 w-2/3 max-w-48 animate-pulse rounded bg-ink-950/10"></span>
+                <span class="h-4 w-10 animate-pulse rounded bg-ink-950/10"></span>
               </li>
             ))}
           </ol>
@@ -251,22 +251,22 @@ const fotoSnedes = [
     {/* Wanneer we spelen: vijf speelmomenten als meetpunten op de draad */}
     <section class="mx-auto max-w-6xl px-4 py-20">
       {/* Kop op de rail-inspringing, zodat de draad links van de letters loopt */}
-      <Kop maat="groot" class="pl-10">Wanneer we spelen</Kop>
-      <p class="mt-3 max-w-xl pl-10 text-inkt-700">
-        Alle trainingen en speelmomenten gaan door in {trainingen.locatie.naam}, {trainingen.locatie.gemeente}.
+      <Heading size="large" class="pl-10">Wanneer we spelen</Heading>
+      <p class="mt-3 max-w-xl pl-10 text-ink-700">
+        Alle trainingen en speelmomenten gaan door in {trainings.location.name}, {trainings.location.municipality}.
       </p>
-      <ol id="speeluren-lijst" class="relative mt-12">
-        {trainingen.momenten.map((moment) => (
-          <li class="vlucht group relative border-b border-inkt-950/10 py-6 pl-10 first:border-t">
+      <ol id="play-hours-list" class="relative mt-12">
+        {trainings.sessions.map((session) => (
+          <li class="flight group relative border-b border-ink-950/10 py-6 pl-10 first:border-t">
             {/* De bol blijft op de draad (schaalt enkel); alleen de inhoud schuift op hover */}
-            <Punt top="top-8" groeit />
-            <div class="transition-transform duration-300 [transition-timing-function:var(--ease-lancering)] group-hover:translate-x-2 sm:grid sm:grid-cols-[8rem_16rem_1fr] sm:items-baseline sm:gap-6">
-              <p class="stem-baan text-xs text-club-700">{moment.dag}</p>
-              <p class="stem-cijfer mt-1 text-2xl text-inkt-950 sm:mt-0 sm:text-3xl">{moment.uren}</p>
+            <Dot top="top-8" grows />
+            <div class="transition-transform duration-300 [transition-timing-function:var(--ease-launch)] group-hover:translate-x-2 sm:grid sm:grid-cols-[8rem_16rem_1fr] sm:items-baseline sm:gap-6">
+              <p class="type-label text-xs text-club-700">{session.day}</p>
+              <p class="type-numeral mt-1 text-2xl text-ink-950 sm:mt-0 sm:text-3xl">{session.hours}</p>
               <div class="mt-1 sm:mt-0">
-                <p class="font-bold">{moment.omschrijving}</p>
-                <p class="text-sm text-inkt-500">{moment.doelgroep}</p>
-                {moment.opmerking && <p class="text-sm text-inkt-500">{moment.opmerking}</p>}
+                <p class="font-bold">{session.description}</p>
+                <p class="text-sm text-ink-500">{session.audience}</p>
+                {session.note && <p class="text-sm text-ink-500">{session.note}</p>}
               </div>
             </div>
           </li>
@@ -276,23 +276,23 @@ const fotoSnedes = [
 
     {/* Komende events: skeletrijen reserveren de ruimte zodat de pagina niet
          verspringt; zonder data klapt de sectie dicht. */}
-    <section id="events-sectie" class="border-y border-inkt-950/10">
+    <section id="events-section" class="border-y border-ink-950/10">
       <div class="mx-auto max-w-6xl px-4 py-20">
-        <h2 class="stem-display pl-10 text-4xl text-inkt-950">Binnenkort in de club</h2>
-        <ol id="events-lijst" class="relative mt-10">
+        <h2 class="type-display pl-10 text-4xl text-ink-950">Binnenkort in de club</h2>
+        <ol id="events-list" class="relative mt-10">
           {Array.from({ length: 4 }).map(() => (
-            <li class="skelet relative border-b border-inkt-950/10 py-5 pl-10 first:border-t" aria-hidden="true">
-              <span class="absolute left-[6px] top-7 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-inkt-950/10"></span>
-              <span class="block h-6 w-44 max-w-full animate-pulse rounded bg-inkt-950/10"></span>
-              <span class="mt-2 block h-5 w-64 max-w-full animate-pulse rounded bg-inkt-950/10"></span>
-              <span class="mt-2 block h-4 w-36 max-w-full animate-pulse rounded bg-inkt-950/10"></span>
+            <li class="skeleton relative border-b border-ink-950/10 py-5 pl-10 first:border-t" aria-hidden="true">
+              <span class="absolute left-[6px] top-7 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-ink-950/10"></span>
+              <span class="block h-6 w-44 max-w-full animate-pulse rounded bg-ink-950/10"></span>
+              <span class="mt-2 block h-5 w-64 max-w-full animate-pulse rounded bg-ink-950/10"></span>
+              <span class="mt-2 block h-4 w-36 max-w-full animate-pulse rounded bg-ink-950/10"></span>
             </li>
           ))}
         </ol>
         <p class="mt-8 pl-10">
-          <a href={url('/kalender/')} class="stem-baan inline-flex items-center gap-2 text-xs text-club-700 hover:text-club-800 hover:underline">
+          <a href={url('/kalender/')} class="type-label inline-flex items-center gap-2 text-xs text-club-700 hover:text-club-800 hover:underline">
             Bekijk de volledige kalender
-            <Pijl />
+            <Arrow />
           </a>
         </p>
       </div>
@@ -302,17 +302,17 @@ const fotoSnedes = [
     <section class="mx-auto max-w-6xl px-4 py-24">
       <h2 class="sr-only">Wat de club te bieden heeft</h2>
       <div class="grid grid-cols-12 gap-y-5">
-        {kaarten.map((kaart) => (
+        {cards.map((card) => (
           <a
-            href={url(kaart.href)}
-            class={`vlucht group p-8 transition-transform duration-300 [transition-timing-function:var(--ease-lancering)] hover:-translate-y-2 ${kaart.kaartClass}`}
-            style={`clip-path: ${kaart.clip}`}
+            href={url(card.href)}
+            class={`flight group p-8 transition-transform duration-300 [transition-timing-function:var(--ease-launch)] hover:-translate-y-2 ${card.cardClass}`}
+            style={`clip-path: ${card.clip}`}
           >
-            <h3 class={`stem-display ${kaart.titelClass}`}>{kaart.titel}</h3>
-            <p class={`mt-3 text-sm leading-relaxed ${kaart.tekstClass}`}>{kaart.tekst}</p>
-            <span class={`stem-baan mt-6 inline-flex items-center gap-2 text-xs ${kaart.linkClass}`}>
-              {kaart.linkTekst}
-              <Pijl class="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+            <h3 class={`type-display ${card.titleClass}`}>{card.title}</h3>
+            <p class={`mt-3 text-sm leading-relaxed ${card.textClass}`}>{card.text}</p>
+            <span class={`type-label mt-6 inline-flex items-center gap-2 text-xs ${card.linkClass}`}>
+              {card.linkText}
+              <Arrow class="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
             </span>
           </a>
         ))}
@@ -323,22 +323,22 @@ const fotoSnedes = [
          hangen op Google's CDN — dat antwoordt met 429 zodra er een vreemde
          referer meekomt, vandaar referrerpolicy per beeld. Paginabreed zetten
          kan hier niet: de Google Calendar-key ís referrer-restricted. */}
-    {laatsteFotos.length > 0 && (
+    {latestPhotos.length > 0 && (
       <section class="mx-auto max-w-6xl px-4 pb-24">
         <div class="pl-10">
-          <Kop maat="groot">Uit de club</Kop>
-          <p class="mt-3 max-w-xl text-inkt-700">
-            De laatste foto's uit onze albums — {fotoAlbum.titel}, {maandNaam(fotoAlbum.datum)}.
+          <Heading size="large">Uit de club</Heading>
+          <p class="mt-3 max-w-xl text-ink-700">
+            De laatste foto's uit onze albums — {photoAlbum.title}, {monthName(photoAlbum.date)}.
           </p>
         </div>
         <a
-          href={url(`/media/${fotoAlbum.slug}/`)}
+          href={url(`/media/${photoAlbum.slug}/`)}
           class="group mt-10 grid grid-cols-2 gap-4 pl-10 sm:grid-cols-3 lg:grid-cols-5"
-          aria-label={`Alle foto's van ${fotoAlbum.titel}`}
+          aria-label={`Alle foto's van ${photoAlbum.title}`}
         >
-          {laatsteFotos.map((foto, i) => (
+          {latestPhotos.map((photo, i) => (
             <img
-              src={coverUrl(foto.url, 640, 640)}
+              src={coverUrl(photo.url, 640, 640)}
               width="640"
               height="640"
               alt=""
@@ -346,17 +346,17 @@ const fotoSnedes = [
               decoding="async"
               referrerpolicy="no-referrer"
               class:list={[
-                'vlucht aspect-square w-full bg-inkt-950/5 object-cover transition-transform duration-300 group-hover:-translate-y-1',
+                'flight aspect-square w-full bg-ink-950/5 object-cover transition-transform duration-300 group-hover:-translate-y-1',
                 i === 4 && 'hidden lg:block',
               ]}
-              style={`clip-path: ${fotoSnedes[i % 2]}`}
+              style={`clip-path: ${photoCuts[i % 2]}`}
             />
           ))}
         </a>
         <p class="mt-8 pl-10">
-          <a href={url('/media/')} class="stem-baan inline-flex items-center gap-2 text-xs text-club-700 hover:text-club-800 hover:underline">
+          <a href={url('/media/')} class="type-label inline-flex items-center gap-2 text-xs text-club-700 hover:text-club-800 hover:underline">
             Alle fotoalbums
-            <Pijl />
+            <Arrow />
           </a>
         </p>
       </section>
@@ -365,47 +365,47 @@ const fotoSnedes = [
     {/* Sinds 1987: één stille regel op de draad */}
     <section class="mx-auto max-w-6xl px-4 pb-24">
       <div class="relative pl-10">
-        <Punt id="punt-1987" top="top-2" />
-        <p class="stem-cijfer text-2xl text-inkt-950">1987</p>
-        <p class="mt-1 max-w-xl text-inkt-700">
+        <Dot id="dot-1987" top="top-2" />
+        <p class="type-numeral text-2xl text-ink-950">1987</p>
+        <p class="mt-1 max-w-xl text-ink-700">
           Begonnen als een gemeentelijke initiatiecursus. Vandaag heeft de club een jeugdwerking,
           vrij spel op vier dagen en ploegen in competitie.
         </p>
-        <a href={url('/club/over-de-club/')} class="stem-baan mt-3 inline-block text-xs text-club-700 hover:text-club-800 hover:underline">
+        <a href={url('/club/over-de-club/')} class="type-label mt-3 inline-block text-xs text-club-700 hover:text-club-800 hover:underline">
           Lees hoe het begon
         </a>
       </div>
     </section>
 
     {/* Slot: de leren dop */}
-    <section id="slot-sectie" class="relative overflow-hidden bg-inkt-950 text-veer-50">
+    <section id="closing-section" class="relative overflow-hidden bg-ink-950 text-feather-50">
       {/* Staart van de vluchtdraad: landt op de foto, achter de tekst */}
-      <svg id="draad-staart-svg" class="pointer-events-none absolute inset-0 h-full w-full" aria-hidden="true">
-        <path id="draad-staart" fill="none" stroke="var(--color-club-500)" stroke-width="4" stroke-linecap="round" />
+      <svg id="thread-tail-svg" class="pointer-events-none absolute inset-0 h-full w-full" aria-hidden="true">
+        <path id="thread-tail" fill="none" stroke="var(--color-club-500)" stroke-width="4" stroke-linecap="round" />
       </svg>
       <div class="mx-auto grid max-w-6xl items-center gap-12 px-4 py-24 md:grid-cols-2">
         <div>
-          <Kop maat="groot" kleur="wit">Zin om mee te spelen?</Kop>
-          <p class="mt-4 max-w-md text-veer-200">
+          <Heading size="large" color="white">Zin om mee te spelen?</Heading>
+          <p class="mt-4 max-w-md text-feather-200">
             Kom eerst eens meespelen tijdens een speelmoment, of schrijf je meteen in.
           </p>
-          <div id="slot-knoppen" class="mt-8 flex flex-wrap gap-4">
+          <div id="closing-buttons" class="mt-8 flex flex-wrap gap-4">
             <a
-              id="slot-cta"
+              id="closing-cta"
               href={url('/club/word-lid/')}
-              class="stem-baan rounded-full bg-club-600 px-7 py-3.5 text-sm text-white transition-colors hover:bg-club-700"
+              class="type-label rounded-full bg-club-600 px-7 py-3.5 text-sm text-white transition-colors hover:bg-club-700"
             >
               Word lid!
             </a>
             <a
               href={url('/kalender/')}
-              class="stem-baan rounded-full border-2 border-veer-200/40 px-7 py-3 text-sm text-veer-50 transition-colors hover:border-club-400 hover:text-club-300"
+              class="type-label rounded-full border-2 border-feather-200/40 px-7 py-3 text-sm text-feather-50 transition-colors hover:border-club-400 hover:text-club-300"
             >
               Bekijk de kalender
             </a>
           </div>
         </div>
-        <figure id="slot-foto" style="clip-path: polygon(0 8%, 100% 0, 100% 92%, 0 100%)">
+        <figure id="closing-photo" style="clip-path: polygon(0 8%, 100% 0, 100% 92%, 0 100%)">
           <Image
             src={hero}
             alt="Badmintonwedstrijd van de club in de sporthal"
@@ -420,8 +420,8 @@ const fotoSnedes = [
 
     {/* De vluchtdraad: één doorlopende rode lijn van kurk tot slot, altijd zichtbaar.
          Hij loopt achter de inhoud en duikt onder de rode band door. */}
-    <svg id="draad" class="pointer-events-none absolute inset-0 -z-[2] h-full w-full" aria-hidden="true">
-      <path id="draad-kern" fill="none" stroke="var(--color-club-500)" stroke-width="4" stroke-linecap="round" />
+    <svg id="thread" class="pointer-events-none absolute inset-0 -z-[2] h-full w-full" aria-hidden="true">
+      <path id="thread-core" fill="none" stroke="var(--color-club-500)" stroke-width="4" stroke-linecap="round" />
     </svg>
   </div>
 </Layout>
@@ -429,49 +429,49 @@ const fotoSnedes = [
 {/* Zonder JS komt er nooit data: verberg dan de gereserveerde blokken,
      zodat er geen eeuwig pulserende skeletten staan. */}
 <style is:global>
-  html:not(.js) #volgend-moment,
-  html:not(.js) #intra-sectie,
-  html:not(.js) #events-sectie {
+  html:not(.js) #next-moment,
+  html:not(.js) #intra-section,
+  html:not(.js) #events-section {
     display: none;
   }
 </style>
 
 <script>
-  import trainingen from '../data/trainingen.json';
-  import { groepUitTitel } from '../data/kalender';
-  import { initDraad } from '../lib/draad';
+  import trainings from '../data/trainings.json';
+  import { groupFromTitle } from '../data/calendar';
+  import { initThread } from '../lib/thread';
   import {
-    NU,
-    dagKey,
-    uurTekst,
-    datumTekst,
-    isThuismatch,
-    haalKalender,
-    type KalenderItem,
-  } from '../lib/kalender-client';
-  import { fetchJson, naam, spelerUrl, formatDatum, laatsteBerekend } from '../lib/intra';
-  import type { RankingRij, Ronde } from '../lib/intra';
+    NOW,
+    dayKey,
+    timeText,
+    dateText,
+    isHomeMatch,
+    fetchCalendar,
+    type CalendarItem,
+  } from '../lib/calendar-client';
+  import { fetchJson, fullName, playerUrl, formatDate, lastCalculated } from '../lib/intra';
+  import type { RankingRow, Round } from '../lib/intra';
 
-  // De vluchtdraad en de landing-animatie leven in lib/draad.ts; `herbouw`
+  // De vluchtdraad en de landing-animatie leven in lib/thread.ts; `rebuild`
   // herberekent de draad zodra een sectie van hoogte verandert of dichtklapt.
-  const { herbouw } = initDraad();
+  const { rebuild } = initThread();
 
-  function esc(tekst: string): string {
+  function esc(text: string): string {
     const span = document.createElement('span');
-    span.textContent = tekst;
+    span.textContent = text;
     return span.innerHTML;
   }
 
   // — Kalenderdata: de hero-chip ("Eerstvolgend speelmoment") en "Binnenkort
   //   in de club" putten uit één gedeelde pass over alle bronnen
-  //   (lib/kalender-client.ts). De ruimte is vooraf gereserveerd (skeletten)
+  //   (lib/calendar-client.ts). De ruimte is vooraf gereserveerd (skeletten)
   //   zodat de pagina niet verspringt; enkel zonder enige data klapt een blok
   //   alsnog dicht — de vaste uren staan in "Wanneer we spelen". —
 
   // "Landegem 1H, 2H en 4H" — de clubnaam één keer, de rest kort.
-  function ploegOpsomming(ploegen: string[]): string {
-    const korte = [ploegen[0], ...ploegen.slice(1).map((ploeg) => ploeg.replace('Landegem ', ''))];
-    return korte.length > 1 ? `${korte.slice(0, -1).join(', ')} en ${korte[korte.length - 1]}` : korte[0];
+  function teamListing(teams: string[]): string {
+    const short = [teams[0], ...teams.slice(1).map((team) => team.replace('Landegem ', ''))];
+    return short.length > 1 ? `${short.slice(0, -1).join(', ')} en ${short[short.length - 1]}` : short[0];
   }
 
   // — Hero-chip: alles wat er op de eerstvolgende speeldag in de zaal gebeurt.
@@ -481,99 +481,99 @@ const fotoSnedes = [
   //   komen uit de kalender, teksten uit de vaste labels per bron
   //   (kalendertitels zijn interne jargon; events dragen wél een leesbare
   //   titel). —
-  function toonSpeelmomenten(items: KalenderItem[]) {
-    const chip = document.getElementById('volgend-moment');
-    const chipDag = document.getElementById('volgend-moment-dag');
-    const chipLijst = document.getElementById('volgend-moment-lijst');
-    const momenten = items.filter((item) => item.bron.speelmoment || isThuismatch(item));
-    const eerste = momenten[0];
-    if (!chip || !chipDag || !chipLijst) return;
-    if (!eerste) {
+  function showPlayMoments(items: CalendarItem[]) {
+    const chip = document.getElementById('next-moment');
+    const chipDay = document.getElementById('next-moment-day');
+    const chipList = document.getElementById('next-moment-list');
+    const moments = items.filter((item) => item.source.playSlot || isHomeMatch(item));
+    const first = moments[0];
+    if (!chip || !chipDay || !chipList) return;
+    if (!first) {
       // Geen speelmoment binnen het venster: gereserveerde ruimte weer vrijgeven.
       chip.classList.add('hidden');
       return;
     }
 
-    const key = dagKey(eerste.start);
-    chipDag.textContent =
-      key === dagKey(NU)
+    const key = dayKey(first.start);
+    chipDay.textContent =
+      key === dayKey(NOW)
         ? 'vandaag'
-        : key === dagKey(new Date(NU.getTime() + 24 * 60 * 60 * 1000))
+        : key === dayKey(new Date(NOW.getTime() + 24 * 60 * 60 * 1000))
           ? 'morgen'
-          : eerste.start.toLocaleDateString('nl-BE', { weekday: 'long' });
+          : first.start.toLocaleDateString('nl-BE', { weekday: 'long' });
 
     // Bij een gelijk beginuur: eerst wat je zelf komt doen, dan de matchen, dan
     // wat er die dag óók nog gebeurt.
-    const rang = (item: KalenderItem) => (item.bron.speelmoment ? 0 : isThuismatch(item) ? 1 : 2);
-    const vanDeDag = items
+    const rank = (item: CalendarItem) => (item.source.playSlot ? 0 : isHomeMatch(item) ? 1 : 2);
+    const ofTheDay = items
       .filter(
         (item) =>
-          dagKey(item.start) === key &&
-          (item.bron.speelmoment || isThuismatch(item) || item.bron.label === 'Events'),
+          dayKey(item.start) === key &&
+          (item.source.playSlot || isHomeMatch(item) || item.source.label === 'Events'),
       )
-      .sort((a, b) => a.start.getTime() - b.start.getTime() || rang(a) - rang(b));
+      .sort((a, b) => a.start.getTime() - b.start.getTime() || rank(a) - rank(b));
 
-    interface Rij {
-      uur: string;
-      tekst: string;
-      doelgroep: string;
-      staart: string;
+    interface Row {
+      time: string;
+      text: string;
+      audience: string;
+      tail: string;
       /** Gezet op matchrijen: de ploegen die samen thuisspelen. */
-      ploegen?: string[];
+      teams?: string[];
     }
-    const rijen: Rij[] = [];
-    const matchRijen = new Map<number, Rij>();
-    for (const item of vanDeDag) {
+    const rows: Row[] = [];
+    const matchRows = new Map<number, Row>();
+    for (const item of ofTheDay) {
       // Een event van een hele dag heeft geen zinnig uur om te tonen.
-      const uur = !item.event.start.dateTime
+      const time = !item.event.start.dateTime
         ? 'hele dag'
-        : item.einde
-          ? `${uurTekst(item.start)} – ${uurTekst(item.einde)}`
-          : uurTekst(item.start);
-      const staart = item.start <= NU && item.einde !== null && NU < item.einde ? ' — nu bezig' : '';
-      if (item.bron.speelmoment) {
+        : item.end
+          ? `${timeText(item.start)} – ${timeText(item.end)}`
+          : timeText(item.start);
+      const tail = item.start <= NOW && item.end !== null && NOW < item.end ? ' — nu bezig' : '';
+      if (item.source.playSlot) {
         // De groep (jeugd zaterdag: groep 1 en 2) moet overal zichtbaar zijn.
-        const groep = groepUitTitel(item.event.summary);
-        const { omschrijving, doelgroep } = item.bron.speelmoment;
-        rijen.push({ uur, tekst: `${omschrijving}${groep ? ` ${groep}` : ''}`, doelgroep, staart });
-      } else if (isThuismatch(item)) {
+        const group = groupFromTitle(item.event.summary);
+        const { description, audience } = item.source.playSlot;
+        rows.push({ time, text: `${description}${group ? ` ${group}` : ''}`, audience, tail });
+      } else if (isHomeMatch(item)) {
         // Ploegen die samen beginnen delen één regel; anders zet een
         // competitieweekend hier vijf bijna-identieke regels neer.
-        const samen = matchRijen.get(item.start.getTime());
-        if (samen) {
-          samen.ploegen!.push(item.bron.label);
+        const shared = matchRows.get(item.start.getTime());
+        if (shared) {
+          shared.teams!.push(item.source.label);
           continue;
         }
         // "vanaf": de Badminton Vlaanderen-import zet er blokken van één uur
         // op, terwijl een matchdag uren duurt — zoals in "Binnenkort".
-        const rij: Rij = {
-          uur: `vanaf ${uurTekst(item.start)}`,
-          tekst: '',
-          doelgroep: 'supporters welkom',
-          staart,
-          ploegen: [item.bron.label],
+        const row: Row = {
+          time: `vanaf ${timeText(item.start)}`,
+          text: '',
+          audience: 'supporters welkom',
+          tail,
+          teams: [item.source.label],
         };
-        matchRijen.set(item.start.getTime(), rij);
-        rijen.push(rij);
+        matchRows.set(item.start.getTime(), row);
+        rows.push(row);
       } else {
-        rijen.push({ uur, tekst: item.event.summary ?? 'Event', doelgroep: 'event', staart });
+        rows.push({ time, text: item.event.summary ?? 'Event', audience: 'event', tail });
       }
     }
 
-    for (const rij of rijen) {
+    for (const row of rows) {
       const li = document.createElement('li');
-      const uur = document.createElement('strong');
-      uur.className = 'stem-cijfer text-inkt-950';
-      uur.textContent = rij.uur;
-      const tekst = rij.ploegen
-        ? `${rij.ploegen.length > 1 ? 'Thuismatchen' : 'Thuismatch'} — ${ploegOpsomming(rij.ploegen)}`
-        : rij.tekst;
-      li.append(uur, ` · ${tekst}${rij.staart} `);
-      const dg = document.createElement('span');
-      dg.className = 'text-inkt-500';
-      dg.textContent = `(${rij.doelgroep})`;
-      li.append(dg);
-      chipLijst.append(li);
+      const time = document.createElement('strong');
+      time.className = 'type-numeral text-ink-950';
+      time.textContent = row.time;
+      const text = row.teams
+        ? `${row.teams.length > 1 ? 'Thuismatchen' : 'Thuismatch'} — ${teamListing(row.teams)}`
+        : row.text;
+      li.append(time, ` · ${text}${row.tail} `);
+      const audienceEl = document.createElement('span');
+      audienceEl.className = 'text-ink-500';
+      audienceEl.textContent = `(${row.audience})`;
+      li.append(audienceEl);
+      chipList.append(li);
     }
     chip.classList.remove('invisible');
   }
@@ -581,97 +581,97 @@ const fotoSnedes = [
   // — "Binnenkort in de club": events (zonder venster), de eerstvolgende
   //   intraclub-speeldag en thuismatchen gegroepeerd per dag — één rij per
   //   bezoekmoment, zodat een competitieweekend de events niet verdringt. —
-  function toonBinnenkort(items: KalenderItem[]) {
-    interface Rij {
+  function showUpcoming(items: CalendarItem[]) {
+    interface Row {
       start: Date;
-      wanneer: string;
-      titel: string;
-      plaats: string | null;
+      when: string;
+      title: string;
+      place: string | null;
       isEvent?: boolean;
     }
-    const rijen: Rij[] = [];
+    const rows: Row[] = [];
 
-    for (const item of items.filter((i) => i.bron.label === 'Events')) {
-      const plaats = item.event.location;
-      rijen.push({
+    for (const item of items.filter((i) => i.source.label === 'Events')) {
+      const place = item.event.location;
+      rows.push({
         start: item.start,
-        wanneer: `${datumTekst(item.start)}${item.event.start.dateTime ? ` · ${uurTekst(item.start)}` : ''}`,
-        titel: item.event.summary ?? 'Event',
-        plaats: plaats && plaats.toLowerCase() !== 'onbekend' ? plaats : null,
+        when: `${dateText(item.start)}${item.event.start.dateTime ? ` · ${timeText(item.start)}` : ''}`,
+        title: item.event.summary ?? 'Event',
+        place: place && place.toLowerCase() !== 'onbekend' ? place : null,
         isEvent: true,
       });
     }
 
-    const intraclub = items.find((item) => item.bron.label === 'Intraclub');
+    const intraclub = items.find((item) => item.source.label === 'Intraclub');
     if (intraclub) {
-      rijen.push({
+      rows.push({
         start: intraclub.start,
-        wanneer: `${datumTekst(intraclub.start)} · ${uurTekst(intraclub.start)}`,
-        titel: 'Intraclub + vrij spel',
-        plaats: trainingen.locatie.naam,
+        when: `${dateText(intraclub.start)} · ${timeText(intraclub.start)}`,
+        title: 'Intraclub + vrij spel',
+        place: trainings.location.name,
       });
     }
 
-    const matchdagen = new Map<string, KalenderItem[]>();
-    for (const item of items.filter(isThuismatch)) {
-      const key = dagKey(item.start);
-      matchdagen.set(key, [...(matchdagen.get(key) ?? []), item]);
+    const matchDays = new Map<string, CalendarItem[]>();
+    for (const item of items.filter(isHomeMatch)) {
+      const key = dayKey(item.start);
+      matchDays.set(key, [...(matchDays.get(key) ?? []), item]);
     }
-    for (const matchen of matchdagen.values()) {
-      const opsomming = ploegOpsomming(matchen.map((match) => match.bron.label));
-      rijen.push({
-        start: matchen[0].start,
-        wanneer: `${datumTekst(matchen[0].start)} · vanaf ${uurTekst(matchen[0].start)}`,
-        titel: `${matchen.length > 1 ? 'Thuismatchen' : 'Thuismatch'} — ${opsomming}`,
-        plaats: `${trainingen.locatie.naam}, ${trainingen.locatie.gemeente}`,
+    for (const matches of matchDays.values()) {
+      const listing = teamListing(matches.map((match) => match.source.label));
+      rows.push({
+        start: matches[0].start,
+        when: `${dateText(matches[0].start)} · vanaf ${timeText(matches[0].start)}`,
+        title: `${matches.length > 1 ? 'Thuismatchen' : 'Thuismatch'} — ${listing}`,
+        place: `${trainings.location.name}, ${trainings.location.municipality}`,
       });
     }
 
-    const sectie = document.getElementById('events-sectie');
-    const lijst = document.getElementById('events-lijst');
-    if (!sectie || !lijst) return;
-    if (!rijen.length) {
-      sectie.classList.add('hidden');
+    const section = document.getElementById('events-section');
+    const list = document.getElementById('events-list');
+    if (!section || !list) return;
+    if (!rows.length) {
+      section.classList.add('hidden');
       return;
     }
-    lijst.textContent = ''; // skeletrijen ruimen
+    list.textContent = ''; // skeletrijen ruimen
     // Max. 6 rijen, maar events overleven de cap altijd: in volle
     // competitieperiodes zouden matchdagen ze anders alsnog verdringen.
-    rijen.sort((a, b) => a.start.getTime() - b.start.getTime());
-    const events = rijen.filter((rij) => rij.isEvent).slice(0, 6);
-    const rest = rijen.filter((rij) => !rij.isEvent).slice(0, 6 - events.length);
-    const selectie = [...events, ...rest].sort((a, b) => a.start.getTime() - b.start.getTime());
-    for (const rij of selectie) {
+    rows.sort((a, b) => a.start.getTime() - b.start.getTime());
+    const events = rows.filter((row) => row.isEvent).slice(0, 6);
+    const rest = rows.filter((row) => !row.isEvent).slice(0, 6 - events.length);
+    const selection = [...events, ...rest].sort((a, b) => a.start.getTime() - b.start.getTime());
+    for (const row of selection) {
       const li = document.createElement('li');
-      li.className = 'relative border-b border-inkt-950/10 py-5 pl-10 first:border-t';
+      li.className = 'relative border-b border-ink-950/10 py-5 pl-10 first:border-t';
       li.innerHTML = `
-        <span class="absolute left-[6px] top-7 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-club-500 ring-4 ring-veer-50" aria-hidden="true"></span>
-        <p class="stem-cijfer text-lg text-club-700">${esc(rij.wanneer)}</p>
-        <p class="mt-0.5 font-bold">${esc(rij.titel)}</p>
-        ${rij.plaats ? `<p class="mt-0.5 text-sm text-inkt-500">${esc(rij.plaats)}</p>` : ''}`;
-      lijst.append(li);
+        <span class="absolute left-[6px] top-7 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-club-500 ring-4 ring-feather-50" aria-hidden="true"></span>
+        <p class="type-numeral text-lg text-club-700">${esc(row.when)}</p>
+        <p class="mt-0.5 font-bold">${esc(row.title)}</p>
+        ${row.place ? `<p class="mt-0.5 text-sm text-ink-500">${esc(row.place)}</p>` : ''}`;
+      list.append(li);
     }
   }
 
-  async function laadKalender() {
-    const alle = await haalKalender();
-    if (!alle.length) {
+  async function loadCalendar() {
+    const all = await fetchCalendar();
+    if (!all.length) {
       // Geen enkele bron bereikbaar: gereserveerde blokken opruimen.
-      document.getElementById('volgend-moment')?.classList.add('hidden');
-      document.getElementById('events-sectie')?.classList.add('hidden');
+      document.getElementById('next-moment')?.classList.add('hidden');
+      document.getElementById('events-section')?.classList.add('hidden');
     } else {
-      toonSpeelmomenten(alle);
-      toonBinnenkort(alle);
+      showPlayMoments(all);
+      showUpcoming(all);
     }
-    herbouw();
+    rebuild();
   }
 
-  laadKalender();
+  loadCalendar();
 
   // — Intra top-10 uit de intra-API; de skeletrijen reserveren de ruimte,
   //   faalt de API of is de stand leeg, dan klapt de sectie dicht. —
-  async function laadIntra() {
-    const sectie = document.getElementById('intra-sectie')!;
+  async function loadIntra() {
+    const section = document.getElementById('intra-section')!;
 
     // De datumregel loopt náást de top-10, niet ervoor: de API wordt trager van
     // gelijktijdige verzoeken, dus mag de lijst niet op deze wachten. `min-h-4`
@@ -679,44 +679,44 @@ const fotoSnedes = [
     // Bewust /rounds i.p.v. /rounds/latestCalculated: hetzelfde nummer en
     // dezelfde datum, maar zonder de matchen en aanwezigheden van die speeldag
     // (0,3 kB tegen 2,3 kB gzip).
-    fetchJson<Ronde[]>('/rounds')
-      .then((rondes) => {
-        const laatste = laatsteBerekend(rondes);
-        if (!laatste) return;
-        document.getElementById('intra-stand-na')!.textContent =
-          `Stand na speeldag ${laatste.number} · ${formatDatum(laatste.date)}`;
+    fetchJson<Round[]>('/rounds')
+      .then((rounds) => {
+        const last = lastCalculated(rounds);
+        if (!last) return;
+        document.getElementById('intra-standing-after')!.textContent =
+          `Stand na speeldag ${last.number} · ${formatDate(last.date)}`;
       })
       .catch(() => {});
 
     try {
-      const rankings = await fetchJson<{ seasonId: number; general: RankingRij[] }>(
+      const rankings = await fetchJson<{ seasonId: number; general: RankingRow[] }>(
         '/rankings/general?$top=10',
       );
-      const rijen = rankings.general ?? [];
-      if (!rijen.length) {
-        sectie.classList.add('hidden');
-        herbouw();
+      const rows = rankings.general ?? [];
+      if (!rows.length) {
+        section.classList.add('hidden');
+        rebuild();
         return;
       }
 
-      const lijst = document.getElementById('intra-top10')!;
-      lijst.textContent = ''; // skeletrijen ruimen
-      for (const rij of rijen) {
+      const list = document.getElementById('intra-top10')!;
+      list.textContent = ''; // skeletrijen ruimen
+      for (const row of rows) {
         const li = document.createElement('li');
         li.className =
-          'grid grid-cols-[2.5rem_1fr_auto] items-baseline gap-x-3 border-b border-inkt-950/10 py-2.5 first:border-t';
+          'grid grid-cols-[2.5rem_1fr_auto] items-baseline gap-x-3 border-b border-ink-950/10 py-2.5 first:border-t';
         li.innerHTML = `
-          <span class="stem-cijfer text-lg text-club-700">${rij.rank}</span>
-          <a href="${spelerUrl(rij.id)}" class="truncate font-bold text-inkt-950 hover:text-club-600 hover:underline">${esc(naam(rij))}</a>
-          <span class="stem-cijfer text-lg text-inkt-950">${rij.average.toFixed(2)}</span>`;
-        lijst.append(li);
+          <span class="type-numeral text-lg text-club-700">${row.rank}</span>
+          <a href="${playerUrl(row.id)}" class="truncate font-bold text-ink-950 hover:text-club-600 hover:underline">${esc(fullName(row))}</a>
+          <span class="type-numeral text-lg text-ink-950">${row.average.toFixed(2)}</span>`;
+        list.append(li);
       }
-      herbouw();
+      rebuild();
     } catch {
-      sectie.classList.add('hidden');
-      herbouw();
+      section.classList.add('hidden');
+      rebuild();
     }
   }
 
-  laadIntra();
+  loadIntra();
 </script>

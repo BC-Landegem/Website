@@ -2,7 +2,7 @@
 // Vangnet van de service worker: verschijnt wanneer je een pagina opvraagt die
 // nog niet in de cache zit en er geen verbinding is.
 import Layout from '../layouts/Layout.astro';
-import RailKop from '../components/RailKop.astro';
+import RailHeading from '../components/RailHeading.astro';
 import { url } from '../lib/url';
 ---
 
@@ -12,12 +12,12 @@ import { url } from '../lib/url';
   noindex
 >
   <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
-    <RailKop
+    <RailHeading
       title="Geen verbinding"
       intro="Deze pagina staat nog niet in de cache en je toestel krijgt er op dit moment niet bij."
     />
 
-    <div class="mt-12 max-w-2xl space-y-4 pl-10 leading-relaxed text-inkt-700">
+    <div class="mt-12 max-w-2xl space-y-4 pl-10 leading-relaxed text-ink-700">
       <p>
         Pagina's die je eerder bezocht blijven wél werken, ook zonder bereik. Van de kalender en de
         intraclub toont de app dan de laatst opgehaalde stand — die kan intussen achterhaald zijn.

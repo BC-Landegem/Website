@@ -10,21 +10,21 @@ interface Props {
    */
   top?: string;
   /** Groeit bij hover op de omliggende `.group` — voor punten die in een link zitten. */
-  groeit?: boolean;
+  grows?: boolean;
   /** Klopt zachtjes; blijft stil wanneer de bezoeker minder beweging vraagt. */
-  klopt?: boolean;
+  pulses?: boolean;
   id?: string;
 }
 
-const { top, klopt = false, groeit = false, id } = Astro.props;
+const { top, pulses = false, grows = false, id } = Astro.props;
 ---
 
 <span
   id={id}
   class:list={[
-    'h-3.5 w-3.5 rounded-full bg-club-500 ring-4 ring-veer-50',
+    'h-3.5 w-3.5 rounded-full bg-club-500 ring-4 ring-feather-50',
     top && ['absolute left-[6px] -translate-x-1/2', top],
-    klopt && 'motion-safe:animate-pulse',
-    groeit && 'transition-transform duration-300 group-hover:scale-125',
+    pulses && 'motion-safe:animate-pulse',
+    grows && 'transition-transform duration-300 group-hover:scale-125',
   ]}
   aria-hidden="true"></span>

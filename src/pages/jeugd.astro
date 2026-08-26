@@ -1,19 +1,19 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import Kop from '../components/Kop.astro';
+import Heading from '../components/Heading.astro';
 import Link from '../components/Link.astro';
-import Punt from '../components/Punt.astro';
-import ArchiefLink from '../components/ArchiefLink.astro';
-import RailKop from '../components/RailKop.astro';
+import Dot from '../components/Dot.astro';
+import ArchiveLink from '../components/ArchiveLink.astro';
+import RailHeading from '../components/RailHeading.astro';
 import { url } from '../lib/url';
-import trainingen from '../data/trainingen.json';
+import trainings from '../data/trainings.json';
 
-const { locatie } = trainingen;
+const { location } = trainings;
 const LUC = 'mailto:vantornhoutluc@skynet.be';
 
 // Wat een ouder wil horen vóór die eerste keer — dezelfde beloftes als op
 // word-lid, hier kort herhaald zodat niemand hoeft door te klikken.
-const drempel = [
+const threshold = [
   ['Drie keer gratis meespelen', 'Pas daarna moet je beslissen of je kind lid wordt.'],
   ['Een racket breng je zelf mee', 'Heb je er nog geen, leen er dan een van iemand die al speelt.'],
   ['Sportschoenen volstaan', 'Er is geen clubkledij en geen dresscode.'],
@@ -26,13 +26,13 @@ const drempel = [
   description="De jeugdwerking van BC Landegem: vanaf 8 jaar, vrij spelen op woensdagavond en training op zaterdag in twee groepen. Drie keer gratis proberen, zonder selectie."
 >
   <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
-    <RailKop
+    <RailHeading
       title="Jeugd"
       intro="Vier kinderen, één veld, en ze zijn alle vier aan het spelen. Bij badminton zit er niemand op de bank te wachten tot hij mag invallen."
     />
 
     <div class="mt-10 max-w-3xl pl-10">
-      <p class="text-lg leading-relaxed text-inkt-700">
+      <p class="text-lg leading-relaxed text-ink-700">
         Om te beginnen volstaat het dat je kind eens binnenwandelt op een woensdagavond. Kunnen
         badmintonnen hoeft niet. Een racket en sportschoenen zijn genoeg, de shuttles krijg je van
         ons. Hieronder lees je hoe het daarna verdergaat, tot en met een eerste tornooi.
@@ -44,15 +44,15 @@ const drempel = [
     <ol class="relative mt-12">
       <span class="absolute bottom-12 left-[6px] top-12 w-1 -translate-x-1/2 rounded-full bg-club-500" aria-hidden="true"></span>
 
-      <li class="relative border-b border-inkt-950/10 py-10 pl-10 first:border-t">
-        <Punt top="top-12" />
-        <Kop bovenkop="Woensdagavond">De eerste keer</Kop>
-        <p class="stem-cijfer mt-2 text-2xl text-inkt-950">19u00 – 20u00</p>
+      <li class="relative border-b border-ink-950/10 py-10 pl-10 first:border-t">
+        <Dot top="top-12" />
+        <Heading eyebrow="Woensdagavond">De eerste keer</Heading>
+        <p class="type-numeral mt-2 text-2xl text-ink-950">19u00 – 20u00</p>
 
-        <div class="mt-5 max-w-3xl space-y-4 leading-relaxed text-inkt-700">
+        <div class="mt-5 max-w-3xl space-y-4 leading-relaxed text-ink-700">
           <p>
             Op woensdagavond spelen onze jeugdspelers vrij,
-            en <strong class="text-inkt-950">iedereen vanaf 8 jaar mag meedoen</strong>. Je moet je
+            en <strong class="text-ink-950">iedereen vanaf 8 jaar mag meedoen</strong>. Je moet je
             niet vooraf inschrijven en er is geen selectie. Je komt binnen, je doet mee met de
             opwarming, en daarna sta je te spelen.
           </p>
@@ -64,23 +64,23 @@ const drempel = [
         </div>
 
         <ul class="mt-6 max-w-3xl space-y-3">
-          {drempel.map(([wat, waarom]) => (
-            <li class="grid grid-cols-[1.25rem_1fr] items-baseline gap-2 leading-relaxed text-inkt-700">
+          {threshold.map(([what, why]) => (
+            <li class="grid grid-cols-[1.25rem_1fr] items-baseline gap-2 leading-relaxed text-ink-700">
               <span class="text-club-500" aria-hidden="true">—</span>
-              <span><strong class="text-inkt-950">{wat}.</strong> {waarom}</span>
+              <span><strong class="text-ink-950">{what}.</strong> {why}</span>
             </li>
           ))}
         </ul>
 
-        <p class="mt-6 max-w-3xl leading-relaxed text-inkt-700">
-          Blijft je kind spelen, dan kost dat <strong class="text-inkt-950">120 € voor een heel
+        <p class="mt-6 max-w-3xl leading-relaxed text-ink-700">
+          Blijft je kind spelen, dan kost dat <strong class="text-ink-950">120 € voor een heel
           jaar</strong>. Daar zitten de trainingen en alle vrije speelmomenten in, hoe vaak het ook
           komt.
            <Link href={url('/club/word-lid/')}>Alles over lid worden</Link>.
         </p>
 
-        <p class="mt-4 max-w-3xl leading-relaxed text-inkt-700">
-          Waar je wel zelf voor zorgt, is <strong class="text-inkt-950">een racket</strong>. Voor
+        <p class="mt-4 max-w-3xl leading-relaxed text-ink-700">
+          Waar je wel zelf voor zorgt, is <strong class="text-ink-950">een racket</strong>. Voor
           die eerste keren volstaat er een dat je van iemand kan lenen. Wordt het menens, koop dan
           een racket dat bij je kind past: vraag gerust raad aan de trainers voor je er een gaat
           kopen, bestellen kan ook via de club. Lukt het voor die eerste woensdag echt niet om
@@ -88,18 +88,18 @@ const drempel = [
         </p>
       </li>
 
-      <li class="relative border-b border-inkt-950/10 py-10 pl-10">
-        <Punt top="top-12" />
-        <Kop bovenkop="September">Van woensdag naar zaterdag</Kop>
+      <li class="relative border-b border-ink-950/10 py-10 pl-10">
+        <Dot top="top-12" />
+        <Heading eyebrow="September">Van woensdag naar zaterdag</Heading>
 
-        <div class="mt-5 max-w-3xl space-y-4 leading-relaxed text-inkt-700">
+        <div class="mt-5 max-w-3xl space-y-4 leading-relaxed text-ink-700">
           <p>
             De trainers staan op woensdag mee in de zaal, dus ze zien vanzelf wie vooruitgaat. Wie
             er klaar voor is, krijgt de vraag om er op zaterdag bij te komen trainen. Bij nieuwe
             spelers gebeurt dat meestal in de loop van september.
           </p>
           <p>
-            <strong class="text-inkt-950">Niet iedereen gaat meteen mee naar zaterdag.</strong> Die
+            <strong class="text-ink-950">Niet iedereen gaat meteen mee naar zaterdag.</strong> Die
             training is bedoeld voor kinderen die de basisslagen al onder de knie hebben, anders
             krijg je anderhalf uur niet gericht gevuld. Is je kind nog niet zover, dan speelt het
             gewoon verder op woensdag. Ook daar staat het elke week op het veld, tegen kinderen van
@@ -112,64 +112,64 @@ const drempel = [
           </p>
           <p>
             Het jeugdseizoen begint telkens op
-            de <strong class="text-inkt-950">eerste woensdag of zaterdag van september</strong>. Later
+            de <strong class="text-ink-950">eerste woensdag of zaterdag van september</strong>. Later
             instappen kan meestal ook; vraag het gerust.
           </p>
         </div>
       </li>
 
-      <li class="relative border-b border-inkt-950/10 py-10 pl-10">
-        <Punt top="top-12" />
-        <Kop bovenkop="Zaterdagvoormiddag">Training in groep 1 of 2</Kop>
+      <li class="relative border-b border-ink-950/10 py-10 pl-10">
+        <Dot top="top-12" />
+        <Heading eyebrow="Zaterdagvoormiddag">Training in groep 1 of 2</Heading>
 
         <div class="mt-5 grid max-w-md gap-3 sm:grid-cols-2">
           <p class="border-l-4 border-club-500 pl-4">
-            <span class="stem-baan block text-xs text-club-700">Groep 1</span>
-            <span class="stem-cijfer text-2xl text-inkt-950">9u30 – 11u00</span>
+            <span class="type-label block text-xs text-club-700">Groep 1</span>
+            <span class="type-numeral text-2xl text-ink-950">9u30 – 11u00</span>
           </p>
           <p class="border-l-4 border-club-500 pl-4">
-            <span class="stem-baan block text-xs text-club-700">Groep 2</span>
-            <span class="stem-cijfer text-2xl text-inkt-950">11u00 – 12u30</span>
+            <span class="type-label block text-xs text-club-700">Groep 2</span>
+            <span class="type-numeral text-2xl text-ink-950">11u00 – 12u30</span>
           </p>
         </div>
 
-        <div class="mt-5 max-w-3xl space-y-4 leading-relaxed text-inkt-700">
+        <div class="mt-5 max-w-3xl space-y-4 leading-relaxed text-ink-700">
           <p>
             Op zaterdagvoormiddag wordt er anderhalf uur gericht getraind, in twee groepen. In
-             <strong class="text-inkt-950">groep 1</strong> kom je toe; wie goed leert slaan,
-            schuift door naar <strong class="text-inkt-950">groep 2</strong>. Binnen elke groep
+             <strong class="text-ink-950">groep 1</strong> kom je toe; wie goed leert slaan,
+            schuift door naar <strong class="text-ink-950">groep 2</strong>. Binnen elke groep
             splitsen de trainers nog op naar leeftijd en ervaring, naargelang wie er die zaterdag
             is. Zo staat niemand tegenover een tegenstander die veel te sterk of veel te zwak is.
           </p>
           <p>
             Er staan elke zaterdag trainers klaar, ook als er maar een handvol kinderen opdaagt.
-            Daarom rekenen we erop dat je kind <strong class="text-inkt-950">er elke week bij
+            Daarom rekenen we erop dat je kind <strong class="text-ink-950">er elke week bij
             is</strong>. Lukt het een keer niet, laat het dan vooraf even weten aan de trainers.
             Daar maakt niemand een probleem van.
           </p>
         </div>
       </li>
 
-      <li class="relative border-b border-inkt-950/10 py-10 pl-10">
-        <Punt top="top-12" />
-        <Kop bovenkop="Het hele jaar">Meer dan die ene training</Kop>
+      <li class="relative border-b border-ink-950/10 py-10 pl-10">
+        <Dot top="top-12" />
+        <Heading eyebrow="Het hele jaar">Meer dan die ene training</Heading>
 
-        <div class="mt-5 max-w-3xl space-y-4 leading-relaxed text-inkt-700">
+        <div class="mt-5 max-w-3xl space-y-4 leading-relaxed text-ink-700">
           <p>
             Jeugdleden die vaker willen spelen, zijn ook welkom
-            op <strong class="text-inkt-950">maandag van 20u00 tot 21u30</strong> en
-            op <strong class="text-inkt-950">zondag van 19u00 tot 21u00</strong>. Dat is vrij spelen
+            op <strong class="text-ink-950">maandag van 20u00 tot 21u30</strong> en
+            op <strong class="text-ink-950">zondag van 19u00 tot 21u00</strong>. Dat is vrij spelen
             tussen de volwassenen.
           </p>
           <p>
             Wie graag eens een tornooi speelt, kan meedoen aan
-            de <strong class="text-inkt-950">PBO Jeugdcup</strong>: een provinciaal circuit tegen
+            de <strong class="text-ink-950">PBO Jeugdcup</strong>: een provinciaal circuit tegen
             leeftijdsgenoten uit heel Oost-Vlaanderen. Meedoen is vrijblijvend. Wie het doet, merkt
             op zo'n dag pas goed hoeveel hij er in een jaar op vooruitgegaan is.
           </p>
           <p>
             Eén van die tornooien organiseren we zelf. Het volgende staat op
-             <strong class="text-inkt-950">zondag 14 maart 2027</strong>: dan spelen de
+             <strong class="text-ink-950">zondag 14 maart 2027</strong>: dan spelen de
             jeugdploegen van heel de provincie bij ons, en kan je kind een tornooi meemaken zonder
             zich te moeten verplaatsen.
           </p>
@@ -183,14 +183,14 @@ const drempel = [
 
     {/* Vertrouwen: een ouder die een kind afzet, wil weten wie er staat. */}
     <section class="mt-14 max-w-3xl pl-10">
-      <Kop maat="klein">Bij wie je terechtkan</Kop>
-      <div class="mt-4 space-y-4 leading-relaxed text-inkt-700">
+      <Heading size="small">Bij wie je terechtkan</Heading>
+      <div class="mt-4 space-y-4 leading-relaxed text-ink-700">
         <p>
           De jeugd wordt begeleid door trainers uit de club zelf. Je ziet ze elke week aan de
           zaalrand staan en je mag ze altijd aanspreken.
-           <strong class="text-inkt-950">Luc Van Tornhout</strong> is onze
+           <strong class="text-ink-950">Luc Van Tornhout</strong> is onze
           jeugdverantwoordelijke en je vaste aanspreekpunt. Je vindt hem tijdens de trainingsuren in
-           {locatie.naam} (zie
+           {location.name} (zie
           de <Link href={url('/kalender/')}>kalender</Link>),
           of je mailt hem op <Link href={LUC}>vantornhoutluc@skynet.be</Link>.
         </p>
@@ -209,26 +209,26 @@ const drempel = [
   <section class="border-y-8 border-club-800 bg-club-600 text-white">
     <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-6 px-4 py-12">
       <div class="flex-[1_1_26rem]">
-        <Kop kleur="erft">Spring eens binnen op woensdag</Kop>
+        <Heading color="inherit">Spring eens binnen op woensdag</Heading>
         <p class="mt-2 max-w-xl text-xl font-bold text-white">
-          Vanaf 19u00 in {locatie.naam}, {locatie.gemeente}. Laat vooraf even iets weten, dan staat
+          Vanaf 19u00 in {location.name}, {location.municipality}. Laat vooraf even iets weten, dan staat
           er iemand klaar om je kind op te vangen.
         </p>
       </div>
       <div class="flex flex-col items-start gap-4">
         <a
           href={LUC}
-          class="stem-baan inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm text-club-600 transition-colors hover:bg-club-50"
+          class="type-label inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm text-club-600 transition-colors hover:bg-club-50"
         >
           Mail Luc
           <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4 12h16m0 0l-6-6m6 6l-6 6" />
           </svg>
         </a>
-        {/* Op de club-600-band is álle tekst wit: inkt-950 haalt daar geen 4,5:1. Rangorde komt van grootte en gewicht. */}
+        {/* Op de club-600-band is álle tekst wit: ink-950 haalt daar geen 4,5:1. Rangorde komt van grootte en gewicht. */}
         <a
           href={url('/club/word-lid/#inschrijven')}
-          class="stem-baan inline-flex items-center gap-2 text-xs text-white transition-colors hover:underline"
+          class="type-label inline-flex items-center gap-2 text-xs text-white transition-colors hover:underline"
         >
           Of schrijf je meteen in
         </a>
@@ -238,28 +238,28 @@ const drempel = [
 
   <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
     <section id="jeugdcup" class="max-w-3xl pl-10">
-      <Kop bovenkop="Praktisch">PBO Jeugdcup</Kop>
+      <Heading eyebrow="Praktisch">PBO Jeugdcup</Heading>
 
-      <p class="mt-5 leading-relaxed text-inkt-700">
+      <p class="mt-5 leading-relaxed text-ink-700">
         De PBO Jeugdcup is een reeks open jeugdtornooien in Oost-Vlaanderen, voor
-         <strong class="text-inkt-950">alle badmintonners van -9 tot -19 jaar</strong>. Iedereen
+         <strong class="text-ink-950">alle badmintonners van -9 tot -19 jaar</strong>. Iedereen
         speelt in zijn eigen leeftijdscategorie,
-        dus <strong class="text-inkt-950">tegen leeftijdsgenoten</strong>. Over het seizoen heen
+        dus <strong class="text-ink-950">tegen leeftijdsgenoten</strong>. Over het seizoen heen
         wordt er een <Link href="https://www.badminton-pbo.be/jeugd/jeugdcup/pbo-jeugdcuptour-ranking/">rangschikking</Link> bijgehouden,
         met per reeks een winnaar op het einde.
       </p>
 
-      <h3 class="mt-8 text-lg font-bold text-inkt-950">Wij organiseren er zelf een</h3>
-      <p class="mt-3 leading-relaxed text-inkt-700">
+      <h3 class="mt-8 text-lg font-bold text-ink-950">Wij organiseren er zelf een</h3>
+      <p class="mt-3 leading-relaxed text-ink-700">
         BC Landegem neemt elk seizoen een van de tornooien uit het circuit voor zijn rekening. Het
-        volgende gaat door op <strong class="text-inkt-950">zondag 14 maart 2027</strong>. Voor onze
+        volgende gaat door op <strong class="text-ink-950">zondag 14 maart 2027</strong>. Voor onze
         eigen jeugd is dat de makkelijkste eerste keer: eigen zaal, bekende gezichten, geen
         verplaatsing. Meestal kunnen we die dag ook wat helpende handen gebruiken.
       </p>
 
-      <h3 class="mt-8 text-lg font-bold text-inkt-950">Hoe schrijf je in?</h3>
-      <p class="mt-3 leading-relaxed text-inkt-700">
-        Voor elk tornooi sturen we <strong class="text-inkt-950">de link door naar onze
+      <h3 class="mt-8 text-lg font-bold text-ink-950">Hoe schrijf je in?</h3>
+      <p class="mt-3 leading-relaxed text-ink-700">
+        Voor elk tornooi sturen we <strong class="text-ink-950">de link door naar onze
         jeugd</strong>. Inschrijven doe je zelf, online of per mail. Je hebt daarvoor een
         Badminton Vlaanderen-lidnummer nodig: dat zoek je op via
         de <Link href="https://badvla.tournamentsoftware.com/find/player">site van Badminton Vlaanderen</Link>,
@@ -267,18 +267,18 @@ const drempel = [
         Per discipline waarin je speelt, betaal je inschrijvingsgeld.
       </p>
 
-      <h3 class="mt-8 text-lg font-bold text-inkt-950">Vervoer en begeleiding</h3>
-      <p class="mt-3 leading-relaxed text-inkt-700">
+      <h3 class="mt-8 text-lg font-bold text-ink-950">Vervoer en begeleiding</h3>
+      <p class="mt-3 leading-relaxed text-ink-700">
         De verplaatsing regelen de ouders onderling: een paar spreken af en rijden samen. Waar het
         lukt, gaat er ook een trainer of begeleider mee, die dan zowel coach als chauffeur is.
       </p>
 
-      <p class="mt-10 leading-relaxed text-inkt-700">
+      <p class="mt-10 leading-relaxed text-ink-700">
         Staat je vraag hier niet bij? Mail Luc
         op  <Link href={LUC}>vantornhoutluc@skynet.be</Link>.
       </p>
     
-      <ArchiefLink groep="jeugd" />
+      <ArchiveLink group="jeugd" />
     </section>
   </div>
 </Layout>

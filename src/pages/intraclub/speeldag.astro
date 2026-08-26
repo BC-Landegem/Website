@@ -1,55 +1,55 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import Punt from '../../components/Punt.astro';
+import Dot from '../../components/Dot.astro';
 import { url } from '../../lib/url';
 ---
 
 <Layout title="Intraclub speeldag" description="De uitslagen van een intraclub-speeldag van BC Landegem.">
   <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
     <div class="relative pl-10">
-      <Punt top="top-11" />
+      <Dot top="top-11" />
       <span class="absolute bottom-1 left-[6px] top-[3.75rem] w-1 -translate-x-1/2 rounded-full bg-club-500" aria-hidden="true"></span>
       <span class="absolute bottom-0 left-[6px] h-2 w-2 -translate-x-1/2 rounded-full bg-club-500" aria-hidden="true"></span>
       <p>
-        <a href={url('/intraclub/')} class="stem-baan inline-flex items-center gap-2 text-xs text-club-700 hover:text-club-800 hover:underline">
+        <a href={url('/intraclub/')} class="type-label inline-flex items-center gap-2 text-xs text-club-700 hover:text-club-800 hover:underline">
           <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4m0 0l6-6m-6 6l6 6" />
           </svg>
           Intraclub
         </a>
       </p>
-      <h1 id="speeldag-titel" class="stem-display mt-3 kop-pagina text-inkt-950">Speeldag</h1>
-      <p id="speeldag-info" class="mt-3 text-inkt-700"></p>
+      <h1 id="matchday-title" class="type-display mt-3 page-heading text-ink-950">Speeldag</h1>
+      <p id="matchday-info" class="mt-3 text-ink-700"></p>
     </div>
 
     <div
-      id="speeldag-fout"
+      id="matchday-error"
       role="alert"
       class="ml-10 mt-10 hidden max-w-3xl border-2 border-club-500 bg-club-50 p-4 font-medium text-club-800"
     >
       De uitslagen konden niet geladen worden. Probeer het later opnieuw.
     </div>
 
-    <p id="speeldag-laden" class="mt-10 flex items-center gap-3 pl-10 text-sm font-medium text-inkt-500" aria-live="polite">
-      <Punt klopt />
+    <p id="matchday-loading" class="mt-10 flex items-center gap-3 pl-10 text-sm font-medium text-ink-500" aria-live="polite">
+      <Dot pulses />
       Uitslagen laden…
     </p>
 
-    <div id="speeldag-inhoud" class="mt-12 hidden max-w-3xl pl-10">
-      <p class="mb-6 text-sm text-inkt-500">
+    <div id="matchday-content" class="mt-12 hidden max-w-3xl pl-10">
+      <p class="mb-6 text-sm text-ink-500">
         Elke match wordt gespeeld door vier spelers die per set in een andere samenstelling dubbelen.
         Het winnende duo staat in het vet.
       </p>
-      <div id="speeldag-matchen" class="space-y-4"></div>
+      <div id="matchday-matches" class="space-y-4"></div>
     </div>
   </div>
 </Layout>
 
 <script>
-  import { fetchJson, formatDatum, renderMatchKaart } from '../../lib/intra';
+  import { fetchJson, formatDate, renderMatchCard } from '../../lib/intra';
   import type { Match } from '../../lib/intra';
 
-  interface Ronde {
+  interface Round {
     id?: string;
     number: string;
     date: string;
@@ -57,32 +57,32 @@ import { url } from '../../lib/url';
     matches: Match[];
   }
 
-  const fout = document.getElementById('speeldag-fout')!;
-  const laden = document.getElementById('speeldag-laden')!;
+  const error = document.getElementById('matchday-error')!;
+  const loading = document.getElementById('matchday-loading')!;
 
-  async function laadSpeeldag() {
+  async function loadMatchday() {
     const id = new URLSearchParams(location.search).get('id');
     try {
       if (!id) throw new Error('geen id');
-      const ronde = await fetchJson<Ronde>(`/rounds/${encodeURIComponent(id)}`);
-      if (!ronde.id) throw new Error('onbekende speeldag');
+      const round = await fetchJson<Round>(`/rounds/${encodeURIComponent(id)}`);
+      if (!round.id) throw new Error('onbekende speeldag');
 
-      document.getElementById('speeldag-titel')!.textContent = `Speeldag ${ronde.number}`;
-      document.title = `Intraclub speeldag ${ronde.number} | BC Landegem`;
-      document.getElementById('speeldag-info')!.textContent =
-        `${formatDatum(ronde.date)} — gemiddelde van de afwezigen: ${ronde.averageAbsent}`;
+      document.getElementById('matchday-title')!.textContent = `Speeldag ${round.number}`;
+      document.title = `Intraclub speeldag ${round.number} | BC Landegem`;
+      document.getElementById('matchday-info')!.textContent =
+        `${formatDate(round.date)} — gemiddelde van de afwezigen: ${round.averageAbsent}`;
 
-      document.getElementById('speeldag-matchen')!.innerHTML = ronde.matches
-        .map((match) => renderMatchKaart(match))
+      document.getElementById('matchday-matches')!.innerHTML = round.matches
+        .map((match) => renderMatchCard(match))
         .join('');
 
-      laden.classList.add('hidden');
-      document.getElementById('speeldag-inhoud')!.classList.remove('hidden');
+      loading.classList.add('hidden');
+      document.getElementById('matchday-content')!.classList.remove('hidden');
     } catch {
-      laden.classList.add('hidden');
-      fout.classList.remove('hidden');
+      loading.classList.add('hidden');
+      error.classList.remove('hidden');
     }
   }
 
-  laadSpeeldag();
+  loadMatchday();
 </script>

@@ -1,8 +1,8 @@
 ---
 import { Image } from 'astro:assets';
 import Layout from '../../layouts/Layout.astro';
-import RailKop from '../../components/RailKop.astro';
-import portret from '../../assets/api.jpg';
+import RailHeading from '../../components/RailHeading.astro';
+import portrait from '../../assets/api.jpg';
 ---
 
 <Layout
@@ -10,18 +10,18 @@ import portret from '../../assets/api.jpg';
   description="Bij het Aanspreekpunt Integriteit (API) van BC Landegem kan je terecht met vragen, vermoedens of klachten over grensoverschrijdend gedrag."
 >
   <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
-    <RailKop
+    <RailHeading
       {/* Zacht afbreekstreepje: op de smalste toestellen breekt AANSPREEKPUNT
           zo op de naad van de samenstelling af. */}
       title={'Aanspreek\u00ADpunt Integriteit'}
       intro="Een veilige plek voor je vraag, vermoeden of klacht over grensoverschrijdend gedrag."
     />
 
-    <div class="mt-10 max-w-3xl space-y-4 pl-10 leading-relaxed text-inkt-700">
+    <div class="mt-10 max-w-3xl space-y-4 pl-10 leading-relaxed text-ink-700">
       {/* Echte foto in een veerblad-snit, zoals de clubfoto op de homepage */}
       <figure class="mx-auto w-56 sm:float-right sm:ml-8 sm:mb-4" style="clip-path: polygon(0 6%, 100% 0, 100% 94%, 0 100%)">
         <Image
-          src={portret}
+          src={portrait}
           alt="Lieselot Van Haute, Aanspreekpunt Integriteit van BC Landegem"
           width={300}
           class="w-full"
@@ -37,7 +37,7 @@ import portret from '../../assets/api.jpg';
         gedrag. Als jouw grenzen of die van iemand anders worden overschreden, op welk vlak dan
         ook, kan je bij mij terecht met je verhaal of melding.
       </p>
-      <ul class="list-disc space-y-2 pl-5 marker:text-inkt-500">
+      <ul class="list-disc space-y-2 pl-5 marker:text-ink-500">
         <li>Heb je vragen, vermoedens of klachten over een integriteitsschending?</li>
         <li>Heb je te maken met pesten of chantage?</li>
         <li>Is er (seksueel) ongewenst gedrag?</li>
@@ -48,7 +48,7 @@ import portret from '../../assets/api.jpg';
           aanvaardbaar zijn?
         </li>
       </ul>
-      <p class="font-bold text-inkt-950">Aarzel niet om mij te contacteren!</p>
+      <p class="font-bold text-ink-950">Aarzel niet om mij te contacteren!</p>
       <p>
         Je hoeft zelf geen slachtoffer of getuige van bepaald gedrag te zijn om een vermoeden te
         hebben van grensoverschrijdend gedrag, zowel op het badmintonveld als ernaast. Zodra je een

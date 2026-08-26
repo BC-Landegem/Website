@@ -1,21 +1,21 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import Punt from '../../components/Punt.astro';
-import RailKop from '../../components/RailKop.astro';
+import Dot from '../../components/Dot.astro';
+import RailHeading from '../../components/RailHeading.astro';
 import { url } from '../../lib/url';
-import { zichtbareAlbums, fotodata, maandNaam, coverUrl } from '../../lib/media';
+import { visibleAlbums, photoData, monthName, coverUrl } from '../../lib/media';
 
-// Albums gegroepeerd per jaar, nieuwste eerst (zichtbareAlbums is al gesorteerd).
-const jaren = new Map<string, typeof zichtbareAlbums>();
-for (const album of zichtbareAlbums) {
-  const jaar = album.datum.slice(0, 4);
-  if (!jaren.has(jaar)) jaren.set(jaar, []);
-  jaren.get(jaar)!.push(album);
+// Albums gegroepeerd per jaar, nieuwste eerst (visibleAlbums is al gesorteerd).
+const years = new Map<string, typeof visibleAlbums>();
+for (const album of visibleAlbums) {
+  const year = album.date.slice(0, 4);
+  if (!years.has(year)) years.set(year, []);
+  years.get(year)!.push(album);
 }
 
 // Veerpaneel-ritme: geen gelijke kaarten — spans en rotaties wisselen af.
-const spanKlassen = ['sm:col-span-7', 'sm:col-span-5', 'sm:col-span-5', 'sm:col-span-7'];
-const rotatieKlassen = ['sm:-rotate-1', 'sm:rotate-1', 'sm:rotate-[-0.75deg]', 'sm:rotate-[0.75deg]'];
+const spanClasses = ['sm:col-span-7', 'sm:col-span-5', 'sm:col-span-5', 'sm:col-span-7'];
+const rotationClasses = ['sm:-rotate-1', 'sm:rotate-1', 'sm:rotate-[-0.75deg]', 'sm:rotate-[0.75deg]'];
 ---
 
 <Layout
@@ -24,51 +24,51 @@ const rotatieKlassen = ['sm:-rotate-1', 'sm:rotate-1', 'sm:rotate-[-0.75deg]', '
   noReferrer
 >
   <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
-    <RailKop
+    <RailHeading
       title="Foto's"
       intro="Het clubleven in beeld: jeugdcups, intraclubavonden, weekends en feesten — vers uit de albums van de club."
-      doorlopend={zichtbareAlbums.length > 0}
+      continuous={visibleAlbums.length > 0}
     >
-      <p class="mt-3 max-w-2xl text-sm text-inkt-500">
+      <p class="mt-3 max-w-2xl text-sm text-ink-500">
         Sta je op een foto en zie je die liever niet online? Laat het ons weten via
         <a href="mailto:info@bclandegem.be" class="font-semibold underline hover:text-club-100">info@bclandegem.be</a>.
       </p>
-    </RailKop>
+    </RailHeading>
 
-    {zichtbareAlbums.length === 0 && (
-      <p class="mt-10 pl-10 text-inkt-700">De fotoalbums worden binnenkort toegevoegd.</p>
+    {visibleAlbums.length === 0 && (
+      <p class="mt-10 pl-10 text-ink-700">De fotoalbums worden binnenkort toegevoegd.</p>
     )}
 
     <section class="mt-12 space-y-16">
-      {[...jaren.entries()].map(([jaar, jaarAlbums], j) => (
+      {[...years.entries()].map(([year, yearAlbums], j) => (
         <div class="relative pl-10">
           {/* Draadsegment: overbrugt ook de ruimte boven dit jaar; de rail eindigt op de bol van het laatste jaar */}
           <span
             class:list={[
               'absolute -top-16 left-[6px] w-1 -translate-x-1/2 bg-club-500',
-              j === jaren.size - 1 ? 'h-20' : 'bottom-0',
+              j === years.size - 1 ? 'h-20' : 'bottom-0',
             ]}
             aria-hidden="true"
           ></span>
-          <Punt top="top-2" />
-          <h2 class="stem-cijfer text-2xl text-inkt-950">{jaar}</h2>
+          <Dot top="top-2" />
+          <h2 class="type-numeral text-2xl text-ink-950">{year}</h2>
 
           <div class="mt-6 grid grid-cols-12 gap-x-6 gap-y-10">
-            {jaarAlbums.map((album, i) => (
+            {yearAlbums.map((album, i) => (
               <a
                 href={url(`/media/${album.slug}/`)}
                 class:list={[
                   'group col-span-12 transition-transform duration-300 hover:-translate-y-2',
-                  spanKlassen[i % 4],
-                  rotatieKlassen[i % 4],
+                  spanClasses[i % 4],
+                  rotationClasses[i % 4],
                 ]}
               >
                 <figure
-                  class="bg-inkt-950"
+                  class="bg-ink-950"
                   style="clip-path: polygon(0 16px, 100% 0, 100% calc(100% - 16px), 0 100%)"
                 >
                   <img
-                    src={coverUrl(fotodata[album.slug].cover, 1200, 800)}
+                    src={coverUrl(photoData[album.slug].cover, 1200, 800)}
                     width="1200"
                     height="800"
                     alt=""
@@ -77,11 +77,11 @@ const rotatieKlassen = ['sm:-rotate-1', 'sm:rotate-1', 'sm:rotate-[-0.75deg]', '
                     class="aspect-[3/2] w-full object-cover"
                   />
                   <figcaption class="px-5 pb-7 pt-4 sm:px-6">
-                    <span class="stem-display block text-2xl text-veer-50 transition-colors group-hover:text-club-300">
-                      {album.titel}
+                    <span class="type-display block text-2xl text-feather-50 transition-colors group-hover:text-club-300">
+                      {album.title}
                     </span>
-                    <span class="stem-baan mt-2 block text-xs text-veer-200">
-                      {maandNaam(album.datum)} · {fotodata[album.slug].fotos.length} foto's
+                    <span class="type-label mt-2 block text-xs text-feather-200">
+                      {monthName(album.date)} · {photoData[album.slug].photos.length} foto's
                     </span>
                   </figcaption>
                 </figure>

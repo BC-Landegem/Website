@@ -1,17 +1,17 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import Kop from '../components/Kop.astro';
-import Punt from '../components/Punt.astro';
+import Heading from '../components/Heading.astro';
+import Dot from '../components/Dot.astro';
 import { url } from '../lib/url';
-import { bronnen, categorieen } from '../data/kalender';
+import { sources, categories } from '../data/calendar';
 
 // Voor "In je eigen agenda": bronnen gegroepeerd per categorie, plus de
 // statische links voor de eerste bron zodat de knoppen ook zonder JS werken.
-const agendaGroepen = Object.entries(categorieen).map(([key, categorie]) => ({
-  label: categorie.label,
-  bronnen: bronnen.filter((bron) => bron.categorie === key),
+const agendaGroups = Object.entries(categories).map(([key, category]) => ({
+  label: category.label,
+  sources: sources.filter((source) => source.category === key),
 }));
-const eersteBron = agendaGroepen[0].bronnen[0];
+const firstSource = agendaGroups[0].sources[0];
 const icsUrl = (id: string) => `https://calendar.google.com/calendar/ical/${encodeURIComponent(id)}/public/basic.ics`;
 const googleUrl = (id: string) => `https://calendar.google.com/calendar/render?cid=${encodeURIComponent(id)}`;
 ---
@@ -23,58 +23,58 @@ const googleUrl = (id: string) => `https://calendar.google.com/calendar/render?c
   <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
     {/* Kop op de rail: statische draad (geen scroll-script op deze pagina) */}
     <div class="relative pl-10">
-      <Punt top="top-3" />
+      <Dot top="top-3" />
       <span class="absolute bottom-1 left-[6px] top-7 w-1 -translate-x-1/2 rounded-full bg-club-500" aria-hidden="true"></span>
       <span class="absolute bottom-0 left-[6px] h-2 w-2 -translate-x-1/2 rounded-full bg-club-500" aria-hidden="true"></span>
-      <h1 class="stem-display kop-pagina text-inkt-950">Kalender</h1>
-      <p class="mt-3 max-w-2xl text-inkt-700">
+      <h1 class="type-display page-heading text-ink-950">Kalender</h1>
+      <p class="mt-3 max-w-2xl text-ink-700">
         Alle trainingen, speelmomenten, competitiematchen en events op één plek.
         Klik op een activiteit voor het uur, de plaats en de details.
       </p>
-      <p class="mt-2 max-w-2xl text-sm text-inkt-500">
+      <p class="mt-2 max-w-2xl text-sm text-ink-500">
         Het klassement en de volledige wedstrijdkalender van je competitieploeg vind je op
         de <a href={url('/competitie/')} class="font-semibold text-club-700 hover:text-club-800 hover:underline">competitiepagina</a>.
       </p>
       {/* Kleur zegt wát je er kan doen; de titel draagt de details */}
       <ul class="mt-8 flex flex-wrap gap-x-6 gap-y-2">
-        {Object.values(categorieen).map((categorie) => (
-          <li class="flex items-center gap-2 text-sm text-inkt-700">
-            <span class="h-3 w-3 rounded-full" style={`background: ${categorie.kleur}`}></span>
-            {categorie.label}
+        {Object.values(categories).map((category) => (
+          <li class="flex items-center gap-2 text-sm text-ink-700">
+            <span class="h-3 w-3 rounded-full" style={`background: ${category.color}`}></span>
+            {category.label}
           </li>
         ))}
       </ul>
     </div>
 
-    <div id="kalender-wrap" class="relative mt-10">
-      <p id="kalender-laden" class="mb-4 hidden items-center gap-3 text-sm font-medium text-inkt-500" aria-live="polite">
-        <Punt klopt />
+    <div id="calendar-wrap" class="relative mt-10">
+      <p id="calendar-loading" class="mb-4 hidden items-center gap-3 text-sm font-medium text-ink-500" aria-live="polite">
+        <Dot pulses />
         Kalender laden…
       </p>
       <div
-        id="kalender-fout"
+        id="calendar-error"
         role="alert"
         class="mb-4 hidden border-2 border-club-500 bg-club-50 p-4 font-medium text-club-800"
       >
         De kalender kon niet (volledig) geladen worden. Probeer het later opnieuw.
       </div>
-      <div id="kalender"></div>
+      <div id="calendar"></div>
 
       {/* Detailpaneel: een kopband in de categoriekleur (dezelfde kleur als de
            legende en het blokje op de kalender), daaronder de railgrammatica —
            baan-dag, cijfer-uren, vette omschrijving, stille plaats. Onder 640px
-           plakt het paneel onderaan de viewport (kalender-detail--blad). */}
+           plakt het paneel onderaan de viewport (calendar-detail--sheet). */}
       <div
-        id="kalender-detail"
+        id="calendar-detail"
         role="dialog"
-        aria-labelledby="kalender-detail-titel"
+        aria-labelledby="calendar-detail-title"
         tabindex="-1"
-        class="absolute z-20 hidden w-80 max-w-[calc(100vw-2rem)] border-2 border-inkt-950 bg-white shadow-lg"
+        class="absolute z-20 hidden w-80 max-w-[calc(100vw-2rem)] border-2 border-ink-950 bg-white shadow-lg"
       >
-        <div id="kalender-detail-band" class="flex items-center justify-between gap-2 border-b-2 border-inkt-950 py-2 pl-5 pr-3">
-          <span id="kalender-detail-soort" class="stem-baan min-w-0 truncate text-xs"></span>
+        <div id="calendar-detail-band" class="flex items-center justify-between gap-2 border-b-2 border-ink-950 py-2 pl-5 pr-3">
+          <span id="calendar-detail-category" class="type-label min-w-0 truncate text-xs"></span>
           <button
-            id="kalender-detail-sluit"
+            id="calendar-detail-close"
             type="button"
             class="flex h-8 w-8 shrink-0 items-center justify-center transition-opacity hover:opacity-60"
             aria-label="Sluiten"
@@ -85,14 +85,14 @@ const googleUrl = (id: string) => `https://calendar.google.com/calendar/render?c
           </button>
         </div>
         <div class="p-5">
-          <p id="kalender-detail-dag" class="stem-baan text-xs text-club-700"></p>
-          <p id="kalender-detail-uren" class="stem-cijfer mt-1 text-2xl text-inkt-950"></p>
-          <h2 id="kalender-detail-titel" class="mt-1.5 font-bold text-inkt-950"></h2>
-          <p id="kalender-detail-plaats" class="mt-0.5 text-sm text-inkt-500"></p>
-          <div id="kalender-detail-tekst" class="mt-4 border-t border-inkt-950/10 pt-4">
+          <p id="calendar-detail-day" class="type-label text-xs text-club-700"></p>
+          <p id="calendar-detail-hours" class="type-numeral mt-1 text-2xl text-ink-950"></p>
+          <h2 id="calendar-detail-title" class="mt-1.5 font-bold text-ink-950"></h2>
+          <p id="calendar-detail-location" class="mt-0.5 text-sm text-ink-500"></p>
+          <div id="calendar-detail-body" class="mt-4 border-t border-ink-950/10 pt-4">
             <p
-              id="kalender-detail-beschrijving"
-              class="max-h-48 overflow-y-auto overscroll-contain whitespace-pre-line pr-2 text-sm leading-6 text-inkt-700"
+              id="calendar-detail-description"
+              class="max-h-48 overflow-y-auto overscroll-contain whitespace-pre-line pr-2 text-sm leading-6 text-ink-700"
             ></p>
           </div>
         </div>
@@ -100,33 +100,33 @@ const googleUrl = (id: string) => `https://calendar.google.com/calendar/render?c
     </div>
 
     {/* In je eigen agenda: stille regel op de rail, abonneren per bron */}
-    <section class="relative mt-16 pl-10" aria-labelledby="agenda-kop">
-      <Punt top="top-2" />
-      <Kop maat="klein" id="agenda-kop">In je eigen agenda</Kop>
-      <p class="mt-3 max-w-2xl text-inkt-700">
+    <section class="relative mt-16 pl-10" aria-labelledby="agenda-heading">
+      <Dot top="top-2" />
+      <Heading size="small" id="agenda-heading">In je eigen agenda</Heading>
+      <p class="mt-3 max-w-2xl text-ink-700">
         Abonneer je op een clubkalender en nieuwe activiteiten verschijnen vanzelf in je eigen
         agenda-app — bijvoorbeeld het vrij spel, of alle matchen van je eigen ploeg.
       </p>
       <div class="mt-6 flex flex-wrap items-center gap-3">
-        <label class="sr-only" for="agenda-bron">Kies een kalender</label>
+        <label class="sr-only" for="agenda-source">Kies een kalender</label>
         <select
-          id="agenda-bron"
-          class="max-w-full rounded-full border-2 border-inkt-950 bg-white px-4 py-2.5 text-sm font-semibold text-inkt-950"
+          id="agenda-source"
+          class="max-w-full rounded-full border-2 border-ink-950 bg-white px-4 py-2.5 text-sm font-semibold text-ink-950"
         >
-          {agendaGroepen.map((groep) => (
-            <optgroup label={groep.label}>
-              {groep.bronnen.map((bron) => (
-                <option value={bron.googleCalendarId}>{bron.label}</option>
+          {agendaGroups.map((group) => (
+            <optgroup label={group.label}>
+              {group.sources.map((source) => (
+                <option value={source.googleCalendarId}>{source.label}</option>
               ))}
             </optgroup>
           ))}
         </select>
         <a
           id="agenda-google"
-          href={googleUrl(eersteBron.googleCalendarId)}
+          href={googleUrl(firstSource.googleCalendarId)}
           target="_blank"
           rel="noopener"
-          class="stem-baan group inline-flex items-center gap-2 rounded-full border-2 border-inkt-950 px-5 py-2.5 text-xs text-inkt-950 transition-colors hover:border-club-600 hover:text-club-600"
+          class="type-label group inline-flex items-center gap-2 rounded-full border-2 border-ink-950 px-5 py-2.5 text-xs text-ink-950 transition-colors hover:border-club-600 hover:text-club-600"
         >
           Google Agenda
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:translate-x-1" aria-hidden="true">
@@ -135,8 +135,8 @@ const googleUrl = (id: string) => `https://calendar.google.com/calendar/render?c
         </a>
         <a
           id="agenda-ical"
-          href={icsUrl(eersteBron.googleCalendarId).replace('https://', 'webcal://')}
-          class="stem-baan group inline-flex items-center gap-2 rounded-full border-2 border-inkt-950 px-5 py-2.5 text-xs text-inkt-950 transition-colors hover:border-club-600 hover:text-club-600"
+          href={icsUrl(firstSource.googleCalendarId).replace('https://', 'webcal://')}
+          class="type-label group inline-flex items-center gap-2 rounded-full border-2 border-ink-950 px-5 py-2.5 text-xs text-ink-950 transition-colors hover:border-club-600 hover:text-club-600"
         >
           Apple / Outlook
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:translate-x-1" aria-hidden="true">
@@ -144,9 +144,9 @@ const googleUrl = (id: string) => `https://calendar.google.com/calendar/render?c
           </svg>
         </a>
         <button
-          id="agenda-kopieer"
+          id="agenda-copy"
           type="button"
-          class="stem-baan inline-flex items-center gap-2 rounded-full border-2 border-inkt-950 px-5 py-2.5 text-xs text-inkt-950 transition-colors hover:border-club-600 hover:text-club-600"
+          class="type-label inline-flex items-center gap-2 rounded-full border-2 border-ink-950 px-5 py-2.5 text-xs text-ink-950 transition-colors hover:border-club-600 hover:text-club-600"
         >
           Kopieer link
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -167,26 +167,26 @@ const googleUrl = (id: string) => `https://calendar.google.com/calendar/render?c
   import dayGridPlugin from '@fullcalendar/daygrid';
   import listPlugin from '@fullcalendar/list';
   import googleCalendarPlugin from '@fullcalendar/google-calendar';
-  import { googleCalendarApiKey, bronnen, categorieen, groepUitTitel } from '../data/kalender';
+  import { googleCalendarApiKey, sources, categories, groupFromTitle } from '../data/calendar';
 
-  const el = document.getElementById('kalender')!;
-  const wrap = document.getElementById('kalender-wrap')!;
-  const laden = document.getElementById('kalender-laden')!;
-  const foutmelding = document.getElementById('kalender-fout')!;
-  const paneel = document.getElementById('kalender-detail')!;
-  const paneelBand = document.getElementById('kalender-detail-band')!;
-  const paneelSoort = document.getElementById('kalender-detail-soort')!;
-  const paneelDag = document.getElementById('kalender-detail-dag')!;
-  const paneelUren = document.getElementById('kalender-detail-uren')!;
-  const paneelTitel = document.getElementById('kalender-detail-titel')!;
-  const paneelPlaats = document.getElementById('kalender-detail-plaats')!;
-  const paneelBeschrijving = document.getElementById('kalender-detail-beschrijving')!;
-  const paneelTekst = document.getElementById('kalender-detail-tekst')!;
-  const sluitKnop = document.getElementById('kalender-detail-sluit')!;
+  const el = document.getElementById('calendar')!;
+  const wrap = document.getElementById('calendar-wrap')!;
+  const loadingEl = document.getElementById('calendar-loading')!;
+  const errorEl = document.getElementById('calendar-error')!;
+  const panel = document.getElementById('calendar-detail')!;
+  const panelBand = document.getElementById('calendar-detail-band')!;
+  const panelCategory = document.getElementById('calendar-detail-category')!;
+  const panelDay = document.getElementById('calendar-detail-day')!;
+  const panelHours = document.getElementById('calendar-detail-hours')!;
+  const panelTitle = document.getElementById('calendar-detail-title')!;
+  const panelLocation = document.getElementById('calendar-detail-location')!;
+  const panelDescription = document.getElementById('calendar-detail-description')!;
+  const panelBody = document.getElementById('calendar-detail-body')!;
+  const closeButton = document.getElementById('calendar-detail-close')!;
   // Eén bron voor 'smal scherm': de lijstweergave bij het laden, en per keer
   // opnieuw gelezen wanneer het detailpaneel een blad moet worden.
-  const smalScherm = window.matchMedia('(max-width: 640px)');
-  const isMobiel = smalScherm.matches;
+  const narrowScreen = window.matchMedia('(max-width: 640px)');
+  const isMobile = narrowScreen.matches;
 
   // — Detailpaneel: klik of Enter op een activiteit toont uur, plaats en
   //   beschrijving in de wereld zelf; de Google Calendar-pagina blijft dicht. —
@@ -196,39 +196,39 @@ const googleUrl = (id: string) => `https://calendar.google.com/calendar/render?c
   // kolombreedtes van die tabel dichtklappen zodra de rij zélf focus krijgt
   // (blur herstelt het meteen) — dus is daar de titelcel het bedienbare
   // element, niet de rij. In de maandweergave blijft dat het blokje zelf.
-  const bedienbaar = (el: HTMLElement): HTMLElement =>
+  const actionable = (el: HTMLElement): HTMLElement =>
     el.querySelector<HTMLElement>('.fc-list-event-title') ?? el;
 
-  const uur = (d: Date) => `${d.getHours()}u${String(d.getMinutes()).padStart(2, '0')}`;
-  const datumOpties: Intl.DateTimeFormatOptions = { weekday: 'long', day: 'numeric', month: 'long' };
+  const formatTime = (d: Date) => `${d.getHours()}u${String(d.getMinutes()).padStart(2, '0')}`;
+  const dateOptions: Intl.DateTimeFormatOptions = { weekday: 'long', day: 'numeric', month: 'long' };
 
-  function dagTekst(event: EventApi): string {
+  function dayText(event: EventApi): string {
     const start = event.start;
     if (!start) return '';
-    const dag = start.toLocaleDateString('nl-BE', datumOpties);
-    if (!event.allDay || !event.end) return dag;
+    const day = start.toLocaleDateString('nl-BE', dateOptions);
+    if (!event.allDay || !event.end) return day;
     // Bij een activiteit over meerdere dagen is de einddatum exclusief.
-    const laatste = new Date(event.end.getTime() - 86400000);
-    if (laatste.toDateString() === start.toDateString()) return dag;
-    return `${dag} – ${laatste.toLocaleDateString('nl-BE', datumOpties)}`;
+    const lastDay = new Date(event.end.getTime() - 86400000);
+    if (lastDay.toDateString() === start.toDateString()) return day;
+    return `${day} – ${lastDay.toLocaleDateString('nl-BE', dateOptions)}`;
   }
 
-  function urenTekst(event: EventApi): string {
+  function hoursText(event: EventApi): string {
     if (!event.start) return '';
     if (event.allDay) return 'Hele dag';
-    return event.end ? `${uur(event.start)} – ${uur(event.end)}` : `vanaf ${uur(event.start)}`;
+    return event.end ? `${formatTime(event.start)} – ${formatTime(event.end)}` : `vanaf ${formatTime(event.start)}`;
   }
 
   // Google Calendar levert beschrijvingen als HTML. De tags gaan eruit, maar de
   // entiteiten (&nbsp;, &amp;, &#39;) moeten terug naar echte tekens en de
   // regeleindes blijven staan — anders leest een aankondiging als één blok met
   // "&nbsp;" ertussen.
-  function alsTekst(html: string): string {
-    const metRegels = html
+  function toPlainText(html: string): string {
+    const withBreaks = html
       .replace(/<br\s*\/?>/gi, '\n')
       .replace(/<\/(p|div|li|ul|ol|h[1-6])>/gi, '\n');
-    const tekst = new DOMParser().parseFromString(metRegels, 'text/html').body.textContent ?? '';
-    return tekst
+    const text = new DOMParser().parseFromString(withBreaks, 'text/html').body.textContent ?? '';
+    return text
       .replace(/\u00a0/g, ' ')
       .replace(/[^\S\n]+/g, ' ')
       .replace(/ ?\n ?/g, '\n')
@@ -238,114 +238,114 @@ const googleUrl = (id: string) => `https://calendar.google.com/calendar/render?c
 
   // Een inschrijflink of e-mailadres in de beschrijving hoort klikbaar te zijn;
   // de rest blijft tekst (geen vreemde HTML via innerHTML in de pagina).
-  const linkPatroon = /(?:https?:\/\/|www\.)\S+[^\s.,;:!?)"']|[\w.+-]+@[\w-]+\.[\w.-]+/gi;
+  const linkPattern = /(?:https?:\/\/|www\.)\S+[^\s.,;:!?)"']|[\w.+-]+@[\w-]+\.[\w.-]+/gi;
 
-  function vulBeschrijving(tekst: string) {
-    paneelBeschrijving.textContent = '';
-    let gelezen = 0;
-    for (const match of tekst.matchAll(linkPatroon)) {
-      const vondst = match[0];
+  function renderDescription(text: string) {
+    panelDescription.textContent = '';
+    let consumed = 0;
+    for (const match of text.matchAll(linkPattern)) {
+      const found = match[0];
       const start = match.index ?? 0;
-      if (start > gelezen) paneelBeschrijving.append(tekst.slice(gelezen, start));
+      if (start > consumed) panelDescription.append(text.slice(consumed, start));
       const link = document.createElement('a');
-      const mail = !/^(?:https?:|www\.)/i.test(vondst);
-      link.textContent = vondst;
-      link.href = mail ? `mailto:${vondst}` : vondst.startsWith('www.') ? `https://${vondst}` : vondst;
+      const isMail = !/^(?:https?:|www\.)/i.test(found);
+      link.textContent = found;
+      link.href = isMail ? `mailto:${found}` : found.startsWith('www.') ? `https://${found}` : found;
       link.className = 'font-semibold text-club-700 underline underline-offset-2 hover:text-club-800';
-      if (!mail) {
+      if (!isMail) {
         link.target = '_blank';
         link.rel = 'noopener';
       }
-      paneelBeschrijving.append(link);
-      gelezen = start + vondst.length;
+      panelDescription.append(link);
+      consumed = start + found.length;
     }
-    paneelBeschrijving.append(tekst.slice(gelezen));
+    panelDescription.append(text.slice(consumed));
   }
 
   // Onder 640px is er geen ruimte naast de lijst: het paneel wordt een blad
   // onderaan de viewport, zodat het nooit half buiten beeld openklapt.
-  function plaatsPaneel(eventEl: HTMLElement) {
-    const blad = smalScherm.matches;
-    paneel.classList.toggle('kalender-detail--blad', blad);
-    if (blad) {
-      paneel.style.left = '';
-      paneel.style.top = '';
+  function positionPanel(eventEl: HTMLElement) {
+    const sheet = narrowScreen.matches;
+    panel.classList.toggle('calendar-detail--sheet', sheet);
+    if (sheet) {
+      panel.style.left = '';
+      panel.style.top = '';
       return;
     }
     const rect = eventEl.getBoundingClientRect();
     const wrect = wrap.getBoundingClientRect();
-    const hoogte = paneel.offsetHeight;
-    const kop = (document.querySelector('header')?.getBoundingClientRect().height ?? 0) + 8;
-    const onder = rect.bottom + 8;
-    const boven = rect.top - 8 - hoogte;
+    const height = panel.offsetHeight;
+    const headerOffset = (document.querySelector('header')?.getBoundingClientRect().height ?? 0) + 8;
+    const below = rect.bottom + 8;
+    const above = rect.top - 8 - height;
     // Standaard onder de activiteit; alleen omklappen als het daar niet past
     // én er boven wél plaats is onder de sticky header.
-    const top = onder + hoogte <= window.innerHeight || boven < kop ? onder : boven;
-    paneel.style.left = `${Math.max(0, Math.min(rect.left - wrect.left, wrap.clientWidth - paneel.offsetWidth))}px`;
-    paneel.style.top = `${top - wrect.top}px`;
+    const top = below + height <= window.innerHeight || above < headerOffset ? below : above;
+    panel.style.left = `${Math.max(0, Math.min(rect.left - wrect.left, wrap.clientWidth - panel.offsetWidth))}px`;
+    panel.style.top = `${top - wrect.top}px`;
   }
 
   function openDetail(event: EventApi, eventEl: HTMLElement) {
-    const plaats = (event.extendedProps.location as string | undefined) ?? '';
-    const beschrijving = alsTekst((event.extendedProps.description as string | undefined) ?? '');
-    const soort =
-      categorieen[event.extendedProps.categorie as keyof typeof categorieen] ?? categorieen.event;
+    const place = (event.extendedProps.location as string | undefined) ?? '';
+    const description = toPlainText((event.extendedProps.description as string | undefined) ?? '');
+    const category =
+      categories[event.extendedProps.category as keyof typeof categories] ?? categories.event;
 
-    paneelSoort.textContent = soort.label;
-    paneelBand.style.background = soort.kleur;
-    paneelBand.style.color = soort.tekst;
-    paneelDag.textContent = dagTekst(event);
-    paneelUren.textContent = urenTekst(event);
-    paneelTitel.textContent = event.title;
-    paneelPlaats.textContent = plaats.toLowerCase() === 'onbekend' ? '' : plaats;
-    paneelPlaats.classList.toggle('hidden', !paneelPlaats.textContent);
-    vulBeschrijving(beschrijving);
-    paneelTekst.classList.toggle('hidden', !beschrijving);
-    paneelBeschrijving.scrollTop = 0;
+    panelCategory.textContent = category.label;
+    panelBand.style.background = category.color;
+    panelBand.style.color = category.text;
+    panelDay.textContent = dayText(event);
+    panelHours.textContent = hoursText(event);
+    panelTitle.textContent = event.title;
+    panelLocation.textContent = place.toLowerCase() === 'onbekend' ? '' : place;
+    panelLocation.classList.toggle('hidden', !panelLocation.textContent);
+    renderDescription(description);
+    panelBody.classList.toggle('hidden', !description);
+    panelDescription.scrollTop = 0;
 
-    paneel.classList.remove('hidden');
-    plaatsPaneel(eventEl);
+    panel.classList.remove('hidden');
+    positionPanel(eventEl);
 
     trigger = eventEl;
-    paneel.focus({ preventScroll: true });
+    panel.focus({ preventScroll: true });
   }
 
-  function sluitDetail() {
-    if (paneel.classList.contains('hidden')) return;
-    paneel.classList.add('hidden');
+  function closeDetail() {
+    if (panel.classList.contains('hidden')) return;
+    panel.classList.add('hidden');
     trigger?.focus({ preventScroll: true });
     trigger = null;
   }
 
-  sluitKnop.addEventListener('click', sluitDetail);
+  closeButton.addEventListener('click', closeDetail);
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') sluitDetail();
+    if (e.key === 'Escape') closeDetail();
   });
   document.addEventListener('click', (e) => {
-    const doel = e.target as HTMLElement;
-    if (!paneel.contains(doel) && !doel.closest('.fc-event')) sluitDetail();
+    const target = e.target as HTMLElement;
+    if (!panel.contains(target) && !target.closest('.fc-event')) closeDetail();
   });
 
   // — In je eigen agenda: de knoppen volgen de gekozen bron; kopiëren geeft
   //   de publieke iCal-link voor elke agenda-app. —
-  const agendaSelect = document.getElementById('agenda-bron') as HTMLSelectElement;
+  const agendaSelect = document.getElementById('agenda-source') as HTMLSelectElement;
   const agendaGoogle = document.getElementById('agenda-google') as HTMLAnchorElement;
   const agendaIcal = document.getElementById('agenda-ical') as HTMLAnchorElement;
-  const agendaKopieer = document.getElementById('agenda-kopieer')!;
+  const agendaCopy = document.getElementById('agenda-copy')!;
   const agendaStatus = document.getElementById('agenda-status')!;
 
   const agendaIcsUrl = (id: string) => `https://calendar.google.com/calendar/ical/${encodeURIComponent(id)}/public/basic.ics`;
 
-  function vernieuwAgendaLinks() {
+  function refreshAgendaLinks() {
     const id = agendaSelect.value;
     agendaGoogle.href = `https://calendar.google.com/calendar/render?cid=${encodeURIComponent(id)}`;
     agendaIcal.href = agendaIcsUrl(id).replace('https://', 'webcal://');
   }
-  agendaSelect.addEventListener('change', vernieuwAgendaLinks);
-  vernieuwAgendaLinks();
+  agendaSelect.addEventListener('change', refreshAgendaLinks);
+  refreshAgendaLinks();
 
-  let kopieerTimer: number | undefined;
-  agendaKopieer.addEventListener('click', async () => {
+  let copyTimer: number | undefined;
+  agendaCopy.addEventListener('click', async () => {
     const url = agendaIcsUrl(agendaSelect.value);
     try {
       await navigator.clipboard.writeText(url);
@@ -354,8 +354,8 @@ const googleUrl = (id: string) => `https://calendar.google.com/calendar/render?c
       // Kopiëren kan geblokkeerd zijn; toon dan de link zelf om over te nemen.
       agendaStatus.textContent = url;
     }
-    clearTimeout(kopieerTimer);
-    kopieerTimer = window.setTimeout(() => {
+    clearTimeout(copyTimer);
+    copyTimer = window.setTimeout(() => {
       agendaStatus.textContent = '';
     }, 8000);
   });
@@ -363,23 +363,23 @@ const googleUrl = (id: string) => `https://calendar.google.com/calendar/render?c
   // — Mobiel: bij het openen meteen naar vandaag scrollen. De maandlijst
   //   begint anders bij de eerste dag van de maand, ver boven het
   //   eerstvolgende speelmoment. Eén keer, meteen na de eerste lading. —
-  let naarVandaagGescrold = false;
-  function scrolNaarVandaag() {
-    if (!isMobiel || naarVandaagGescrold) return;
-    const nu = new Date();
-    const vandaagIso = `${nu.getFullYear()}-${String(nu.getMonth() + 1).padStart(2, '0')}-${String(nu.getDate()).padStart(2, '0')}`;
-    const dagen = [...el.querySelectorAll<HTMLElement>('.fc-list-day')];
-    const doel = dagen.find((dag) => (dag.dataset.date ?? '') >= vandaagIso);
-    if (!doel) return;
-    naarVandaagGescrold = true;
-    const hoogteChroom = (document.querySelector('header')?.getBoundingClientRect().height ?? 0) + 8;
-    window.scrollTo({ top: doel.getBoundingClientRect().top + window.scrollY - hoogteChroom });
+  let scrolledToToday = false;
+  function scrollToToday() {
+    if (!isMobile || scrolledToToday) return;
+    const now = new Date();
+    const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const days = [...el.querySelectorAll<HTMLElement>('.fc-list-day')];
+    const target = days.find((day) => (day.dataset.date ?? '') >= todayIso);
+    if (!target) return;
+    scrolledToToday = true;
+    const chromeHeight = (document.querySelector('header')?.getBoundingClientRect().height ?? 0) + 8;
+    window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY - chromeHeight });
   }
 
   const calendar = new Calendar(el, {
     plugins: [dayGridPlugin, listPlugin, googleCalendarPlugin],
     locale: nlLocale,
-    initialView: isMobiel ? 'listMonth' : 'dayGridMonth',
+    initialView: isMobile ? 'listMonth' : 'dayGridMonth',
     headerToolbar: {
       left: 'prev,next today',
       center: 'title',
@@ -388,52 +388,52 @@ const googleUrl = (id: string) => `https://calendar.google.com/calendar/render?c
     height: 'auto',
     dayMaxEvents: true,
     googleCalendarApiKey,
-    eventSources: bronnen.map((bron) => ({
-      googleCalendarId: bron.googleCalendarId,
-      backgroundColor: categorieen[bron.categorie].kleur,
-      borderColor: categorieen[bron.categorie].kleur,
-      textColor: categorieen[bron.categorie].tekst,
+    eventSources: sources.map((source) => ({
+      googleCalendarId: source.googleCalendarId,
+      backgroundColor: categories[source.category].color,
+      borderColor: categories[source.category].color,
+      textColor: categories[source.category].text,
       eventDataTransform(data: Record<string, unknown>) {
         // De categorie reist mee: het detailpaneel draagt dezelfde kleur als
         // het blokje op de kalender en de legende bovenaan.
-        data.extendedProps = { ...((data.extendedProps as object | undefined) ?? {}), categorie: bron.categorie };
+        data.extendedProps = { ...((data.extendedProps as object | undefined) ?? {}), category: source.category };
         // Nooit naar de Google Calendar-pagina navigeren (ook niet via
         // middelklik of "open in nieuw tabblad"); details tonen we zelf.
         delete data.url;
         // Kalendertitels zijn interne jargon; bronnen met een speelmoment
         // krijgen dezelfde vaste tekst als de hero-chip op de homepage.
         // De groep (jeugd zaterdag: groep 1 en 2) blijft wel zichtbaar.
-        if (bron.speelmoment) {
-          const groep = groepUitTitel(data.title as string | undefined);
-          data.title = `${bron.speelmoment.omschrijving}${groep ? ` ${groep}` : ''} (${bron.speelmoment.doelgroep})`;
+        if (source.playSlot) {
+          const group = groupFromTitle(data.title as string | undefined);
+          data.title = `${source.playSlot.description}${group ? ` ${group}` : ''} (${source.playSlot.audience})`;
         }
         return data;
       },
     })),
-    loading(bezig) {
-      laden.classList.toggle('hidden', !bezig);
-      laden.classList.toggle('flex', bezig);
-      if (!bezig) requestAnimationFrame(scrolNaarVandaag);
+    loading(busy) {
+      loadingEl.classList.toggle('hidden', !busy);
+      loadingEl.classList.toggle('flex', busy);
+      if (!busy) requestAnimationFrame(scrollToToday);
     },
     eventSourceFailure() {
-      foutmelding.classList.remove('hidden');
+      errorEl.classList.remove('hidden');
     },
     eventDidMount(arg) {
       // Zonder url is het element geen link meer; maak het zelf bedienbaar.
-      const knop = bedienbaar(arg.el);
-      knop.setAttribute('role', 'button');
-      if (!knop.hasAttribute('tabindex')) knop.tabIndex = 0;
+      const button = actionable(arg.el);
+      button.setAttribute('role', 'button');
+      if (!button.hasAttribute('tabindex')) button.tabIndex = 0;
       arg.el.title = arg.event.title;
-      knop.addEventListener('keydown', (e) => {
+      button.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          openDetail(arg.event, knop);
+          openDetail(arg.event, button);
         }
       });
     },
     eventClick(info) {
       info.jsEvent.preventDefault();
-      openDetail(info.event, bedienbaar(info.el));
+      openDetail(info.event, actionable(info.el));
     },
   });
 
@@ -442,21 +442,21 @@ const googleUrl = (id: string) => `https://calendar.google.com/calendar/render?c
 
 <style is:global>
   /* FullCalendar in De Shuttle: hairlines, baan-knoppen, display-titel, tabulaire cijfers */
-  #kalender {
+  #calendar {
     --fc-border-color: rgba(27, 20, 16, 0.1);
-    --fc-page-bg-color: var(--color-veer-50);
-    --fc-neutral-bg-color: var(--color-veer-100);
+    --fc-page-bg-color: var(--color-feather-50);
+    --fc-neutral-bg-color: var(--color-feather-100);
     --fc-today-bg-color: rgba(230, 220, 200, 0.45);
-    --fc-list-event-hover-bg-color: var(--color-veer-100);
+    --fc-list-event-hover-bg-color: var(--color-feather-100);
   }
-  #kalender .fc-toolbar-title {
+  #calendar .fc-toolbar-title {
     font-variation-settings: "wdth" 125;
     font-weight: 900;
     text-transform: uppercase;
     letter-spacing: -0.02em;
     font-size: 1.5rem;
   }
-  #kalender .fc-button {
+  #calendar .fc-button {
     font-variation-settings: "wdth" 110;
     font-weight: 700;
     text-transform: uppercase;
@@ -464,49 +464,49 @@ const googleUrl = (id: string) => `https://calendar.google.com/calendar/render?c
     font-size: 0.75rem;
     padding: 0.5rem 1.1rem;
   }
-  #kalender .fc-button,
-  #kalender .fc-button-group > .fc-button {
+  #calendar .fc-button,
+  #calendar .fc-button-group > .fc-button {
     border-radius: 9999px;
   }
-  #kalender .fc-button-group {
+  #calendar .fc-button-group {
     gap: 0.375rem;
   }
   /* Baan-tekst is klein: club-600 als basis haalt 4.5:1 met wit (club-500 niet) */
-  #kalender .fc-button-primary {
+  #calendar .fc-button-primary {
     background: var(--color-club-600);
     border-color: var(--color-club-600);
   }
-  #kalender .fc-button-primary:hover {
+  #calendar .fc-button-primary:hover {
     background: var(--color-club-700);
     border-color: var(--color-club-700);
   }
-  #kalender .fc-button-primary:not(:disabled).fc-button-active,
-  #kalender .fc-button-primary:not(:disabled):active {
+  #calendar .fc-button-primary:not(:disabled).fc-button-active,
+  #calendar .fc-button-primary:not(:disabled):active {
     background: var(--color-club-800);
     border-color: var(--color-club-800);
   }
   /* Uitgeschakeld = omtrek in inkt, geen pil die op een highlight lijkt */
-  #kalender .fc-button-primary:disabled {
+  #calendar .fc-button-primary:disabled {
     background: transparent;
     border-color: rgba(107, 92, 80, 0.4);
-    color: var(--color-inkt-500);
+    color: var(--color-ink-500);
     opacity: 1;
   }
   /* Focus in het clubrood van de wereld, niet FullCalendars grijze gloed */
-  #kalender .fc-button:focus,
-  #kalender .fc-event:focus {
+  #calendar .fc-button:focus,
+  #calendar .fc-event:focus {
     box-shadow: none;
   }
-  #kalender .fc-event:focus::after {
+  #calendar .fc-event:focus::after {
     display: none;
   }
-  #kalender .fc-button:focus-visible,
-  #kalender .fc-event:focus-visible {
+  #calendar .fc-button:focus-visible,
+  #calendar .fc-event:focus-visible {
     outline: 2px solid var(--color-club-500);
     outline-offset: 3px;
     box-shadow: none;
   }
-  #kalender .fc-col-header-cell-cushion {
+  #calendar .fc-col-header-cell-cushion {
     font-variation-settings: "wdth" 110;
     font-weight: 700;
     text-transform: uppercase;
@@ -515,28 +515,28 @@ const googleUrl = (id: string) => `https://calendar.google.com/calendar/render?c
     color: var(--color-club-700);
     padding: 0.5rem 0.25rem;
   }
-  #kalender .fc-daygrid-day-number,
-  #kalender .fc-list-day-text,
-  #kalender .fc-list-day-side-text {
+  #calendar .fc-daygrid-day-number,
+  #calendar .fc-list-day-text,
+  #calendar .fc-list-day-side-text {
     font-variation-settings: "wdth" 112;
     font-weight: 800;
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.01em;
-    color: var(--color-inkt-950);
+    color: var(--color-ink-950);
   }
-  #kalender .fc-daygrid-day-number {
+  #calendar .fc-daygrid-day-number {
     padding: 0.375rem 0.5rem;
   }
   /* Activiteiten zijn bedienbaar: afknippen met ellipsis, cursor toont het */
-  #kalender .fc-event {
+  #calendar .fc-event {
     cursor: pointer;
   }
-  #kalender .fc-event-title {
+  #calendar .fc-event-title {
     overflow: hidden;
     text-overflow: ellipsis;
   }
   /* "+N meer" en de dagpopover in de wereldtokens: baan-link, scherp vlak */
-  #kalender .fc-daygrid-more-link {
+  #calendar .fc-daygrid-more-link {
     font-variation-settings: "wdth" 110;
     font-weight: 700;
     text-transform: uppercase;
@@ -544,35 +544,35 @@ const googleUrl = (id: string) => `https://calendar.google.com/calendar/render?c
     font-size: 0.75rem;
     color: var(--color-club-700);
   }
-  #kalender .fc-daygrid-more-link:hover {
-    background: var(--color-veer-100);
+  #calendar .fc-daygrid-more-link:hover {
+    background: var(--color-feather-100);
     color: var(--color-club-800);
   }
   /* Popovers zijn chroom: ze mogen zich als enige van het raster losmaken. */
-  #kalender .fc-popover {
+  #calendar .fc-popover {
     background: #ffffff;
-    border: 2px solid var(--color-inkt-950);
+    border: 2px solid var(--color-ink-950);
     border-radius: 0;
     box-shadow:
       0 10px 15px -3px rgb(27 20 16 / 0.12),
       0 4px 6px -4px rgb(27 20 16 / 0.12);
   }
-  #kalender .fc-popover-header {
+  #calendar .fc-popover-header {
     font-variation-settings: "wdth" 110;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     font-size: 0.75rem;
-    background: var(--color-veer-100);
+    background: var(--color-feather-100);
     padding: 0.5rem 0.75rem;
   }
   /* De sluitknop staat op een gekleurde band: de focusring neemt de tekstkleur
      van die band over, want clubrood op club-600 verdwijnt. */
-  #kalender-detail-sluit:focus-visible {
+  #calendar-detail-close:focus-visible {
     outline-color: currentColor;
   }
   /* Mobiel: het paneel is een blad onderaan de viewport. */
-  #kalender-detail.kalender-detail--blad {
+  #calendar-detail.calendar-detail--sheet {
     position: fixed;
     inset: auto 0.5rem 0.5rem;
     width: auto;
@@ -580,11 +580,11 @@ const googleUrl = (id: string) => `https://calendar.google.com/calendar/render?c
   }
   /* Het paneel landt als een shuttle: van boven, kort, beslist. */
   @media (prefers-reduced-motion: no-preference) {
-    #kalender-detail:not(.hidden) {
+    #calendar-detail:not(.hidden) {
       animation: detail-land 0.28s var(--ease-drop) both;
     }
-    #kalender-detail.kalender-detail--blad:not(.hidden) {
-      animation-name: detail-blad;
+    #calendar-detail.calendar-detail--sheet:not(.hidden) {
+      animation-name: detail-sheet;
     }
   }
   @keyframes detail-land {
@@ -593,14 +593,14 @@ const googleUrl = (id: string) => `https://calendar.google.com/calendar/render?c
       transform: translateY(-0.5rem);
     }
   }
-  @keyframes detail-blad {
+  @keyframes detail-sheet {
     from {
       opacity: 0;
       transform: translateY(0.75rem);
     }
   }
   @media (max-width: 640px) {
-    #kalender .fc-toolbar {
+    #calendar .fc-toolbar {
       flex-direction: column;
       gap: 0.5rem;
     }

@@ -1,23 +1,23 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import Kop from '../components/Kop.astro';
+import Heading from '../components/Heading.astro';
 import Link from '../components/Link.astro';
-import Punt from '../components/Punt.astro';
-import RailKop from '../components/RailKop.astro';
+import Dot from '../components/Dot.astro';
+import RailHeading from '../components/RailHeading.astro';
 import { url } from '../lib/url';
-import trainingen from '../data/trainingen.json';
+import trainings from '../data/trainings.json';
 
-const { locatie, lidgeld } = trainingen;
+const { location, membership } = trainings;
 
 // De speelmomenten waar een volwassen recreant terechtkan. Komt uit dezelfde
 // bron als de homepage en /club/word-lid/: jeugduren en de zaterdagtraining
 // vallen er vanzelf uit.
-const vrijSpel = trainingen.momenten.filter((moment) =>
-  moment.doelgroep.toLowerCase().includes('recreanten'),
+const freePlay = trainings.sessions.filter((session) =>
+  session.audience.toLowerCase().includes('recreanten'),
 );
 
 // De twee tarieven zonder competitie: wie recreatief speelt, kiest hiertussen.
-const recreantTarieven = lidgeld.tarieven.filter((tarief) => tarief.detail.startsWith('Volwassenen'));
+const recreationalRates = membership.rates.filter((rate) => rate.detail.startsWith('Volwassenen'));
 ---
 
 <Layout
@@ -25,12 +25,12 @@ const recreantTarieven = lidgeld.tarieven.filter((tarief) => tarief.detail.start
   description="Badminton voor volwassenen in Nevele (Deinze): vrij spel op maandag, woensdag en zondag, intraclub, een lessenreeks van vijf avonden en drie keer gratis meespelen."
 >
   <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
-    <RailKop
+    <RailHeading
       title="Recreatief badminton"
       intro="De meeste van onze leden spelen gewoon voor hun plezier. Geen selectie, geen vaste ploegjes, geen niveau dat je eerst moet halen. Je komt binnen, je speelt, en je gaat met een rood hoofd naar huis."
     />
 
-    <div class="mt-10 max-w-3xl space-y-4 pl-10 leading-relaxed text-inkt-700">
+    <div class="mt-10 max-w-3xl space-y-4 pl-10 leading-relaxed text-ink-700">
       <p>
         Recreanten, competitiespelers en jeugd staan bij ons in dezelfde zaal, op dezelfde uren. Dat
         maakt de avonden ook beter: de ene partij speel je tegen iemand van je eigen niveau, de
@@ -41,45 +41,45 @@ const recreantTarieven = lidgeld.tarieven.filter((tarief) => tarief.detail.start
 
     {/* Wanneer je terechtkan: dezelfde rail als op de homepage */}
     <section class="mt-14">
-      <Kop class="pl-10">Je komt en je speelt</Kop>
-      <p class="mt-3 max-w-2xl pl-10 leading-relaxed text-inkt-700">
+      <Heading class="pl-10">Je komt en je speelt</Heading>
+      <p class="mt-3 max-w-2xl pl-10 leading-relaxed text-ink-700">
         Inschrijven voor een uur hoeft niet, en afspreken met iemand evenmin. Wie er die avond is,
         speelt met wie er is: de dubbels worden ter plaatse samengesteld.
       </p>
       <ol class="relative mt-8">
-        {vrijSpel.map((moment, i) => (
-          <li class="group relative border-b border-inkt-950/10 py-5 pl-10 first:border-t">
+        {freePlay.map((session, i) => (
+          <li class="group relative border-b border-ink-950/10 py-5 pl-10 first:border-t">
             {/* De statische draad in stukken per rij: van bolmiddelpunt tot bolmiddelpunt, zodat
                  er boven de eerste en onder de laatste bol geen staart blijft hangen — ook niet
                  wanneer de rijen op mobiel uitklappen. 2.1875rem = top-7 plus een halve bol. */}
-            {vrijSpel.length > 1 && (
+            {freePlay.length > 1 && (
               <span
                 class:list={[
                   'absolute left-[6px] w-1 -translate-x-1/2 bg-club-500',
                   i === 0 ? 'top-[2.1875rem]' : 'top-0',
-                  i === vrijSpel.length - 1 ? 'h-[2.1875rem]' : '-bottom-px',
+                  i === freePlay.length - 1 ? 'h-[2.1875rem]' : '-bottom-px',
                 ]}
                 aria-hidden="true"
               ></span>
             )}
             {/* De bol blijft op de draad (schaalt enkel); alleen de inhoud schuift op hover */}
-            <Punt top="top-7" groeit />
-            <div class="transition-transform duration-300 [transition-timing-function:var(--ease-lancering)] group-hover:translate-x-2 sm:grid sm:grid-cols-[7rem_13rem_1fr] sm:items-baseline sm:gap-6">
-              <p class="stem-baan text-xs text-club-700">{moment.dag}</p>
-              <p class="stem-cijfer mt-1 text-2xl text-inkt-950 sm:mt-0">{moment.uren}</p>
+            <Dot top="top-7" grows />
+            <div class="transition-transform duration-300 [transition-timing-function:var(--ease-launch)] group-hover:translate-x-2 sm:grid sm:grid-cols-[7rem_13rem_1fr] sm:items-baseline sm:gap-6">
+              <p class="type-label text-xs text-club-700">{session.day}</p>
+              <p class="type-numeral mt-1 text-2xl text-ink-950 sm:mt-0">{session.hours}</p>
               <div class="mt-1 sm:mt-0">
-                <p class="font-bold">{moment.omschrijving}</p>
-                <p class="text-sm text-inkt-500">{moment.doelgroep}</p>
-                {moment.opmerking && <p class="text-sm text-inkt-500">{moment.opmerking}</p>}
+                <p class="font-bold">{session.description}</p>
+                <p class="text-sm text-ink-500">{session.audience}</p>
+                {session.note && <p class="text-sm text-ink-500">{session.note}</p>}
               </div>
             </div>
           </li>
         ))}
       </ol>
-      <p class="mt-6 max-w-3xl pl-10 leading-relaxed text-inkt-700">
-        Alles gaat door in <strong class="text-inkt-950">{locatie.naam}</strong>, {locatie.adres},
-        {locatie.gemeente} —
-        <Link href={locatie.kaart}>bekijk op de kaart</Link>.
+      <p class="mt-6 max-w-3xl pl-10 leading-relaxed text-ink-700">
+        Alles gaat door in <strong class="text-ink-950">{location.name}</strong>, {location.address},
+        {location.municipality} —
+        <Link href={location.map}>bekijk op de kaart</Link>.
         Valt er uitzonderlijk een avond weg, dan lees je dat
         <Link href={url('/kalender/')}>in de kalender</Link>.
       </p>
@@ -87,11 +87,11 @@ const recreantTarieven = lidgeld.tarieven.filter((tarief) => tarief.detail.start
 
     {/* Lessenreeks: het antwoord op "ik wil wél iets bijleren" */}
     <section class="mt-16 pl-10">
-      <Kop>De lessenreeks</Kop>
-      <div class="mt-4 max-w-3xl space-y-4 leading-relaxed text-inkt-700">
+      <Heading>De lessenreeks</Heading>
+      <div class="mt-4 max-w-3xl space-y-4 leading-relaxed text-ink-700">
         <p>
           Van vrij spelen alleen word je niet vanzelf beter. Daarom geeft de club elk jaar
-          een <strong class="text-inkt-950">lessenreeks voor nieuwkomers en recreanten</strong>:
+          een <strong class="text-ink-950">lessenreeks voor nieuwkomers en recreanten</strong>:
           vijf avonden waarop een trainer je slagen en je verplaatsing onder handen neemt, en je
           leert hoe je een dubbel samen speelt in plaats van naast elkaar.
         </p>
@@ -100,7 +100,7 @@ const recreantTarieven = lidgeld.tarieven.filter((tarief) => tarief.detail.start
           op niveau verdeeld.
         </p>
         <p>
-          <strong class="text-inkt-950">Voor leden is de reeks gratis.</strong> Ben je nog geen lid,
+          <strong class="text-ink-950">Voor leden is de reeks gratis.</strong> Ben je nog geen lid,
           dan betaal je 25 €, en dat bedrag gaat er weer af van je lidgeld als je nadien aansluit.
         </p>
         <p>
@@ -113,10 +113,10 @@ const recreantTarieven = lidgeld.tarieven.filter((tarief) => tarief.detail.start
 
     {/* Intraclub: het beste argument voor een recreant die meer wil */}
     <section class="mt-16 pl-10">
-      <Kop>Om de twee weken intraclub</Kop>
-      <div class="mt-4 max-w-3xl space-y-4 leading-relaxed text-inkt-700">
+      <Heading>Om de twee weken intraclub</Heading>
+      <div class="mt-4 max-w-3xl space-y-4 leading-relaxed text-ink-700">
         <p>
-          Om de twee weken is het op woensdagavond <strong class="text-inkt-950">intraclub</strong>:
+          Om de twee weken is het op woensdagavond <strong class="text-ink-950">intraclub</strong>:
           een interne competitie waarbij je bij drie andere spelers geloot wordt en drie sets speelt,
           telkens met een andere partner. Elke speeldag wordt opnieuw op sterkte ingedeeld, dus je
           speelt tegen je eigen niveau en sta je toch bijna nooit twee keer met dezelfde mensen op de
@@ -130,13 +130,13 @@ const recreantTarieven = lidgeld.tarieven.filter((tarief) => tarief.detail.start
       <div class="mt-6 flex flex-wrap gap-4">
         <a
           href={url('/intraclub/zo-werkt-het/')}
-          class="stem-baan inline-flex items-center gap-2 rounded-full border-2 border-inkt-950 px-7 py-3 text-sm text-inkt-950 transition-colors hover:border-club-600 hover:text-club-600"
+          class="type-label inline-flex items-center gap-2 rounded-full border-2 border-ink-950 px-7 py-3 text-sm text-ink-950 transition-colors hover:border-club-600 hover:text-club-600"
         >
           Zo werkt de intraclub
         </a>
         <a
           href={url('/intraclub/')}
-          class="stem-baan inline-flex items-center gap-2 rounded-full border-2 border-inkt-950/20 px-7 py-3 text-sm text-inkt-950 transition-colors hover:border-club-600 hover:text-club-600"
+          class="type-label inline-flex items-center gap-2 rounded-full border-2 border-ink-950/20 px-7 py-3 text-sm text-ink-950 transition-colors hover:border-club-600 hover:text-club-600"
         >
           Bekijk de stand
         </a>
@@ -145,23 +145,23 @@ const recreantTarieven = lidgeld.tarieven.filter((tarief) => tarief.detail.start
 
     {/* Wat het kost: enkel de twee tarieven die voor een recreant gelden */}
     <section class="mt-16 pl-10">
-      <Kop>Wat het kost</Kop>
-      <p class="mt-4 max-w-3xl leading-relaxed text-inkt-700">
+      <Heading>Wat het kost</Heading>
+      <p class="mt-4 max-w-3xl leading-relaxed text-ink-700">
         Als recreant kies je tussen twee tarieven. Welk van de twee hangt af van de avonden waarop
         je wil spelen. De clubshuttles zitten er in beide gevallen bij.
       </p>
       <ul class="mt-6 max-w-3xl">
-        {recreantTarieven.map((tarief) => (
-          <li class="grid grid-cols-[5rem_1fr] items-baseline gap-4 border-b border-inkt-950/10 py-4 first:border-t">
-            <span class="stem-cijfer text-2xl text-club-700">{tarief.prijs}</span>
+        {recreationalRates.map((rate) => (
+          <li class="grid grid-cols-[5rem_1fr] items-baseline gap-4 border-b border-ink-950/10 py-4 first:border-t">
+            <span class="type-numeral text-2xl text-club-700">{rate.price}</span>
             <span>
-              <span class="block font-bold text-inkt-950">{tarief.titel}</span>
-              <span class="block text-sm text-inkt-500">{tarief.detail}</span>
+              <span class="block font-bold text-ink-950">{rate.title}</span>
+              <span class="block text-sm text-ink-500">{rate.detail}</span>
             </span>
           </li>
         ))}
       </ul>
-      <p class="mt-4 max-w-3xl text-sm text-inkt-500">
+      <p class="mt-4 max-w-3xl text-sm text-ink-500">
         Stap je later in het jaar in, dan betaal je minder: het lidgeld wordt per kwartaal verrekend.
         Alle tarieven en de rekensom staan op
         <Link href={url('/club/word-lid/')}>Word lid!</Link>.
@@ -170,10 +170,10 @@ const recreantTarieven = lidgeld.tarieven.filter((tarief) => tarief.detail.start
 
     {/* Meer dan de zaal: het groepsgevoel, met de foto's als bewijs */}
     <section class="mt-16 pl-10">
-      <Kop>Buiten de zaal</Kop>
-      <div class="mt-4 max-w-3xl space-y-4 leading-relaxed text-inkt-700">
+      <Heading>Buiten de zaal</Heading>
+      <div class="mt-4 max-w-3xl space-y-4 leading-relaxed text-ink-700">
         <p>
-          Er is een <strong class="text-inkt-950">clubweekend voor volwassenen</strong>, we trekken
+          Er is een <strong class="text-ink-950">clubweekend voor volwassenen</strong>, we trekken
           samen naar recreatieve tornooien, en na het spelen blijft er geregeld nog volk hangen om
           iets te drinken.
         </p>
@@ -189,22 +189,22 @@ const recreantTarieven = lidgeld.tarieven.filter((tarief) => tarief.detail.start
   <section class="border-y-8 border-club-800 bg-club-600 text-white">
     <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-6 px-4 py-12">
       <div class="flex-[1_1_28rem]">
-        <Kop kleur="erft">Drie keer gratis meespelen</Kop>
+        <Heading color="inherit">Drie keer gratis meespelen</Heading>
         <p class="mt-2 max-w-xl text-xl font-bold text-white">
           Ben je nog nergens aangesloten, dan mag je drie keer komen meespelen voor je iets betaalt.
-          Racket mee, sportschoenen aan, en binnenspringen in {locatie.naam}.
+          Racket mee, sportschoenen aan, en binnenspringen in {location.name}.
         </p>
       </div>
       <div class="flex flex-col items-start gap-4">
         <a
           href={url('/club/word-lid/')}
-          class="stem-baan rounded-full bg-white px-7 py-3.5 text-sm text-club-600 transition-colors hover:bg-club-50"
+          class="type-label rounded-full bg-white px-7 py-3.5 text-sm text-club-600 transition-colors hover:bg-club-50"
         >
           Zo begin je
         </a>
         <a
           href={url('/club/contact/')}
-          class="stem-baan inline-flex items-center gap-2 text-xs text-white transition-colors hover:underline"
+          class="type-label inline-flex items-center gap-2 text-xs text-white transition-colors hover:underline"
         >
           Liever eerst iets vragen? Contacteer ons
         </a>

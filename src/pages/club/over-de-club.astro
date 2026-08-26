@@ -1,16 +1,16 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import RailKop from '../../components/RailKop.astro';
+import RailHeading from '../../components/RailHeading.astro';
 ---
 
 <Layout title="Over de club" description="De geschiedenis van Badmintonclub Landegem, van gemeentelijke initiatiecursus in 1987 tot bloeiende club.">
   <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
-    <RailKop
+    <RailHeading
       title="Over de club"
       intro="Een badmintonclub met jeugdwerking, recreatieve avonden én competitieploegen — en dat al sinds 1987."
     />
 
-    <div class="mt-10 max-w-3xl space-y-4 pl-10 leading-relaxed text-inkt-700">
+    <div class="mt-10 max-w-3xl space-y-4 pl-10 leading-relaxed text-ink-700">
       <p>
         BC Landegem is een badmintonclub met jeugdwerking, recreatieve avonden én competitieploegen.
       </p>
@@ -22,10 +22,10 @@ import RailKop from '../../components/RailKop.astro';
 
     {/* Het verhaal van Herman: een veerblad-vlak, geen kaart */}
     <blockquote
-      class="ml-10 mt-12 max-w-3xl bg-veer-100 p-8 sm:p-10"
+      class="ml-10 mt-12 max-w-3xl bg-feather-100 p-8 sm:p-10"
       style="clip-path: polygon(0 24px, 100% 0, 100% calc(100% - 24px), 0 100%)"
     >
-      <div class="space-y-4 leading-relaxed text-inkt-700">
+      <div class="space-y-4 leading-relaxed text-ink-700">
         <p>
           Tot 1987 speelden wij met een aantal mensen in Lovendegem, Christian Van Wassenhove en
           zijn vrouw Rachel Lambert, Hubert Bollaert en zijn zoon en mezelf. In 1987 werd door de
@@ -68,7 +68,7 @@ import RailKop from '../../components/RailKop.astro';
           met de jeugdopleiding op zaterdag.
         </p>
       </div>
-      <footer class="stem-baan mt-8 text-xs text-club-700">— Herman Van Damme</footer>
+      <footer class="type-label mt-8 text-xs text-club-700">— Herman Van Damme</footer>
     </blockquote>
   </div>
 </Layout>

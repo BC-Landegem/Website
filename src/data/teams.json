@@ -1,17 +1,17 @@
 {
-  "seizoen": "2026–2027",
-  "clubkalender": "https://badvla.tournamentsoftware.com/sport/clubmatches.aspx?id=F4D8C93E-D12D-4116-86CF-A63A6B9B6046&cid=2",
-  "ploegen": [
-    { "naam": "Landegem 1H", "type": "Heren", "url": "https://badvla.tournamentsoftware.com/sport/league/team?id=7C182DF5-153D-443A-86DB-C21A50E46372&team=153" },
-    { "naam": "Landegem 2H", "type": "Heren", "url": "https://badvla.tournamentsoftware.com/sport/league/team?id=F4D8C93E-D12D-4116-86CF-A63A6B9B6046&team=27" },
-    { "naam": "Landegem 3H", "type": "Heren", "url": "https://badvla.tournamentsoftware.com/sport/league/team?id=F4D8C93E-D12D-4116-86CF-A63A6B9B6046&team=82" },
-    { "naam": "Landegem 4H", "type": "Heren", "url": "https://badvla.tournamentsoftware.com/sport/league/team?id=F4D8C93E-D12D-4116-86CF-A63A6B9B6046&team=114" },
-    { "naam": "Landegem 5H", "type": "Heren", "url": "https://badvla.tournamentsoftware.com/sport/league/team?id=F4D8C93E-D12D-4116-86CF-A63A6B9B6046&team=155" },
-    { "naam": "Landegem 1G", "type": "Gemengd", "url": "https://badvla.tournamentsoftware.com/sport/league/team?id=7C182DF5-153D-443A-86DB-C21A50E46372&team=57" },
-    { "naam": "Landegem 2G", "type": "Gemengd", "url": "https://badvla.tournamentsoftware.com/sport/league/team?id=F4D8C93E-D12D-4116-86CF-A63A6B9B6046&team=19" },
-    { "naam": "Landegem 3G", "type": "Gemengd", "url": "https://badvla.tournamentsoftware.com/sport/league/team?id=F4D8C93E-D12D-4116-86CF-A63A6B9B6046&team=56" },
-    { "naam": "Landegem 4G", "type": "Gemengd", "url": "https://badvla.tournamentsoftware.com/sport/league/team?id=F4D8C93E-D12D-4116-86CF-A63A6B9B6046&team=140" },
-    { "naam": "Landegem 1D", "type": "Dames", "url": "https://badvla.tournamentsoftware.com/sport/league/team?id=7C182DF5-153D-443A-86DB-C21A50E46372&team=106" },
-    { "naam": "Landegem 2D", "type": "Dames", "url": "https://badvla.tournamentsoftware.com/sport/league/team?id=F4D8C93E-D12D-4116-86CF-A63A6B9B6046&team=45" }
+  "season": "2026–2027",
+  "clubCalendar": "https://badvla.tournamentsoftware.com/sport/clubmatches.aspx?id=F4D8C93E-D12D-4116-86CF-A63A6B9B6046&cid=2",
+  "teams": [
+    { "name": "Landegem 1H", "type": "Heren", "url": "https://badvla.tournamentsoftware.com/sport/league/team?id=7C182DF5-153D-443A-86DB-C21A50E46372&team=153" },
+    { "name": "Landegem 2H", "type": "Heren", "url": "https://badvla.tournamentsoftware.com/sport/league/team?id=F4D8C93E-D12D-4116-86CF-A63A6B9B6046&team=27" },
+    { "name": "Landegem 3H", "type": "Heren", "url": "https://badvla.tournamentsoftware.com/sport/league/team?id=F4D8C93E-D12D-4116-86CF-A63A6B9B6046&team=82" },
+    { "name": "Landegem 4H", "type": "Heren", "url": "https://badvla.tournamentsoftware.com/sport/league/team?id=F4D8C93E-D12D-4116-86CF-A63A6B9B6046&team=114" },
+    { "name": "Landegem 5H", "type": "Heren", "url": "https://badvla.tournamentsoftware.com/sport/league/team?id=F4D8C93E-D12D-4116-86CF-A63A6B9B6046&team=155" },
+    { "name": "Landegem 1G", "type": "Gemengd", "url": "https://badvla.tournamentsoftware.com/sport/league/team?id=7C182DF5-153D-443A-86DB-C21A50E46372&team=57" },
+    { "name": "Landegem 2G", "type": "Gemengd", "url": "https://badvla.tournamentsoftware.com/sport/league/team?id=F4D8C93E-D12D-4116-86CF-A63A6B9B6046&team=19" },
+    { "name": "Landegem 3G", "type": "Gemengd", "url": "https://badvla.tournamentsoftware.com/sport/league/team?id=F4D8C93E-D12D-4116-86CF-A63A6B9B6046&team=56" },
+    { "name": "Landegem 4G", "type": "Gemengd", "url": "https://badvla.tournamentsoftware.com/sport/league/team?id=F4D8C93E-D12D-4116-86CF-A63A6B9B6046&team=140" },
+    { "name": "Landegem 1D", "type": "Dames", "url": "https://badvla.tournamentsoftware.com/sport/league/team?id=7C182DF5-153D-443A-86DB-C21A50E46372&team=106" },
+    { "name": "Landegem 2D", "type": "Dames", "url": "https://badvla.tournamentsoftware.com/sport/league/team?id=F4D8C93E-D12D-4116-86CF-A63A6B9B6046&team=45" }
   ]
 }

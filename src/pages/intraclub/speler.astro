@@ -1,137 +1,137 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import Kop from '../../components/Kop.astro';
-import Punt from '../../components/Punt.astro';
+import Heading from '../../components/Heading.astro';
+import Dot from '../../components/Dot.astro';
 import { url } from '../../lib/url';
 ---
 
 <Layout title="Intraclub speler" description="Statistieken van een intraclub-speler van BC Landegem.">
   <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
     <div class="relative pl-10">
-      <Punt top="top-11" />
+      <Dot top="top-11" />
       <span class="absolute bottom-1 left-[6px] top-[3.75rem] w-1 -translate-x-1/2 rounded-full bg-club-500" aria-hidden="true"></span>
       <span class="absolute bottom-0 left-[6px] h-2 w-2 -translate-x-1/2 rounded-full bg-club-500" aria-hidden="true"></span>
       <p>
-        <a href={url('/intraclub/')} class="stem-baan inline-flex items-center gap-2 text-xs text-club-700 hover:text-club-800 hover:underline">
+        <a href={url('/intraclub/')} class="type-label inline-flex items-center gap-2 text-xs text-club-700 hover:text-club-800 hover:underline">
           <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4m0 0l6-6m-6 6l6 6" />
           </svg>
           Intraclub
         </a>
       </p>
-      <h1 id="speler-naam" class="stem-display mt-3 kop-pagina text-inkt-950">Speler</h1>
-      <p id="speler-ranking" class="mt-3 text-inkt-700"></p>
+      <h1 id="player-name" class="type-display mt-3 page-heading text-ink-950">Speler</h1>
+      <p id="player-ranking" class="mt-3 text-ink-700"></p>
     </div>
 
     <div
-      id="speler-fout"
+      id="player-error"
       role="alert"
       class="ml-10 mt-10 hidden max-w-3xl border-2 border-club-500 bg-club-50 p-4 font-medium text-club-800"
     >
       De statistieken konden niet geladen worden. Probeer het later opnieuw.
     </div>
 
-    <p id="speler-laden" class="mt-10 flex items-center gap-3 pl-10 text-sm font-medium text-inkt-500" aria-live="polite">
-      <Punt klopt />
+    <p id="player-loading" class="mt-10 flex items-center gap-3 pl-10 text-sm font-medium text-ink-500" aria-live="polite">
+      <Dot pulses />
       Statistieken laden…
     </p>
 
-    <div id="speler-inhoud" class="mt-12 hidden max-w-3xl pl-10">
+    <div id="player-content" class="mt-12 hidden max-w-3xl pl-10">
       {/* Drie cijfers op één lijn: geen kaarten, geen meters — de data draagt zichzelf */}
       <dl class="grid gap-8 sm:grid-cols-3">
-        <div class="border-t border-inkt-950/10 pt-4" data-stat="aanwezig">
-          <dt class="stem-baan text-xs text-club-700">Aanwezig</dt>
-          <dd class="stem-cijfer mt-2 text-4xl text-inkt-950"><span data-waarde></span><span class="text-xl text-inkt-500">%</span></dd>
-          <dd data-context class="mt-1.5 text-xs text-inkt-500"></dd>
+        <div class="border-t border-ink-950/10 pt-4" data-stat="present">
+          <dt class="type-label text-xs text-club-700">Aanwezig</dt>
+          <dd class="type-numeral mt-2 text-4xl text-ink-950"><span data-value></span><span class="text-xl text-ink-500">%</span></dd>
+          <dd data-context class="mt-1.5 text-xs text-ink-500"></dd>
         </div>
-        <div class="border-t border-inkt-950/10 pt-4" data-stat="sets">
-          <dt class="stem-baan text-xs text-club-700">Sets gewonnen</dt>
-          <dd class="stem-cijfer mt-2 text-4xl text-inkt-950"><span data-waarde></span><span class="text-xl text-inkt-500">%</span></dd>
-          <dd data-context class="mt-1.5 text-xs text-inkt-500"></dd>
+        <div class="border-t border-ink-950/10 pt-4" data-stat="sets">
+          <dt class="type-label text-xs text-club-700">Sets gewonnen</dt>
+          <dd class="type-numeral mt-2 text-4xl text-ink-950"><span data-value></span><span class="text-xl text-ink-500">%</span></dd>
+          <dd data-context class="mt-1.5 text-xs text-ink-500"></dd>
         </div>
-        <div class="border-t border-inkt-950/10 pt-4" data-stat="punten">
-          <dt class="stem-baan text-xs text-club-700">Punten gewonnen</dt>
-          <dd class="stem-cijfer mt-2 text-4xl text-inkt-950"><span data-waarde></span><span class="text-xl text-inkt-500">%</span></dd>
-          <dd data-context class="mt-1.5 text-xs text-inkt-500"></dd>
+        <div class="border-t border-ink-950/10 pt-4" data-stat="points">
+          <dt class="type-label text-xs text-club-700">Punten gewonnen</dt>
+          <dd class="type-numeral mt-2 text-4xl text-ink-950"><span data-value></span><span class="text-xl text-ink-500">%</span></dd>
+          <dd data-context class="mt-1.5 text-xs text-ink-500"></dd>
         </div>
       </dl>
 
       <section class="mt-14">
-        <Kop maat="klein">Klassementsverloop</Kop>
+        <Heading size="small">Klassementsverloop</Heading>
         {/* De as staat omgekeerd; dat moet in woorden staan, niet enkel in de cijfers. */}
-        <p id="verloop-onderschrift" class="mt-3 text-sm text-inkt-500">
+        <p id="progression-caption" class="mt-3 text-sm text-ink-500">
           Je plaats in het klassement per speeldag.
         </p>
 
         {/*
           Eén reeks, dus geen legende: de kop zegt al wat er staat. Elke laag draagt
-          zijn kleur via de text-* klasse hieronder; verloop.ts tekent met currentColor.
+          zijn kleur via de text-* klasse hieronder; progression.ts tekent met currentColor.
         */}
-        <figure id="verloop" class="relative mt-5 hidden">
+        <figure id="progression" class="relative mt-5 hidden">
           <svg
             class="w-full touch-pan-y select-none overflow-visible"
             role="img"
             tabindex="0"
-            aria-describedby="verloop-onderschrift"
+            aria-describedby="progression-caption"
           >
-            <g data-laag="grid" class="text-inkt-950/10"></g>
-            <g data-laag="as" class="text-[11px] tabular-nums text-inkt-500"></g>
-            <g data-laag="kruis" class="text-club-700/40"></g>
-            <g data-laag="vlak" class="text-club-500"></g>
-            <g data-laag="labels" class="text-[11px] text-inkt-950"></g>
-            <g data-laag="raakvlak"></g>
+            <g data-layer="grid" class="text-ink-950/10"></g>
+            <g data-layer="axis" class="text-[11px] tabular-nums text-ink-500"></g>
+            <g data-layer="cross" class="text-club-700/40"></g>
+            <g data-layer="area" class="text-club-500"></g>
+            <g data-layer="labels" class="text-[11px] text-ink-950"></g>
+            <g data-layer="hit"></g>
           </svg>
           <div
             data-tooltip
             hidden
-            class="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-[calc(100%+14px)] border-2 border-inkt-950 bg-veer-50 px-2.5 py-1.5 shadow-[3px_3px_0_0_var(--color-inkt-950)]"
+            class="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-[calc(100%+14px)] border-2 border-ink-950 bg-feather-50 px-2.5 py-1.5 shadow-[3px_3px_0_0_var(--color-ink-950)]"
           >
             {/* Waarde eerst, bijschrift daarna: de lezer heeft de speeldag al aangewezen. */}
-            <p data-tooltip-waarde class="stem-cijfer whitespace-nowrap text-sm text-inkt-950"></p>
-            <p data-tooltip-bijschrift class="whitespace-nowrap text-xs text-inkt-500"></p>
+            <p data-tooltip-value class="type-numeral whitespace-nowrap text-sm text-ink-950"></p>
+            <p data-tooltip-caption class="whitespace-nowrap text-xs text-ink-500"></p>
           </div>
-          <p data-melding class="sr-only" aria-live="polite"></p>
+          <p data-message class="sr-only" aria-live="polite"></p>
         </figure>
 
         {/* De tooltip mag nooit de enige weg naar een cijfer zijn. */}
-        <details id="verloop-tabel" class="mt-5 hidden">
-          <summary class="stem-baan cursor-pointer text-xs text-club-700 hover:text-club-800">
+        <details id="progression-table" class="mt-5 hidden">
+          <summary class="type-label cursor-pointer text-xs text-club-700 hover:text-club-800">
             Toon de cijfers
           </summary>
           <table class="mt-4 w-full max-w-sm text-sm">
             <thead>
-              <tr class="border-b border-inkt-950/10 text-left">
-                <th scope="col" class="stem-baan pb-2 text-xs text-inkt-500">Speeldag</th>
-                <th scope="col" class="stem-baan pb-2 text-xs text-inkt-500">Ranking</th>
+              <tr class="border-b border-ink-950/10 text-left">
+                <th scope="col" class="type-label pb-2 text-xs text-ink-500">Speeldag</th>
+                <th scope="col" class="type-label pb-2 text-xs text-ink-500">Ranking</th>
               </tr>
             </thead>
-            <tbody data-tabel-lichaam class="tabular-nums"></tbody>
+            <tbody data-table-body class="tabular-nums"></tbody>
           </table>
         </details>
 
-        <p id="verloop-leeg" class="mt-4 hidden text-sm text-inkt-500">
+        <p id="progression-empty" class="mt-4 hidden text-sm text-ink-500">
           Nog te weinig speeldagen voor een verloop — na je tweede speeldag verschijnt de lijn hier.
         </p>
       </section>
 
       <section class="mt-14">
-        <Kop maat="klein">Wedstrijden</Kop>
-        <p class="mb-6 mt-3 text-sm text-inkt-500">
+        <Heading size="small">Wedstrijden</Heading>
+        <p class="mb-6 mt-3 text-sm text-ink-500">
           Vier spelers per match, per set een andere samenstelling. Het winnende duo staat in het vet;
           de meest recente speeldag staat bovenaan.
         </p>
-        <div id="speler-matchen" class="space-y-6"></div>
+        <div id="player-matches" class="space-y-6"></div>
       </section>
     </div>
   </div>
 </Layout>
 
 <script>
-  import { fetchJson, renderMatchKaart } from '../../lib/intra';
+  import { fetchJson, renderMatchCard } from '../../lib/intra';
   import type { Match } from '../../lib/intra';
-  import { tekenVerloop } from '../../lib/verloop';
+  import { drawProgression } from '../../lib/progression';
 
-  interface SpelerDetail {
+  interface PlayerDetail {
     id?: string;
     firstName: string;
     name: string;
@@ -144,91 +144,91 @@ import { url } from '../../lib/url';
     };
   }
 
-  const fout = document.getElementById('speler-fout')!;
-  const laden = document.getElementById('speler-laden')!;
+  const error = document.getElementById('player-error')!;
+  const loading = document.getElementById('player-loading')!;
 
-  function percentage(deel: number, totaal: number): number {
-    return totaal > 0 ? Math.round((deel / totaal) * 100) : 0;
+  function percentage(part: number, total: number): number {
+    return total > 0 ? Math.round((part / total) * 100) : 0;
   }
 
-  function vulStat(stat: string, deel: number, totaal: number, context: string) {
-    const blok = document.querySelector(`[data-stat="${stat}"]`)!;
-    blok.querySelector('[data-waarde]')!.textContent = String(percentage(deel, totaal));
-    blok.querySelector('[data-context]')!.textContent = context;
+  function fillStat(stat: string, part: number, total: number, context: string) {
+    const block = document.querySelector(`[data-stat="${stat}"]`)!;
+    block.querySelector('[data-value]')!.textContent = String(percentage(part, total));
+    block.querySelector('[data-context]')!.textContent = context;
   }
 
-  async function laadSpeler() {
+  async function loadPlayer() {
     const id = new URLSearchParams(location.search).get('id');
     try {
       if (!id) throw new Error('geen id');
-      const speler = await fetchJson<SpelerDetail>(`/players/${encodeURIComponent(id)}`);
-      if (!speler.id) throw new Error('onbekende speler');
+      const player = await fetchJson<PlayerDetail>(`/players/${encodeURIComponent(id)}`);
+      if (!player.id) throw new Error('onbekende speler');
 
-      const volledigeNaam = `${speler.firstName} ${speler.name}`;
-      document.getElementById('speler-naam')!.textContent = volledigeNaam;
-      document.title = `${volledigeNaam} — intraclub | BC Landegem`;
+      const fullName = `${player.firstName} ${player.name}`;
+      document.getElementById('player-name')!.textContent = fullName;
+      document.title = `${fullName} — intraclub | BC Landegem`;
 
-      const historiek = speler.statistics.rankingHistory;
-      const huidige = historiek.at(-1);
-      if (huidige) {
-        const beste = Math.min(...historiek.map((rij) => rij.rank));
-        const besteSpeeldag = historiek.slice().reverse().find((rij) => rij.rank === beste)!;
-        document.getElementById('speler-ranking')!.textContent =
-          `Ranking: ${huidige.rank} · Beste: ${beste} (op speeldag ${besteSpeeldag.number})`;
+      const history = player.statistics.rankingHistory;
+      const current = history.at(-1);
+      if (current) {
+        const best = Math.min(...history.map((row) => row.rank));
+        const bestMatchday = history.slice().reverse().find((row) => row.rank === best)!;
+        document.getElementById('player-ranking')!.textContent =
+          `Ranking: ${current.rank} · Beste: ${best} (op speeldag ${bestMatchday.number})`;
       }
 
-      const stats = speler.statistics;
-      vulStat('aanwezig', stats.rounds.present, historiek.length, `${stats.rounds.present} van ${historiek.length} speeldagen`);
-      vulStat('sets', stats.sets.won, stats.sets.total, `${stats.sets.won} van ${stats.sets.total} sets`);
-      vulStat('punten', stats.points.won, stats.points.total, `${stats.points.won} van ${stats.points.total} punten`);
+      const stats = player.statistics;
+      fillStat('present', stats.rounds.present, history.length, `${stats.rounds.present} van ${history.length} speeldagen`);
+      fillStat('sets', stats.sets.won, stats.sets.total, `${stats.sets.won} van ${stats.sets.total} sets`);
+      fillStat('points', stats.points.won, stats.points.total, `${stats.points.won} van ${stats.points.total} punten`);
 
       // Eerst tonen, dan pas tekenen: de grafiek meet de breedte van zijn
       // container en krijgt 0 terug zolang die nog 'hidden' is.
-      laden.classList.add('hidden');
-      document.getElementById('speler-inhoud')!.classList.remove('hidden');
+      loading.classList.add('hidden');
+      document.getElementById('player-content')!.classList.remove('hidden');
 
       // Eén punt is geen verloop maar een cijfer; dat staat al in de kop.
-      if (historiek.length < 2) {
-        document.getElementById('verloop-leeg')!.classList.remove('hidden');
+      if (history.length < 2) {
+        document.getElementById('progression-empty')!.classList.remove('hidden');
       } else {
-        const figuur = document.getElementById('verloop')!;
-        figuur.classList.remove('hidden');
-        tekenVerloop(figuur, historiek);
+        const figure = document.getElementById('progression')!;
+        figure.classList.remove('hidden');
+        drawProgression(figure, history);
 
-        const tabel = document.getElementById('verloop-tabel')!;
-        tabel.classList.remove('hidden');
-        tabel.querySelector('[data-tabel-lichaam]')!.replaceChildren(
-          ...historiek.map((rij) => {
+        const table = document.getElementById('progression-table')!;
+        table.classList.remove('hidden');
+        table.querySelector('[data-table-body]')!.replaceChildren(
+          ...history.map((row) => {
             const tr = document.createElement('tr');
-            tr.className = 'border-b border-inkt-950/10';
-            const speeldag = document.createElement('th');
-            speeldag.scope = 'row';
-            speeldag.className = 'py-2 text-left font-normal text-inkt-700';
-            speeldag.textContent = String(rij.number);
+            tr.className = 'border-b border-ink-950/10';
+            const matchday = document.createElement('th');
+            matchday.scope = 'row';
+            matchday.className = 'py-2 text-left font-normal text-ink-700';
+            matchday.textContent = String(row.number);
             const rank = document.createElement('td');
-            rank.className = 'py-2 text-inkt-950';
-            rank.textContent = String(rij.rank);
-            tr.append(speeldag, rank);
+            rank.className = 'py-2 text-ink-950';
+            rank.textContent = String(row.rank);
+            tr.append(matchday, rank);
             return tr;
           }),
         );
       }
 
-      const matchen = speler.matches.slice().reverse();
-      document.getElementById('speler-matchen')!.innerHTML = matchen
+      const matches = player.matches.slice().reverse();
+      document.getElementById('player-matches')!.innerHTML = matches
         .map((match) => `
           <div>
-            <p class="stem-baan mb-2 text-xs text-club-700">Speeldag ${match.round?.number ?? ''}</p>
-            ${renderMatchKaart(match, speler.id)}
+            <p class="type-label mb-2 text-xs text-club-700">Speeldag ${match.round?.number ?? ''}</p>
+            ${renderMatchCard(match, player.id)}
           </div>`)
         .join('');
 
     } catch {
-      laden.classList.add('hidden');
-      document.getElementById('speler-inhoud')!.classList.add('hidden');
-      fout.classList.remove('hidden');
+      loading.classList.add('hidden');
+      document.getElementById('player-content')!.classList.add('hidden');
+      error.classList.remove('hidden');
     }
   }
 
-  laadSpeler();
+  loadPlayer();
 </script>

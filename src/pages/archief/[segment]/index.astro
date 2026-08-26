@@ -1,12 +1,12 @@
 ---
 import type { GetStaticPaths } from 'astro';
 import Layout from '../../../layouts/Layout.astro';
-import RailKop from '../../../components/RailKop.astro';
+import RailHeading from '../../../components/RailHeading.astro';
 import { url } from '../../../lib/url';
 import {
-  alleArtikels, perJaar, vanGroep, GROEPEN, jaarVan,
-  datumKort, artikelPad, inleiding, groepLabel, type Artikel, type Groep,
-} from '../../../lib/archief';
+  allArticles, byYear, byGroup, GROUPS, yearOf,
+  formatDateShort, articlePath, intro as articleIntro, groupLabel, type Article, type Group,
+} from '../../../lib/archive';
 
 /**
  * Eén route voor twee soorten overzicht: een jaar (/archief/2013/) en een
@@ -14,101 +14,101 @@ import {
  * dezelfde route — anders zou Astro twee dynamische mappen naast elkaar zien.
  */
 export const getStaticPaths: GetStaticPaths = async () => {
-  const jaren = await perJaar();
-  const jaarPaden = [...jaren.entries()].map(([jaar, artikels]) => ({
-    params: { segment: jaar },
-    props: { soort: 'jaar' as const, titel: jaar, artikels },
+  const years = await byYear();
+  const yearPaths = [...years.entries()].map(([year, articles]) => ({
+    params: { segment: year },
+    props: { kind: 'year' as const, title: year, articles },
   }));
-  const groepPaden = await Promise.all(
-    GROEPEN.map(async (g) => ({
-      params: { segment: g.sleutel },
+  const groupPaths = await Promise.all(
+    GROUPS.map(async (g) => ({
+      params: { segment: g.key },
       props: {
-        soort: 'groep' as const,
-        titel: g.label,
-        uitleg: g.uitleg,
-        artikels: await vanGroep(g.sleutel),
+        kind: 'group' as const,
+        title: g.label,
+        description: g.description,
+        articles: await byGroup(g.key),
       },
     })),
   );
-  return [...jaarPaden, ...groepPaden];
+  return [...yearPaths, ...groupPaths];
 };
 
 interface Props {
-  soort: 'jaar' | 'groep';
-  titel: string;
-  uitleg?: string;
-  artikels: Artikel[];
+  kind: 'year' | 'group';
+  title: string;
+  description?: string;
+  articles: Article[];
 }
 
-const { soort, titel, uitleg, artikels } = Astro.props;
-const alle = await alleArtikels();
-const jaren = await perJaar();
-const jaarLijst = [...jaren.keys()];
+const { kind, title, description, articles } = Astro.props;
+const all = await allArticles();
+const years = await byYear();
+const yearList = [...years.keys()];
 
 // Een onderwerppagina groepeert zelf per jaar; een jaarpagina is al één blok.
-const blokken: [string, Artikel[]][] =
-  soort === 'jaar'
-    ? [['', artikels]]
-    : [...artikels.reduce((m, a) => {
-        const j = jaarVan(a);
-        m.set(j, [...(m.get(j) ?? []), a]);
+const blocks: [string, Article[]][] =
+  kind === 'year'
+    ? [['', articles]]
+    : [...articles.reduce((m, a) => {
+        const y = yearOf(a);
+        m.set(y, [...(m.get(y) ?? []), a]);
         return m;
-      }, new Map<string, Artikel[]>()).entries()];
+      }, new Map<string, Article[]>()).entries()];
 
-const huidigJaar = soort === 'jaar' ? titel : null;
-const vorige = huidigJaar ? jaarLijst[jaarLijst.indexOf(huidigJaar) + 1] : null;
-const volgende = huidigJaar ? jaarLijst[jaarLijst.indexOf(huidigJaar) - 1] : null;
+const currentYear = kind === 'year' ? title : null;
+const previous = currentYear ? yearList[yearList.indexOf(currentYear) + 1] : null;
+const next = currentYear ? yearList[yearList.indexOf(currentYear) - 1] : null;
 
 const intro =
-  soort === 'jaar'
-    ? `${artikels.length} ${artikels.length === 1 ? 'artikel' : 'artikels'} uit ${titel}.`
-    : uitleg;
-const paginaTitel = soort === 'jaar' ? `Archief ${titel}` : `Archief · ${titel}`;
+  kind === 'year'
+    ? `${articles.length} ${articles.length === 1 ? 'artikel' : 'artikels'} uit ${title}.`
+    : description;
+const pageTitle = kind === 'year' ? `Archief ${title}` : `Archief · ${title}`;
 ---
 
 <Layout
-  title={paginaTitel}
-  description={`${artikels.length} artikels uit het archief van BC Landegem — ${soort === 'jaar' ? titel : titel.toLowerCase()}.`}
+  title={pageTitle}
+  description={`${articles.length} artikels uit het archief van BC Landegem — ${kind === 'year' ? title : title.toLowerCase()}.`}
 >
-  <div class="bg-veer-100">
+  <div class="bg-feather-100">
     <div class="mx-auto max-w-4xl px-4 py-14 sm:py-16">
-      <nav class="stem-baan mb-8 pl-10 text-[0.65rem] text-inkt-500">
-        <a href={url('/archief/')} class="hover:text-kurk-600">Archief</a>
+      <nav class="type-label mb-8 pl-10 text-[0.65rem] text-ink-500">
+        <a href={url('/archief/')} class="hover:text-cork-600">Archief</a>
         <span aria-hidden="true"> / </span>
-        <span class="text-inkt-700">{titel}</span>
+        <span class="text-ink-700">{title}</span>
       </nav>
 
-      <RailKop title={soort === 'jaar' ? titel : titel} accent="kurk" intro={intro} />
+      <RailHeading title={kind === 'year' ? title : title} accent="cork" intro={intro} />
 
       {/* -------------------------------------------------- artikellijst */}
       <div class="mt-12 space-y-14 pl-10">
-        {blokken.map(([jaar, lijst]) => (
-          <section aria-labelledby={jaar ? `jaar-${jaar}` : undefined}>
-            {jaar && (
-              <h2 id={`jaar-${jaar}`} class="stem-cijfer border-b border-inkt-950/10 pb-2 text-xl text-inkt-950">
-                <a href={url(`/archief/${jaar}/`)} class="hover:text-kurk-600">{jaar}</a>
-                <span class="stem-baan ml-2 text-[0.65rem] text-inkt-500">{lijst.length}</span>
+        {blocks.map(([year, list]) => (
+          <section aria-labelledby={year ? `year-${year}` : undefined}>
+            {year && (
+              <h2 id={`year-${year}`} class="type-numeral border-b border-ink-950/10 pb-2 text-xl text-ink-950">
+                <a href={url(`/archief/${year}/`)} class="hover:text-cork-600">{year}</a>
+                <span class="type-label ml-2 text-[0.65rem] text-ink-500">{list.length}</span>
               </h2>
             )}
-            <ol class:list={['divide-y divide-inkt-950/10', !jaar && 'border-t border-inkt-950/10']}>
-              {lijst.map((a) => (
+            <ol class:list={['divide-y divide-ink-950/10', !year && 'border-t border-ink-950/10']}>
+              {list.map((a) => (
                 <li>
-                  <a href={url(artikelPad(a))} class="group flex gap-4 py-4 sm:gap-6">
+                  <a href={url(articlePath(a))} class="group flex gap-4 py-4 sm:gap-6">
                     <time
                       datetime={a.data.datum.toISOString().slice(0, 10)}
-                      class="stem-cijfer w-[5.5rem] shrink-0 pt-1 text-sm text-inkt-500"
+                      class="type-numeral w-[5.5rem] shrink-0 pt-1 text-sm text-ink-500"
                     >
-                      {datumKort(a.data.datum)}
+                      {formatDateShort(a.data.datum)}
                     </time>
                     <span class="min-w-0">
-                      <span class="stem-display block text-lg text-inkt-950 group-hover:text-kurk-600">
+                      <span class="type-display block text-lg text-ink-950 group-hover:text-cork-600">
                         {a.data.titel}
                       </span>
-                      <span class="mt-1 block text-sm text-inkt-700">{inleiding(a, 150)}</span>
-                      <span class="stem-baan mt-1.5 block text-[0.65rem] text-inkt-500">
+                      <span class="mt-1 block text-sm text-ink-700">{articleIntro(a, 150)}</span>
+                      <span class="type-label mt-1.5 block text-[0.65rem] text-ink-500">
                         {a.data.auteur && <>{a.data.auteur}</>}
                         {a.data.auteur && a.data.groep && <span aria-hidden="true"> · </span>}
-                        {a.data.groep && <>{groepLabel(a.data.groep as Groep)}</>}
+                        {a.data.groep && <>{groupLabel(a.data.groep as Group)}</>}
                         {a.data.reacties?.length && (
                           <>
                             <span aria-hidden="true"> · </span>
@@ -127,21 +127,21 @@ const paginaTitel = soort === 'jaar' ? `Archief ${titel}` : `Archief · ${titel}
       </div>
 
       {/* ------------------------------------------------------- navigatie */}
-      {soort === 'jaar' && (
-        <nav class="mt-14 flex items-center justify-between gap-4 border-t border-inkt-950/10 pl-10 pt-6">
-          {vorige ? (
-            <a href={url(`/archief/${vorige}/`)} class="stem-baan text-xs text-inkt-700 hover:text-kurk-600">
-              ← {vorige}
+      {kind === 'year' && (
+        <nav class="mt-14 flex items-center justify-between gap-4 border-t border-ink-950/10 pl-10 pt-6">
+          {previous ? (
+            <a href={url(`/archief/${previous}/`)} class="type-label text-xs text-ink-700 hover:text-cork-600">
+              ← {previous}
             </a>
           ) : (
             <span></span>
           )}
-          <a href={url('/archief/')} class="stem-baan text-xs text-inkt-500 hover:text-kurk-600">
+          <a href={url('/archief/')} class="type-label text-xs text-ink-500 hover:text-cork-600">
             Alle jaren
           </a>
-          {volgende ? (
-            <a href={url(`/archief/${volgende}/`)} class="stem-baan text-xs text-inkt-700 hover:text-kurk-600">
-              {volgende} →
+          {next ? (
+            <a href={url(`/archief/${next}/`)} class="type-label text-xs text-ink-700 hover:text-cork-600">
+              {next} →
             </a>
           ) : (
             <span></span>
@@ -149,10 +149,10 @@ const paginaTitel = soort === 'jaar' ? `Archief ${titel}` : `Archief · ${titel}
         </nav>
       )}
 
-      {soort === 'groep' && (
-        <nav class="mt-14 border-t border-inkt-950/10 pl-10 pt-6">
-          <a href={url('/archief/')} class="stem-baan text-xs text-inkt-500 hover:text-kurk-600">
-            ← Terug naar het archief ({alle.length} artikels)
+      {kind === 'group' && (
+        <nav class="mt-14 border-t border-ink-950/10 pl-10 pt-6">
+          <a href={url('/archief/')} class="type-label text-xs text-ink-500 hover:text-cork-600">
+            ← Terug naar het archief ({all.length} artikels)
           </a>
         </nav>
       )}

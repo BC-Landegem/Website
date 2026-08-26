@@ -1,0 +1,30 @@
+---
+// Sectiekop in de displaystem, met optioneel de rode aanloop erboven (dag,
+// reeks, stap). De maat is een ladder van drie, niet een vrij getal: dat houdt
+// de koppenhiërarchie over de pagina's heen gelijk.
+interface Props {
+  as?: 'h2' | 'h3' | 'h4';
+  size?: 'large' | 'normal' | 'small';
+  /** Kleine rode aanloop boven de kop, bv. "Woensdagavond" of "Stap 2". */
+  eyebrow?: string;
+  /**
+   * `white` op een donkere ondergrond, `inherit` wanneer de omliggende sectie
+   * de tekstkleur al zet (zoals de rode banden) en de kop die moet overnemen.
+   */
+  color?: 'ink' | 'white' | 'inherit';
+  class?: string;
+}
+
+const { as: Tag = 'h2', size = 'normal', eyebrow, color = 'ink', class: extra } = Astro.props;
+
+// Volledige klassennamen, want Tailwind leest de broncode statisch.
+const sizes = {
+  large: 'text-4xl sm:text-5xl',
+  normal: 'text-3xl sm:text-4xl',
+  small: 'text-2xl sm:text-3xl',
+};
+const colors = { ink: 'text-ink-950', white: 'text-white', inherit: '' };
+---
+
+{eyebrow && <p class="type-label text-xs text-club-700">{eyebrow}</p>}
+<Tag class:list={['type-display', sizes[size], colors[color], eyebrow && 'mt-1', extra]}><slot /></Tag>

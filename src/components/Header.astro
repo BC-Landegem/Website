@@ -21,41 +21,41 @@ const mainItems = [
   { label: "Foto's", href: '/media/' },
 ];
 
-const reeksen = ['Heren', 'Gemengd', 'Dames'];
+const divisions = ['Heren', 'Gemengd', 'Dames'];
 
 
 const currentPath = Astro.url.pathname;
 const isActive = (href: string) => currentPath.startsWith(url(href).replace(/\/$/, ''));
 ---
 
-<header class="sticky top-0 z-50 border-b border-inkt-950/10 bg-veer-50/95 backdrop-blur">
+<header class="sticky top-0 z-50 border-b border-ink-950/10 bg-feather-50/95 backdrop-blur">
   <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
     <a href={url('/')} class="flex items-center gap-3">
       <img src={url('/images/logo-bc1.svg')} alt="" class="h-10 w-auto" />
-      <span class="stem-baan text-sm text-inkt-950">BC Landegem</span>
+      <span class="type-label text-sm text-ink-950">BC Landegem</span>
     </a>
 
     <input type="checkbox" id="nav-toggle" class="sr-only" aria-label="Menu openen of sluiten" />
 
     {/* Hamburger (mobiel) */}
-    <label for="nav-toggle" class="hamburger cursor-pointer rounded p-2 hover:bg-veer-100">
-      <svg class="icoon-open h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+    <label for="nav-toggle" class="hamburger cursor-pointer rounded p-2 hover:bg-feather-100">
+      <svg class="icon-open h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
         <path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16" />
       </svg>
-      <svg class="icoon-sluit h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+      <svg class="icon-close h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
         <path stroke-linecap="round" d="M6 6l12 12M18 6L6 18" />
       </svg>
     </label>
 
     <nav class="nav">
-      <ul class="lijst">
+      <ul class="list">
         <li>
-          <a href={url('/')} class:list={['navlink', currentPath === url('/') && 'actief']}>Home</a>
+          <a href={url('/')} class:list={['navlink', currentPath === url('/') && 'active']}>Home</a>
         </li>
 
         {/* Competitie met ploegen-dropdown: spelers springen zo rechtstreeks naar hun ploeg */}
         <li class="menu">
-          <a href={url('/competitie/')} class:list={['navlink', isActive('/competitie/') && 'actief']}>
+          <a href={url('/competitie/')} class:list={['navlink', isActive('/competitie/') && 'active']}>
             Competitie
             <svg class="chevron h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
@@ -63,21 +63,21 @@ const isActive = (href: string) => currentPath.startsWith(url(href).replace(/\/$
           </a>
 
           {/* Desktop: hoverpaneel met de ploegen per reeks */}
-          <div class="paneel">
+          <div class="panel">
             <div class="flex gap-8 px-5 py-4">
-              {reeksen.map((reeks) => (
+              {divisions.map((division) => (
                 <div>
-                  <span class="stem-baan block text-xs text-inkt-500">{reeks}</span>
+                  <span class="type-label block text-xs text-ink-500">{division}</span>
                   <ul class="mt-2 space-y-0.5">
-                    {teams.ploegen.filter((p) => p.type === reeks).map((ploeg) => (
+                    {teams.teams.filter((t) => t.type === division).map((team) => (
                       <li>
                         <a
-                          href={ploeg.url}
+                          href={team.url}
                           target="_blank"
                           rel="noopener"
                           class="block whitespace-nowrap py-1 text-sm font-medium hover:text-club-600"
                         >
-                          {ploeg.naam}
+                          {team.name}
                         </a>
                       </li>
                     ))}
@@ -87,23 +87,23 @@ const isActive = (href: string) => currentPath.startsWith(url(href).replace(/\/$
             </div>
             <a
               href={url('/competitie/')}
-              class="block whitespace-nowrap border-t border-inkt-950/10 px-5 py-3 text-sm font-semibold text-club-700 hover:bg-veer-100 hover:text-club-800"
+              class="block whitespace-nowrap border-t border-ink-950/10 px-5 py-3 text-sm font-semibold text-club-700 hover:bg-feather-100 hover:text-club-800"
             >
               Alle ploegen en info →
             </a>
           </div>
 
           {/* Mobiel: compacte ploeg-pillen onder de link */}
-          <ul class="ploegpillen">
-            {teams.ploegen.map((ploeg) => (
+          <ul class="team-pills">
+            {teams.teams.map((team) => (
               <li>
                 <a
-                  href={ploeg.url}
+                  href={team.url}
                   target="_blank"
                   rel="noopener"
-                  class="stem-baan block rounded-full border border-inkt-950/30 px-3 py-1.5 text-xs text-inkt-950 transition-colors hover:border-club-600 hover:text-club-600"
+                  class="type-label block rounded-full border border-ink-950/30 px-3 py-1.5 text-xs text-ink-950 transition-colors hover:border-club-600 hover:text-club-600"
                 >
-                  {ploeg.naam.replace('Landegem ', '')}
+                  {team.name.replace('Landegem ', '')}
                 </a>
               </li>
             ))}
@@ -112,7 +112,7 @@ const isActive = (href: string) => currentPath.startsWith(url(href).replace(/\/$
 
         {mainItems.map((item) => (
           <li>
-            <a href={url(item.href)} class:list={['navlink', isActive(item.href) && 'actief']}>
+            <a href={url(item.href)} class:list={['navlink', isActive(item.href) && 'active']}>
               {item.label}
             </a>
           </li>
@@ -120,17 +120,17 @@ const isActive = (href: string) => currentPath.startsWith(url(href).replace(/\/$
 
         {/* Club met submenu */}
         <li class="menu">
-          <a href={url('/club/over-de-club/')} class:list={['navlink', isActive('/club/') && 'actief']}>
+          <a href={url('/club/over-de-club/')} class:list={['navlink', isActive('/club/') && 'active']}>
             Club
             <svg class="chevron h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
             </svg>
           </a>
-          <span class="subnav-kop stem-baan px-3 pt-2 text-xs text-inkt-500">Club</span>
+          <span class="subnav-heading type-label px-3 pt-2 text-xs text-ink-500">Club</span>
           <ul class="subnav">
             {clubItems.map((item) => (
               <li>
-                <a href={url(item.href)} class:list={['subnavlink', isActive(item.href) && 'actief']}>
+                <a href={url(item.href)} class:list={['subnavlink', isActive(item.href) && 'active']}>
                   {item.label}
                 </a>
               </li>
@@ -138,10 +138,10 @@ const isActive = (href: string) => currentPath.startsWith(url(href).replace(/\/$
           </ul>
         </li>
 
-        <li class="word-lid">
+        <li class="join">
           <a
             href={url('/club/word-lid/')}
-            class="stem-baan block rounded-full bg-club-600 px-5 py-2.5 text-center text-xs text-white transition-colors hover:bg-club-700"
+            class="type-label block rounded-full bg-club-600 px-5 py-2.5 text-center text-xs text-white transition-colors hover:bg-club-700"
           >
             Word lid!
           </a>
@@ -163,8 +163,8 @@ const isActive = (href: string) => currentPath.startsWith(url(href).replace(/\/$
      wordt display hier volledig in CSS geregeld en niet half in klassen. */
 
   header {
-    --rand: color-mix(in srgb, var(--color-inkt-950) 10%, transparent);
-    --paneel-schaduw:
+    --edge: color-mix(in srgb, var(--color-ink-950) 10%, transparent);
+    --panel-shadow:
       0 10px 15px -3px rgb(0 0 0 / 0.1),
       0 4px 6px -4px rgb(0 0 0 / 0.1);
   }
@@ -179,26 +179,26 @@ const isActive = (href: string) => currentPath.startsWith(url(href).replace(/\/$
     /* 4rem is de hoogte van de balk: het paneel scrollt binnen wat overblijft. */
     max-height: calc(100vh - 4rem);
     overflow-y: auto;
-    border-bottom: 1px solid var(--rand);
-    background: var(--color-veer-50);
-    box-shadow: var(--paneel-schaduw);
+    border-bottom: 1px solid var(--edge);
+    background: var(--color-feather-50);
+    box-shadow: var(--panel-shadow);
   }
 
   #nav-toggle:checked ~ .nav {
     display: block;
   }
 
-  .icoon-sluit {
+  .icon-close {
     display: none;
   }
-  #nav-toggle:checked ~ .hamburger .icoon-open {
+  #nav-toggle:checked ~ .hamburger .icon-open {
     display: none;
   }
-  #nav-toggle:checked ~ .hamburger .icoon-sluit {
+  #nav-toggle:checked ~ .hamburger .icon-close {
     display: block;
   }
 
-  .lijst {
+  .list {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
@@ -222,12 +222,12 @@ const isActive = (href: string) => currentPath.startsWith(url(href).replace(/\/$
   .navlink:hover {
     color: var(--color-club-600);
   }
-  .navlink.actief {
+  .navlink.active {
     border-bottom-color: var(--color-club-500);
     color: var(--color-club-600);
   }
 
-  .subnav-kop {
+  .subnav-heading {
     display: block;
   }
 
@@ -239,28 +239,28 @@ const isActive = (href: string) => currentPath.startsWith(url(href).replace(/\/$
     font-weight: 500;
   }
   .subnavlink:hover {
-    background: var(--color-veer-100);
+    background: var(--color-feather-100);
     color: var(--color-club-600);
   }
-  .subnavlink.actief {
+  .subnavlink.active {
     color: var(--color-club-600);
   }
 
   /* Het ploegenpaneel is een hover-affordance; een telefoon heeft geen hover,
      daar staan de ploegen als pillen onder de link. */
-  .paneel,
+  .panel,
   .chevron {
     display: none;
   }
 
-  .ploegpillen {
+  .team-pills {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
     padding: 0 0.75rem 0.5rem 1.5rem;
   }
 
-  .word-lid {
+  .join {
     margin-top: 0.5rem;
   }
 
@@ -274,8 +274,8 @@ const isActive = (href: string) => currentPath.startsWith(url(href).replace(/\/$
 
   @media (width >= 64rem) {
     .hamburger,
-    .subnav-kop,
-    .ploegpillen {
+    .subnav-heading,
+    .team-pills {
       display: none;
     }
 
@@ -289,7 +289,7 @@ const isActive = (href: string) => currentPath.startsWith(url(href).replace(/\/$
       box-shadow: none;
     }
 
-    .lijst {
+    .list {
       flex-direction: row;
       align-items: center;
       padding: 0;
@@ -306,7 +306,7 @@ const isActive = (href: string) => currentPath.startsWith(url(href).replace(/\/$
     }
 
     /* Onzichtbaar maar wél gelayout, zodat de overgang iets heeft om te lopen. */
-    .paneel,
+    .panel,
     .subnav {
       position: absolute;
       top: 100%;
@@ -314,9 +314,9 @@ const isActive = (href: string) => currentPath.startsWith(url(href).replace(/\/$
       display: block;
       visibility: hidden;
       opacity: 0;
-      border: 1px solid var(--rand);
-      background: var(--color-veer-50);
-      box-shadow: var(--paneel-schaduw);
+      border: 1px solid var(--edge);
+      background: var(--color-feather-50);
+      box-shadow: var(--panel-shadow);
       transition:
         opacity 0.15s,
         visibility 0.15s;
@@ -330,8 +330,8 @@ const isActive = (href: string) => currentPath.startsWith(url(href).replace(/\/$
       padding-block: 0.25rem;
     }
 
-    .menu:hover > .paneel,
-    .menu:focus-within > .paneel,
+    .menu:hover > .panel,
+    .menu:focus-within > .panel,
     .menu:hover > .subnav,
     .menu:focus-within > .subnav {
       visibility: visible;
@@ -342,7 +342,7 @@ const isActive = (href: string) => currentPath.startsWith(url(href).replace(/\/$
       padding-left: 1rem;
     }
 
-    .word-lid {
+    .join {
       margin-top: 0;
       margin-left: 0.75rem;
     }

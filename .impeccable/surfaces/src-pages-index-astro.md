@@ -11,7 +11,7 @@ related_targets: []
 
 **Publiek & taak:** kandidaat-leden uit Nevele/Deinze beslissen om een proefbeurt te doen of lid te worden; bestaande leden vinden binnen seconden wanneer/waar gespeeld wordt en wat er binnenkort gebeurt.
 
-**Actie & bewijs:** primair "Word lid!" (Twizzit) en "kom vrijblijvend proberen"; bewijs = echte speeluren (trainingen.json), echte events (Google Calendar, sectie verdwijnt stil bij leegte), echte clubfoto (hero.jpg), clubgeschiedenis sinds 1987.
+**Actie & bewijs:** primair "Word lid!" (Twizzit) en "kom vrijblijvend proberen"; bewijs = echte speeluren (trainings.json), echte events (Google Calendar, sectie verdwijnt stil bij leegte), echte clubfoto (hero.jpg), clubgeschiedenis sinds 1987.
 
 **Gekozen richting:** "De Shuttle" (seed fc2b4f50, code-first, gekozen op de beslispagina). De anatomie van de shuttle bestuurt de pagina: kurk (vertrekpunt/CTA), rode band (full-bleed rode banen, clubrood #eb4024), verenkrans (radiale vlakgeometrie op strak raster), vluchtbaan (één doorlopende rode lijn die de pagina doorloopt en echte data draagt). Raises: één rode draad (cape), lijn draagt echte data (herkomstlint), alle beweging volgt shuttlevlucht-fysica (ebru), rasterdiscipline (man-machine).
 

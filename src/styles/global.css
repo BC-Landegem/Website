@@ -15,20 +15,20 @@
   --color-club-900: #541309;
 
   /* De Shuttle: veer (grond), inkt (leer/basis), kurk (accent) */
-  --color-veer-50: #faf7f1;
-  --color-veer-100: #f2ecdf;
-  --color-veer-200: #e6dcc8;
-  --color-inkt-500: #6b5c50;
-  --color-inkt-700: #493c33;
-  --color-inkt-950: #1b1410;
-  --color-kurk-300: #ddb887;
-  --color-kurk-400: #cf9a5f;
-  --color-kurk-600: #a97438;
+  --color-feather-50: #faf7f1;
+  --color-feather-100: #f2ecdf;
+  --color-feather-200: #e6dcc8;
+  --color-ink-500: #6b5c50;
+  --color-ink-700: #493c33;
+  --color-ink-950: #1b1410;
+  --color-cork-300: #ddb887;
+  --color-cork-400: #cf9a5f;
+  --color-cork-600: #a97438;
 
   --font-sans: "Archivo", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
 
   /* Vluchtfysica: lancering (explosief uit, dan hangen) en drop (val) */
-  --ease-lancering: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-launch: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-drop: cubic-bezier(0.55, 0, 0.55, 1);
 }
 
@@ -42,7 +42,7 @@ html {
   /* De header is sticky (~4rem): anchors mogen er niet onder landen */
   scroll-padding-top: 5rem;
   caret-color: var(--color-club-500);
-  scrollbar-color: var(--color-inkt-500) var(--color-veer-100);
+  scrollbar-color: var(--color-ink-500) var(--color-feather-100);
 }
 
 :focus-visible {
@@ -56,7 +56,7 @@ a {
 }
 
 /* Typestemmen van de shuttle-wereld: één familie, drie breedtes */
-.stem-display {
+.type-display {
   font-variation-settings: "wdth" 125;
   font-weight: 900;
   text-transform: uppercase;
@@ -68,7 +68,7 @@ a {
   overflow-wrap: break-word;
 }
 
-/* Paginakop op de rail (h1 van RailKop en de losse paginakoppen). Nederlandse
+/* Paginakop op de rail (h1 van RailHeading en de losse paginakoppen). Nederlandse
    samenstellingen zijn lang: AANSPREEKPUNT is op text-4xl 344px breed, terwijl
    een telefoon van 360px na px-4 en de rail-inspringing (pl-10) maar 288px
    kolom overhoudt — de kop liep buiten beeld. De kop schaalt daarom onder de
@@ -77,25 +77,25 @@ a {
    past — PRIVACYVERKLARING is bijna 12px breed per pixel korps — krijgt een
    koppelteken van de Nederlandse afbreekregels in plaats van een afgesneden
    woord. */
-.kop-pagina {
+.page-heading {
   font-size: clamp(1.5rem, 8vw, 2.25rem);
   hyphens: auto;
 }
 
 @media (width >= 40rem) {
-  .kop-pagina {
+  .page-heading {
     font-size: 3rem;
   }
 }
 
-.stem-baan {
+.type-label {
   font-variation-settings: "wdth" 110;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
 
-.stem-cijfer {
+.type-numeral {
   font-variation-settings: "wdth" 112;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
@@ -105,15 +105,15 @@ a {
 /* Vluchtmotoriek: elementen vallen als een shuttle — van boven, kort, beslist.
    Gegate achter een .js-klasse zodat de inhoud zonder JavaScript gewoon zichtbaar is. */
 @media (prefers-reduced-motion: no-preference) {
-  .js .vlucht {
+  .js .flight {
     opacity: 0;
     transform: translateY(-1.25rem);
   }
-  .js .vlucht.geland {
+  .js .flight.landed {
     opacity: 1;
     transform: none;
     transition:
-      opacity 0.45s var(--ease-lancering),
+      opacity 0.45s var(--ease-launch),
       transform 0.6s var(--ease-drop);
   }
 }
