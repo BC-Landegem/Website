@@ -118,7 +118,7 @@ const fotoSnedes = [
            (zie lib/draad.ts) — dat midden ligt in de pluim, niet in de naam. */}
       <div
         id="shuttle-glyph"
-        class="pointer-events-none absolute right-[5%] top-16 -z-[1] w-20 overflow-visible sm:top-20 sm:w-28 min-[900px]:top-16 min-[900px]:w-44"
+        class="pointer-events-none absolute right-[5%] top-8 -z-[1] w-20 overflow-visible min-[900px]:top-16 min-[900px]:w-44"
         aria-hidden="true"
       >
         <picture>
@@ -143,7 +143,12 @@ const fotoSnedes = [
         Word lid!
       </a>
 
-      <div class="mx-auto w-full max-w-6xl px-4 pb-44 pt-24 sm:pb-52 md:py-24">
+      {/* pt-32 + pluim op top-8, allebei tot 900px: samen 13px vrije band boven
+           de kop, ook wanneer de hero-inhoud hoger is dan 88vh en de verticale
+           centrering wegvalt (telefoons, ook in landscape) — anders schuift de
+           titel achter de pluim. Vanaf 900px draagt de hero het volledige logo
+           en ligt de rechterbovenhoek horizontaal vrij (zie hierboven). */}
+      <div class="mx-auto w-full max-w-6xl px-4 pb-44 pt-32 sm:pb-52 md:pb-24 min-[900px]:pt-24">
         <div class="max-w-3xl md:ml-[22%]">
           <h1 class="stem-display text-inkt-950">
             <span class="block text-[clamp(2rem,10.2vw,3rem)] sm:text-6xl lg:text-7xl">Badminton</span>
