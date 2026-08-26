@@ -104,20 +104,34 @@ const fotoSnedes = [
         ))}
       </svg>
 
-      {/* De shuttle op het hangmoment, neus in vliegrichting. Eigen SVG los van de
-           verenkrans, zodat hij op elke viewporthoogte zichtbaar blijft (draad-anker). */}
-      <svg
+      {/* Het clublogo: statisch op het hangmoment, achter de hero-inhoud maar vóór
+           de rode vluchtlijn (zie z-index op #pagina). Vanaf 900px staat het
+           volledige logo er — pluim mét de getekende clubnaam — zodat het
+           hangmoment een clubsignatuur is en niet enkel een mikpunt voor de draad.
+           Het moet daarvoor groot en rechtop staan: op pluimmaat wordt de
+           getekende naam een veeg, en gekanteld leest hij niet. Die 900px is
+           nagemeten, niet gekozen: de herokop springt vanaf md in met ml-[22%] en
+           meet op text-6xl zo'n 470px, dus pas rond 900px ligt de rechterbovenhoek
+           vrij. Smaller draagt de hero de losse pluim in zijn oude stand. In beide
+           bestanden staat de pluim op dezelfde plek in het kader, dus het
+           hangmoment verschuift niet mee. De draad landt op het midden van deze box
+           (zie lib/draad.ts) — dat midden ligt in de pluim, niet in de naam. */}
+      <div
         id="shuttle-glyph"
-        class="absolute right-[5%] top-16 w-16 overflow-visible sm:top-20 sm:w-24"
-        viewBox="-16 -24 70 50"
+        class="pointer-events-none absolute right-[5%] top-16 -z-[1] w-20 overflow-visible sm:top-20 sm:w-28 min-[900px]:top-16 min-[900px]:w-44"
         aria-hidden="true"
       >
-        <g transform="rotate(-8)"><g class="vlucht" style="transition-delay: 1.4s">
-          <path d="M 8 0 L 44 -16 L 40 -6 L 46 -4 L 42 3 L 47 6 L 41 12 L 44 18 L 8 0 Z" fill="var(--color-veer-50)" stroke="var(--color-inkt-950)" stroke-width="2" stroke-linejoin="round" />
-          <circle cx="0" cy="0" r="10" fill="var(--color-kurk-400)" stroke="var(--color-inkt-950)" stroke-width="2" />
-          <path d="M -10 0 A 10 10 0 0 0 10 0 Z" fill="var(--color-club-500)" />
-        </g></g>
-      </svg>
+        <picture>
+          <source media="(min-width: 900px)" srcset={url('/images/logo-bc1.svg')} />
+          <img
+            src={url('/images/logo-pluim.svg')}
+            alt=""
+            width="516"
+            height="538"
+            class="h-full w-full -rotate-12 object-contain min-[900px]:rotate-0"
+          />
+        </picture>
+      </div>
 
       {/* Het kurkpunt is de primaire actie: Word lid! zit op de kurk */}
       <a
@@ -399,9 +413,9 @@ const fotoSnedes = [
       </div>
     </section>
 
-    {/* De vluchtdraad: één doorlopende rode lijn van kurk tot slot, getekend met de
-         scroll. Hij loopt achter de inhoud en duikt onder de rode band door. */}
-    <svg id="draad" class="pointer-events-none absolute inset-0 -z-[1] h-full w-full" aria-hidden="true">
+    {/* De vluchtdraad: één doorlopende rode lijn van kurk tot slot, altijd zichtbaar.
+         Hij loopt achter de inhoud en duikt onder de rode band door. */}
+    <svg id="draad" class="pointer-events-none absolute inset-0 -z-[2] h-full w-full" aria-hidden="true">
       <path id="draad-kern" fill="none" stroke="var(--color-club-500)" stroke-width="4" stroke-linecap="round" />
     </svg>
   </div>

@@ -1,7 +1,5 @@
 // De vluchtdraad op de homepage: één doorlopende rode lijn van kurk tot slot,
-// getekend naarmate de bezoeker scrolt. Plus de landing-animatie (.vlucht →
-// .geland) via een IntersectionObserver. Zonder JS is er geen draad, maar alle
-// inhoud blijft gewoon zichtbaar.
+// met de scroll getekend. De pluim staat statisch in de hero (puur CSS).
 
 // Alle DOM-ankers van de draad op één plek: hernoem je een id in index.astro,
 // dan is dit de inventaris die mee moet.
@@ -23,12 +21,11 @@ const IDS = {
 } as const;
 
 // Onder md staat alle tekst in één volle kolom (px-4): de diagonaal van kurk
-// naar shuttle zou dwars door koppen en lopende tekst snijden. In plaats van
+// naar de shuttle zou dwars door koppen en lopende tekst snijden. In plaats van
 // eromheen te sluipen langs de schermranden — dat leest als een kader, niet als
 // een vlucht — vliegt de baan daar dezelfde parabool in miniatuur: uit de kurk
 // omhoog, een hangmoment in de vrije band onder de tekst, en rechts weer neer
-// de rode band in, waar rood op rood de oversteek naar de rail verbergt. De
-// shuttle-glyph hangt op mobiel los in de lucht, vóór de draad uit.
+// de rode band in, waar rood op rood de oversteek naar de rail verbergt.
 const SMAL_TOT = 768;
 // Baan in de buitenmarge: de tekstkolom begint op px-4 (16px), de draad (4px)
 // blijft er met zijn hele dikte links van.
@@ -40,12 +37,30 @@ function middenVan(el: Element, wrect: DOMRect) {
 }
 
 /**
- * Start de landing-animatie en de vluchtdraad. Geeft `herbouw` terug zodat
- * dataloaders de draad kunnen herberekenen wanneer secties van hoogte
- * veranderen of dichtklappen.
+ * Meet de baan uit in monsters (paginahoogte → afgelegde lengte). De staart
+ * leeft in slot-lokale coördinaten, dus schuift `slotTop` erbij.
+ */
+function meetBaan(kern: SVGPathElement, staart: SVGPathElement, slotTop: number) {
+  const kernLengte = kern.getTotalLength();
+  const staartLengte = staart.getTotalLength();
+  const monsters: { y: number; len: number }[] = [];
+  for (let i = 0; i <= 240; i++) {
+    const len = (kernLengte * i) / 240;
+    monsters.push({ y: kern.getPointAtLength(len).y, len });
+  }
+  for (let i = 0; i <= 40; i++) {
+    const len = (staartLengte * i) / 40;
+    monsters.push({ y: slotTop + staart.getPointAtLength(len).y, len: kernLengte + len });
+  }
+  return { kernLengte, staartLengte, monsters };
+}
+
+/**
+ * Start de landing-animatie (.vlucht → .geland) en bouwt de vluchtdraad.
+ * Geeft `herbouw` terug zodat dataloaders de draad kunnen herberekenen wanneer
+ * secties van hoogte veranderen of dichtklappen.
  */
 export function initDraad(): { herbouw: () => void } {
-  // — Elementen laten neerdalen zodra ze in beeld komen —
   const kijker = new IntersectionObserver(
     (entries) => {
       for (const entry of entries) {
@@ -63,9 +78,12 @@ export function initDraad(): { herbouw: () => void } {
   const kern = document.getElementById(IDS.kern) as SVGPathElement | null;
   const staart = document.getElementById(IDS.staart) as SVGPathElement | null;
   const rustig = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Hoogtes langs de baan (y → afgelegde lengte): per scrollstand weten we zo
+  // hoeveel draad er getekend mag zijn.
   let monsters: { y: number; len: number }[] = [];
   let kernLengte = 0;
   let staartLengte = 0;
+  let totaleLengte = 0;
 
   function bouwDraad() {
     const kurk = document.getElementById(IDS.kurk);
@@ -78,7 +96,6 @@ export function initDraad(): { herbouw: () => void } {
 
     const wrect = wrapper.getBoundingClientRect();
     const K = middenVan(kurk, wrect);
-    const kurkStraal = kurk.getBoundingClientRect().width / 2;
     const G = middenVan(glyph, wrect);
     const urect = uren.getBoundingClientRect();
     const railX = urect.left - wrect.left + 6;
@@ -104,34 +121,18 @@ export function initDraad(): { herbouw: () => void } {
     const brect = bandEl?.getBoundingClientRect();
     const bandTop = brect ? brect.top - wrect.top : railStart - 360;
     const bandOnder = brect ? brect.bottom - wrect.top : railStart - 120;
-
-    // Onderkant van de herokolom: daaronder ligt de vrije band met de
-    // verenkrans, waar de miniatuurparabool zijn hele vlucht in kwijt kan.
-    const heroSlotEl = document.getElementById(IDS.heroSlot);
-    const valY = heroSlotEl
-      ? heroSlotEl.getBoundingClientRect().bottom - wrect.top + 24
-      : K.y - 80;
-    // Het hangmoment: zo hoog als de vrije band toelaat (nooit ín de tekst) en
-    // altijd ruim boven de kurk, anders is het geen boog meer maar een deuk.
-    const hangY = Math.min(Math.max(valY, K.y - 190), K.y - kurkStraal - 30);
-    // De val komt precies onder de shuttle-glyph neer: die hangt op mobiel los
-    // in de lucht, en deze uitlijning maakt hem het punt waar de baan heen wijst
-    // in plaats van een losse versiering. Blijft binnen beeld op elke breedte.
+    // De val na het hangmoment: x blijft bij de pluim, y duikt de rode band in.
     const invalX = Math.min(wrect.width - 34, Math.max(wrect.width * 0.72, G.x));
-    // Asymmetrisch zoals een echte shuttlebaan: de klim beslaat ruim de helft
-    // van de vrije breedte, de val is korter en dus steiler.
-    const hangX = K.x + (invalX - K.x) * 0.56;
 
     kern.setAttribute(
       'd',
       smal
         ? [
             `M ${K.x} ${K.y}`,
-            // lancering: steil uit de kurk, pas laat uitvlakkend — dat maakt de
-            // top een hangmoment in plaats van een regenboog
-            `C ${K.x + 24} ${K.y - (K.y - hangY) * 0.66}, ${hangX - 74} ${hangY}, ${hangX} ${hangY}`,
+            // Mini-parabool in de buitenmarge; eindpunt is het midden van de pluim (G).
+            `C ${K.x + 24} ${K.y - (K.y - G.y) * 0.66}, ${G.x - 74} ${G.y}, ${G.x} ${G.y}`,
             // de val: kort over de top, dan bijna verticaal de rode band in
-            `C ${hangX + 52} ${hangY}, ${invalX} ${Math.min(hangY + 44, bandTop)}, ${invalX} ${bandTop + 18}`,
+            `C ${G.x + 52} ${G.y}, ${invalX} ${Math.min(G.y + 44, bandTop)}, ${invalX} ${bandTop + 18}`,
             // binnen de band (rood op rood) steekt hij onzichtbaar over naar de rail
             `C ${invalX} ${bandOnder - 20}, ${railX} ${bandTop + 20}, ${railX} ${bandOnder + 24}`,
             `L ${railX} ${J.y}`,
@@ -165,39 +166,37 @@ export function initDraad(): { herbouw: () => void } {
       staart.setAttribute('d', `M ${staartX} 0 C ${staartX} ${landY * 0.7}, ${landX - 120} ${landY - 40}, ${landX} ${landY}`);
     }
 
-    kernLengte = kern.getTotalLength();
-    staartLengte = staart.getTotalLength();
-    monsters = [];
-    for (let i = 0; i <= 240; i++) {
-      const len = (kernLengte * i) / 240;
-      monsters.push({ y: kern.getPointAtLength(len).y, len });
-    }
-    for (let i = 0; i <= 40; i++) {
-      const len = (staartLengte * i) / 40;
-      monsters.push({ y: slotTop + staart.getPointAtLength(len).y, len: kernLengte + len });
-    }
+    ({ kernLengte, staartLengte, monsters } = meetBaan(kern, staart, slotTop));
+    totaleLengte = kernLengte + staartLengte;
+
     if (rustig) {
       kern.style.strokeDasharray = staart.style.strokeDasharray = 'none';
       kern.style.strokeDashoffset = staart.style.strokeDashoffset = '0';
     } else {
+      // Eén streep zo lang als het pad: de offset schuift hem naar binnen.
       kern.style.strokeDasharray = String(kernLengte + 2);
       staart.style.strokeDasharray = String(staartLengte + 2);
       tekenDraad();
     }
   }
 
+  /**
+   * Tekent de draad tot waar de scroll staat: alles boven de leeslijn (85% van
+   * het beeld) is gevlogen, de rest wacht.
+   */
   function tekenDraad() {
     if (!wrapper || !kern || !staart || !monsters.length) return;
-    // Tot net boven de onderrand: het diepste punt van de baan is de kurk, en
-    // die staat op mobiel onderaan het eerste scherm. Met een ruimere marge
-    // (0.85 van de hoogte) viel de lancering op veel toestellen buiten beeld en
-    // bleef de draad onzichtbaar tot je scrolde.
-    const zichtbaarTot = -wrapper.getBoundingClientRect().top + window.innerHeight - 32;
+    const zichtbaarTot = -wrapper.getBoundingClientRect().top + window.innerHeight * 0.85;
     let len = 0;
     for (const m of monsters) {
       if (m.y > zichtbaarTot) break;
       len = m.len;
     }
+    // De hero komt leeg binnen. Het kurkpunt staat in het eerste beeld, dus de
+    // leeslijn hierboven zou de hele klim al bij scrollstand 0 tekenen; deze
+    // poort laat de vlucht pas lopen naarmate je scrollt en staat na één beeld
+    // scrollen helemaal open, waarna de leeslijn weer alleen beslist.
+    len = Math.min(len, totaleLengte * Math.min(1, window.scrollY / window.innerHeight));
     kern.style.strokeDashoffset = String(Math.max(0, kernLengte - len));
     staart.style.strokeDashoffset = String(Math.max(0, staartLengte - Math.max(0, len - kernLengte)));
   }
