@@ -1,0 +1,21 @@
+---
+// Tekstlink in clubrood, zoals hij door de lopende tekst van de hele site
+// loopt. Stond op 28 plaatsen als dezelfde vier utilities uitgeschreven.
+interface Props {
+  href: string;
+  /** Extra klassen, bv. `stem-baan text-sm` voor een link in een labelrij. */
+  class?: string;
+  [key: string]: unknown;
+}
+
+const { href, class: extra, ...rest } = Astro.props;
+
+// Een externe link opent in een nieuw tabblad; mailto: en interne links (die
+// via url() altijd met een slash beginnen) blijven in hetzelfde venster.
+const extern = /^https?:/.test(href);
+const doel = extern ? { target: '_blank', rel: 'noopener' } : {};
+---
+
+{/* Alles op één regel: dit is een inline link in lopende tekst, een newline
+    rond de slot zou als spatie voor de punt of komma erna renderen. */}
+<a href={href} class:list={['font-semibold text-club-700 underline hover:text-club-800', extra]} {...doel} {...rest}><slot /></a>

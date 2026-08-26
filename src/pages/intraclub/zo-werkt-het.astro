@@ -1,5 +1,8 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import Kop from '../../components/Kop.astro';
+import Pil from '../../components/Pil.astro';
+import Punt from '../../components/Punt.astro';
 import RailKop from '../../components/RailKop.astro';
 import { url } from '../../lib/url';
 import voorbeeld from '../../data/intraclub-voorbeeld.json';
@@ -136,10 +139,9 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
       {/* ─────────────────────────── STAP 1 ─────────────────────────── */}
       <section class="relative pl-10">
         <span class="absolute -top-16 bottom-0 left-[6px] w-1 -translate-x-1/2 bg-club-500" aria-hidden="true"></span>
-        <span class="absolute left-[6px] top-2 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-club-500 ring-4 ring-veer-50" aria-hidden="true"></span>
+        <Punt top="top-2" />
 
-        <p class="stem-baan text-xs text-club-700">Stap 1 · vóór 20u30</p>
-        <h2 class="stem-display mt-1 text-3xl text-inkt-950 sm:text-4xl">Je meldt je aan</h2>
+        <Kop bovenkop="Stap 1 · vóór 20u30">Je meldt je aan</Kop>
         <p class="mt-4 max-w-2xl text-inkt-700">
           In de sporthal staat een tablet. Wie meespeelt, tikt zijn naam aan. Om 20u30 gaat de lijst
           dicht en staat vast wie er die avond bij is.
@@ -177,10 +179,9 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
       {/* ─────────────────────────── STAP 2 ─────────────────────────── */}
       <section class="relative pl-10">
         <span class="absolute -top-16 bottom-0 left-[6px] w-1 -translate-x-1/2 bg-club-500" aria-hidden="true"></span>
-        <span class="absolute left-[6px] top-2 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-club-500 ring-4 ring-veer-50" aria-hidden="true"></span>
+        <Punt top="top-2" />
 
-        <p class="stem-baan text-xs text-club-700">Stap 2 · 20u30</p>
-        <h2 class="stem-display mt-1 text-3xl text-inkt-950 sm:text-4xl">De loting</h2>
+        <Kop bovenkop="Stap 2 · 20u30">De loting</Kop>
         <p class="mt-4 max-w-2xl text-inkt-700">
           De aanwezigen worden op sterkte gezet en in twee groepen verdeeld. Elke groep beslaat 60% van
           de aanwezigen: de eerste groep vanaf de best gerangschikte speler naar beneden, de tweede groep vanaf de laatst gerangschikte speler naar boven. Wie in de middelste
@@ -308,10 +309,9 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
       {/* ─────────────────────────── STAP 3 ─────────────────────────── */}
       <section class="relative pl-10">
         <span class="absolute -top-16 bottom-0 left-[6px] w-1 -translate-x-1/2 bg-club-500" aria-hidden="true"></span>
-        <span class="absolute left-[6px] top-2 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-club-500 ring-4 ring-veer-50" aria-hidden="true"></span>
+        <Punt top="top-2" />
 
-        <p class="stem-baan text-xs text-club-700">Stap 3 · op de baan</p>
-        <h2 class="stem-display mt-1 text-3xl text-inkt-950 sm:text-4xl">Drie sets, elke keer een ander duo</h2>
+        <Kop bovenkop="Stap 3 · op de baan">Drie sets, elke keer een ander duo</Kop>
         <p class="mt-4 max-w-2xl text-inkt-700">
           Op je baan staan vier spelers en er worden drie sets gespeeld. Met elk van de drie anderen
           speel je één set samen, tegen elk van hen speel je twee sets. Wie je partner is, weegt dus
@@ -349,15 +349,13 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
           <div class="px-4 py-5">
             <div class="flex flex-wrap gap-2" role="tablist" aria-label="Set">
               {[0, 1, 2].map((set) => (
-                <button
-                  type="button"
+                <Pil
                   role="tab"
                   data-set-tab={set}
                   aria-selected={set === 0 ? 'true' : 'false'}
-                  class="stem-baan rounded-full border-2 border-inkt-950/20 px-4 py-1.5 text-xs text-inkt-700 transition-colors hover:border-club-600 hover:text-club-600 aria-selected:border-club-600 aria-selected:bg-club-600 aria-selected:text-white"
                 >
                   Set {set + 1}
-                </button>
+                </Pil>
               ))}
             </div>
 
@@ -426,10 +424,9 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
       {/* ─────────────────────────── STAP 4 ─────────────────────────── */}
       <section class="relative pl-10">
         <span class="absolute -top-16 bottom-0 left-[6px] w-1 -translate-x-1/2 bg-club-500" aria-hidden="true"></span>
-        <span class="absolute left-[6px] top-2 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-club-500 ring-4 ring-veer-50" aria-hidden="true"></span>
+        <Punt top="top-2" />
 
-        <p class="stem-baan text-xs text-club-700">Stap 4 · na de laatste shuttle</p>
-        <h2 class="stem-display mt-1 text-3xl text-inkt-950 sm:text-4xl">Van uitslag naar stand</h2>
+        <Kop bovenkop="Stap 4 · na de laatste shuttle">Van uitslag naar stand</Kop>
         <p class="mt-4 max-w-2xl text-inkt-700">
           De uitslagen gaan in de tablet en daarna wordt de hele stand opnieuw berekend. Niet op
           gewonnen matchen, wel op <strong class="font-bold">punten per set</strong>: je cijfer voor
@@ -453,15 +450,14 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
 
                 <div class="flex flex-wrap gap-1 justify-self-start" role="group" aria-label={`Uitslag set ${set + 1}`}>
                   {['gewonnen', 'verloren'].map((soort) => (
-                    <button
-                      type="button"
+                    <Pil
+                      maat="klein"
                       data-uitslag={set}
                       data-soort={soort}
                       aria-pressed={(soort === 'gewonnen') === setstand.gewonnen ? 'true' : 'false'}
-                      class="stem-baan rounded-full border-2 border-inkt-950/20 px-3 py-1 text-[0.65rem] text-inkt-700 transition-colors hover:border-club-600 hover:text-club-600 aria-pressed:border-club-600 aria-pressed:bg-club-600 aria-pressed:text-white"
                     >
                       {soort === 'gewonnen' ? 'Gewonnen' : 'Verloren'}
-                    </button>
+                    </Pil>
                   ))}
                 </div>
 
@@ -571,10 +567,10 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
       {/* ─────────────────────────── SLOT ─────────────────────────── */}
       <section class="relative pl-10">
         <span class="absolute -top-16 bottom-2 left-[6px] w-1 -translate-x-1/2 rounded-full bg-club-500" aria-hidden="true"></span>
-        <span class="absolute left-[6px] top-2 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-club-500 ring-4 ring-veer-50" aria-hidden="true"></span>
+        <Punt top="top-2" />
         <span class="absolute bottom-0 left-[6px] h-2 w-2 -translate-x-1/2 rounded-full bg-club-500" aria-hidden="true"></span>
 
-        <h2 class="stem-display text-3xl text-inkt-950 sm:text-4xl">En nu?</h2>
+        <Kop>En nu?</Kop>
 
         <div class="mt-6 grid gap-4 pb-10 sm:grid-cols-2">
           <div class="border-2 border-inkt-950 p-5">

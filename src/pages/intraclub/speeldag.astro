@@ -1,12 +1,13 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import Punt from '../../components/Punt.astro';
 import { url } from '../../lib/url';
 ---
 
 <Layout title="Intraclub speeldag" description="De uitslagen van een intraclub-speeldag van BC Landegem.">
   <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
     <div class="relative pl-10">
-      <span class="absolute left-[6px] top-11 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-club-500 ring-4 ring-veer-50" aria-hidden="true"></span>
+      <Punt top="top-11" />
       <span class="absolute bottom-1 left-[6px] top-[3.75rem] w-1 -translate-x-1/2 rounded-full bg-club-500" aria-hidden="true"></span>
       <span class="absolute bottom-0 left-[6px] h-2 w-2 -translate-x-1/2 rounded-full bg-club-500" aria-hidden="true"></span>
       <p>
@@ -30,7 +31,7 @@ import { url } from '../../lib/url';
     </div>
 
     <p id="speeldag-laden" class="mt-10 flex items-center gap-3 pl-10 text-sm font-medium text-inkt-500" aria-live="polite">
-      <span class="h-3.5 w-3.5 rounded-full bg-club-500 ring-4 ring-veer-50 motion-safe:animate-pulse" aria-hidden="true"></span>
+      <Punt klopt />
       Uitslagen laden…
     </p>
 

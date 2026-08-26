@@ -1,5 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import Kop from '../components/Kop.astro';
+import Link from '../components/Link.astro';
+import Punt from '../components/Punt.astro';
 import ArchiefLink from '../components/ArchiefLink.astro';
 import RailKop from '../components/RailKop.astro';
 import { url } from '../lib/url';
@@ -42,9 +45,8 @@ const drempel = [
       <span class="absolute bottom-12 left-[6px] top-12 w-1 -translate-x-1/2 rounded-full bg-club-500" aria-hidden="true"></span>
 
       <li class="relative border-b border-inkt-950/10 py-10 pl-10 first:border-t">
-        <span class="absolute left-[6px] top-12 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-club-500 ring-4 ring-veer-50" aria-hidden="true"></span>
-        <p class="stem-baan text-xs text-club-700">Woensdagavond</p>
-        <h2 class="stem-display mt-1 text-3xl text-inkt-950 sm:text-4xl">De eerste keer</h2>
+        <Punt top="top-12" />
+        <Kop bovenkop="Woensdagavond">De eerste keer</Kop>
         <p class="stem-cijfer mt-2 text-2xl text-inkt-950">19u00 – 20u00</p>
 
         <div class="mt-5 max-w-3xl space-y-4 leading-relaxed text-inkt-700">
@@ -74,7 +76,7 @@ const drempel = [
           Blijft je kind spelen, dan kost dat <strong class="text-inkt-950">120 € voor een heel
           jaar</strong>. Daar zitten de trainingen en alle vrije speelmomenten in, hoe vaak het ook
           komt.
-           <a href={url('/club/word-lid/')} class="font-semibold text-club-700 underline hover:text-club-800">Alles over lid worden</a>.
+           <Link href={url('/club/word-lid/')}>Alles over lid worden</Link>.
         </p>
 
         <p class="mt-4 max-w-3xl leading-relaxed text-inkt-700">
@@ -87,9 +89,8 @@ const drempel = [
       </li>
 
       <li class="relative border-b border-inkt-950/10 py-10 pl-10">
-        <span class="absolute left-[6px] top-12 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-club-500 ring-4 ring-veer-50" aria-hidden="true"></span>
-        <p class="stem-baan text-xs text-club-700">September</p>
-        <h2 class="stem-display mt-1 text-3xl text-inkt-950 sm:text-4xl">Van woensdag naar zaterdag</h2>
+        <Punt top="top-12" />
+        <Kop bovenkop="September">Van woensdag naar zaterdag</Kop>
 
         <div class="mt-5 max-w-3xl space-y-4 leading-relaxed text-inkt-700">
           <p>
@@ -118,9 +119,8 @@ const drempel = [
       </li>
 
       <li class="relative border-b border-inkt-950/10 py-10 pl-10">
-        <span class="absolute left-[6px] top-12 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-club-500 ring-4 ring-veer-50" aria-hidden="true"></span>
-        <p class="stem-baan text-xs text-club-700">Zaterdagvoormiddag</p>
-        <h2 class="stem-display mt-1 text-3xl text-inkt-950 sm:text-4xl">Training in groep 1 of 2</h2>
+        <Punt top="top-12" />
+        <Kop bovenkop="Zaterdagvoormiddag">Training in groep 1 of 2</Kop>
 
         <div class="mt-5 grid max-w-md gap-3 sm:grid-cols-2">
           <p class="border-l-4 border-club-500 pl-4">
@@ -151,9 +151,8 @@ const drempel = [
       </li>
 
       <li class="relative border-b border-inkt-950/10 py-10 pl-10">
-        <span class="absolute left-[6px] top-12 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-club-500 ring-4 ring-veer-50" aria-hidden="true"></span>
-        <p class="stem-baan text-xs text-club-700">Het hele jaar</p>
-        <h2 class="stem-display mt-1 text-3xl text-inkt-950 sm:text-4xl">Meer dan die ene training</h2>
+        <Punt top="top-12" />
+        <Kop bovenkop="Het hele jaar">Meer dan die ene training</Kop>
 
         <div class="mt-5 max-w-3xl space-y-4 leading-relaxed text-inkt-700">
           <p>
@@ -176,7 +175,7 @@ const drempel = [
           </p>
           <p>
             Onderaan deze pagina leggen we uit
-             <a href="#jeugdcup" class="font-semibold text-club-700 underline hover:text-club-800">hoe de Jeugdcup werkt</a>.
+             <Link href="#jeugdcup">hoe de Jeugdcup werkt</Link>.
           </p>
         </div>
       </li>
@@ -184,7 +183,7 @@ const drempel = [
 
     {/* Vertrouwen: een ouder die een kind afzet, wil weten wie er staat. */}
     <section class="mt-14 max-w-3xl pl-10">
-      <h2 class="stem-display text-2xl text-inkt-950 sm:text-3xl">Bij wie je terechtkan</h2>
+      <Kop maat="klein">Bij wie je terechtkan</Kop>
       <div class="mt-4 space-y-4 leading-relaxed text-inkt-700">
         <p>
           De jeugd wordt begeleid door trainers uit de club zelf. Je ziet ze elke week aan de
@@ -192,15 +191,15 @@ const drempel = [
            <strong class="text-inkt-950">Luc Van Tornhout</strong> is onze
           jeugdverantwoordelijke en je vaste aanspreekpunt. Je vindt hem tijdens de trainingsuren in
            {locatie.naam} (zie
-          de <a href={url('/kalender/')} class="font-semibold text-club-700 underline hover:text-club-800">kalender</a>),
-          of je mailt hem op <a href={LUC} class="font-semibold text-club-700 underline hover:text-club-800">vantornhoutluc@skynet.be</a>.
+          de <Link href={url('/kalender/')}>kalender</Link>),
+          of je mailt hem op <Link href={LUC}>vantornhoutluc@skynet.be</Link>.
         </p>
         <p>
           Hoe we met elkaar omgaan, staat zwart op wit in
-          onze <a href={url('/club/gedragscode/')} class="font-semibold text-club-700 underline hover:text-club-800">gedragscode</a>. Zit
+          onze <Link href={url('/club/gedragscode/')}>gedragscode</Link>. Zit
           je met een vraag die je liever niet bij de trainer legt, of loopt er toch iets fout, dan
           kan je terecht bij
-          ons <a href={url('/club/aanspreekpunt-integriteit/')} class="font-semibold text-club-700 underline hover:text-club-800">Aanspreekpunt Integriteit</a>.
+          ons <Link href={url('/club/aanspreekpunt-integriteit/')}>Aanspreekpunt Integriteit</Link>.
         </p>
       </div>
     </section>
@@ -210,7 +209,7 @@ const drempel = [
   <section class="border-y-8 border-club-800 bg-club-600 text-white">
     <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-6 px-4 py-12">
       <div class="flex-[1_1_26rem]">
-        <h2 class="stem-display text-3xl sm:text-4xl">Spring eens binnen op woensdag</h2>
+        <Kop kleur="erft">Spring eens binnen op woensdag</Kop>
         <p class="mt-2 max-w-xl text-xl font-bold text-white">
           Vanaf 19u00 in {locatie.naam}, {locatie.gemeente}. Laat vooraf even iets weten, dan staat
           er iemand klaar om je kind op te vangen.
@@ -239,15 +238,14 @@ const drempel = [
 
   <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
     <section id="jeugdcup" class="max-w-3xl pl-10">
-      <p class="stem-baan text-xs text-club-700">Praktisch</p>
-      <h2 class="stem-display mt-1 text-3xl text-inkt-950 sm:text-4xl">PBO Jeugdcup</h2>
+      <Kop bovenkop="Praktisch">PBO Jeugdcup</Kop>
 
       <p class="mt-5 leading-relaxed text-inkt-700">
         De PBO Jeugdcup is een reeks open jeugdtornooien in Oost-Vlaanderen, voor
          <strong class="text-inkt-950">alle badmintonners van -9 tot -19 jaar</strong>. Iedereen
         speelt in zijn eigen leeftijdscategorie,
         dus <strong class="text-inkt-950">tegen leeftijdsgenoten</strong>. Over het seizoen heen
-        wordt er een <a href="https://www.badminton-pbo.be/jeugd/jeugdcup/pbo-jeugdcuptour-ranking/" target="_blank" rel="noopener" class="font-semibold text-club-700 underline hover:text-club-800">rangschikking</a> bijgehouden,
+        wordt er een <Link href="https://www.badminton-pbo.be/jeugd/jeugdcup/pbo-jeugdcuptour-ranking/">rangschikking</Link> bijgehouden,
         met per reeks een winnaar op het einde.
       </p>
 
@@ -264,8 +262,8 @@ const drempel = [
         Voor elk tornooi sturen we <strong class="text-inkt-950">de link door naar onze
         jeugd</strong>. Inschrijven doe je zelf, online of per mail. Je hebt daarvoor een
         Badminton Vlaanderen-lidnummer nodig: dat zoek je op via
-        de <a href="https://badvla.tournamentsoftware.com/find/player" target="_blank" rel="noopener" class="font-semibold text-club-700 underline hover:text-club-800">site van Badminton Vlaanderen</a>,
-        of je vraagt het aan <a href={LUC} class="font-semibold text-club-700 underline hover:text-club-800">Luc</a>.
+        de <Link href="https://badvla.tournamentsoftware.com/find/player">site van Badminton Vlaanderen</Link>,
+        of je vraagt het aan <Link href={LUC}>Luc</Link>.
         Per discipline waarin je speelt, betaal je inschrijvingsgeld.
       </p>
 
@@ -277,7 +275,7 @@ const drempel = [
 
       <p class="mt-10 leading-relaxed text-inkt-700">
         Staat je vraag hier niet bij? Mail Luc
-        op  <a href={LUC} class="font-semibold text-club-700 underline hover:text-club-800">vantornhoutluc@skynet.be</a>.
+        op  <Link href={LUC}>vantornhoutluc@skynet.be</Link>.
       </p>
     
       <ArchiefLink groep="jeugd" />

@@ -1,5 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import Kop from '../components/Kop.astro';
+import Punt from '../components/Punt.astro';
 import { url } from '../lib/url';
 import { bronnen, categorieen } from '../data/kalender';
 
@@ -21,7 +23,7 @@ const googleUrl = (id: string) => `https://calendar.google.com/calendar/render?c
   <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
     {/* Kop op de rail: statische draad (geen scroll-script op deze pagina) */}
     <div class="relative pl-10">
-      <span class="absolute left-[6px] top-3 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-club-500 ring-4 ring-veer-50" aria-hidden="true"></span>
+      <Punt top="top-3" />
       <span class="absolute bottom-1 left-[6px] top-7 w-1 -translate-x-1/2 rounded-full bg-club-500" aria-hidden="true"></span>
       <span class="absolute bottom-0 left-[6px] h-2 w-2 -translate-x-1/2 rounded-full bg-club-500" aria-hidden="true"></span>
       <h1 class="stem-display kop-pagina text-inkt-950">Kalender</h1>
@@ -46,7 +48,7 @@ const googleUrl = (id: string) => `https://calendar.google.com/calendar/render?c
 
     <div id="kalender-wrap" class="relative mt-10">
       <p id="kalender-laden" class="mb-4 hidden items-center gap-3 text-sm font-medium text-inkt-500" aria-live="polite">
-        <span class="h-3.5 w-3.5 rounded-full bg-club-500 ring-4 ring-veer-50 motion-safe:animate-pulse" aria-hidden="true"></span>
+        <Punt klopt />
         Kalender laden…
       </p>
       <div
@@ -99,8 +101,8 @@ const googleUrl = (id: string) => `https://calendar.google.com/calendar/render?c
 
     {/* In je eigen agenda: stille regel op de rail, abonneren per bron */}
     <section class="relative mt-16 pl-10" aria-labelledby="agenda-kop">
-      <span class="absolute left-[6px] top-2 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-club-500 ring-4 ring-veer-50" aria-hidden="true"></span>
-      <h2 id="agenda-kop" class="stem-display text-2xl text-inkt-950 sm:text-3xl">In je eigen agenda</h2>
+      <Punt top="top-2" />
+      <Kop maat="klein" id="agenda-kop">In je eigen agenda</Kop>
       <p class="mt-3 max-w-2xl text-inkt-700">
         Abonneer je op een clubkalender en nieuwe activiteiten verschijnen vanzelf in je eigen
         agenda-app — bijvoorbeeld het vrij spel, of alle matchen van je eigen ploeg.

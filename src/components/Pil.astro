@@ -1,0 +1,33 @@
+---
+// Filter- of tabknop: een ronde pil die rood invult zodra ze aan staat. De
+// aan-staat komt uit aria-selected (tabs) of aria-pressed (toggles) — welke
+// van de twee bepaalt de aanroeper, de pil stijlt ze allebei.
+interface Props {
+  /** `klein` voor de pillen die binnen een tabelrij of scorebord staan. */
+  maat?: 'normaal' | 'klein';
+  class?: string;
+  [key: string]: unknown;
+}
+
+const { maat = 'normaal', class: extra, ...rest } = Astro.props;
+
+// Volledige klassennamen, want Tailwind leest de broncode statisch.
+const maten = {
+  normaal: 'px-4 py-1.5 text-xs',
+  klein: 'px-3 py-1 text-[0.65rem]',
+};
+---
+
+<button
+  type="button"
+  class:list={[
+    'stem-baan rounded-full border-2 border-inkt-950/20 text-inkt-700 transition-colors hover:border-club-600 hover:text-club-600',
+    'aria-selected:border-club-600 aria-selected:bg-club-600 aria-selected:text-white',
+    'aria-pressed:border-club-600 aria-pressed:bg-club-600 aria-pressed:text-white',
+    maten[maat],
+    extra,
+  ]}
+  {...rest}
+>
+  <slot />
+</button>
