@@ -19,6 +19,6 @@ export interface SociaalKanaal {
 }
 
 export const kanalen: SociaalKanaal[] = [
-  // { naam: 'BC Landegem op Facebook', url: 'https://www.facebook.com/…', icoon: 'facebook' },
-  // { naam: 'BC Landegem op Instagram', url: 'https://www.instagram.com/…', icoon: 'instagram' },
+   { naam: 'BC Landegem op Facebook', url: 'https://www.facebook.com/BCLandegem', icoon: 'facebook' },
+   { naam: 'BC Landegem op Instagram', url: 'https://www.instagram.com/bclandegem', icoon: 'instagram' },
 ];

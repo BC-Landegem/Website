@@ -118,7 +118,7 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
   title="Zo werkt intraclub"
   description="Hoe de loting, de bonuspunten en het klassement van de intraclub werken. Uitgelegd met de namen en de uitslagen van een echte speeldag."
 >
-  <div class="mx-auto max-w-4xl px-4 py-14 sm:py-16">
+  <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
     <RailKop
       title="Zo werkt intraclub"
       intro={`Om de twee weken is het woensdag intraclub. Je wordt bij drie andere spelers geloot, je speelt drie sets met telkens een andere partner, en achteraf wordt je plaats in het klassement bijgewerkt. Hieronder staat wat er die avond gebeurt, met de cijfers van speeldag ${speeldag.nummer}.`}
@@ -130,7 +130,9 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
       </p>
     </RailKop>
 
-    <div class="mt-16 space-y-16">
+    {/* De container is max-w-6xl zoals elke andere pagina, zodat de rail links op
+        dezelfde lijn staat. De inhoud zelf blijft smaller en lijnt links uit. */}
+    <div class="mt-16 max-w-4xl space-y-16">
       {/* ─────────────────────────── STAP 1 ─────────────────────────── */}
       <section class="relative pl-10">
         <span class="absolute -top-16 bottom-0 left-[6px] w-1 -translate-x-1/2 bg-club-500" aria-hidden="true"></span>
@@ -186,8 +188,9 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
         </p>
         <p class="mt-3 max-w-2xl text-inkt-700">
           Daarna trekt de computer beurtelings vier namen uit de bovenste groep en vier uit de onderste,
-          tot er niemand meer overblijft. Wie geloot is, verdwijnt uit allebei de groepen. Zo speel je
-          tegen je eigen niveau en sta je toch bijna elke speeldag met andere mensen op de baan.
+          tot er in geen van beide groepen nog vier namen overblijven. Wie geloot is, verdwijnt uit
+          allebei de groepen. Zo speel je zelden ver boven of onder je eigen niveau, en sta je toch
+          bijna elke speeldag met andere mensen op de baan.
         </p>
 
         {/* De pot: iedereen die aanwezig was, op sterkte, met de overlap als eigen baan. */}
@@ -284,16 +287,21 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
         </div>
 
         <p class="mt-5 max-w-2xl text-sm text-inkt-500">
-          Deelt het aantal aanwezigen niet door vier of komt het loten niet exact uit, dan schuiven de laatste namen samen in een
-          <strong class="font-bold text-inkt-700">restbaan</strong>. Dat is de enige baan waar de
-          sterkste en de zwakste van de zaal samen op kunnen staan.
+          De twee groepen lopen zelden gelijk leeg. De spelers uit de middelste 20% worden nu eens naar
+          boven, dan weer naar onder geloot, en daardoor blijft er op de meeste speeldagen een handvol
+          namen over — ook wanneer het aantal aanwezigen netjes door vier deelt. Die komen samen op de
+          <strong class="font-bold text-inkt-700">restbaan</strong>, de enige baan waar de sterkste en
+          de zwakste van de zaal naast elkaar kunnen staan.
           {heeftRestbaan ? (
             <> Op {datumTekst} was dat baan {restbaanNummer}.</>
           ) : (
             <> Op {datumTekst} viel dat niet voor: alle {aantal} aanwezigen pasten precies op banen.</>
-          )}<br />
-          Indien er een restbaan is met minder dan 4 spelers, kunnen die spelers hun match aanvullen met speler(s) die al een intraclub match gespeelt hebben. Voor die speler(s) telt enkel het resultaat van hun eerste match mee voor het berekenen van de rangschikking.
-  
+          )}
+        </p>
+        <p class="mt-3 max-w-2xl text-sm text-inkt-500">
+          Blijven er minder dan vier namen over, dan wordt de baan aangevuld door iemand die al gespeeld
+          heeft. Die tweede match telt niet mee voor de rangschikking: wie de baan mee helpt vol maken,
+          speelt voor het plezier.
         </p>
       </section>
 
@@ -522,8 +530,8 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
             Dan krijg je geen nul, maar het gemiddelde van alle verliezende duo's van die avond.
             Op {datumTekst} was dat
              <strong class="stem-cijfer font-bold text-inkt-950">{komma(afwezig)}</strong>, terwijl de
-            top van de stand rond {komma(spelers[0].gemiddelde, 1)} zit. Een keer overslaan is dus geen
-            drama, maar wie vaak ontbreekt zakt langzaam weg.
+            top van de stand rond {komma(spelers[0].gemiddelde, 1)} zit. Sta je hoger dan dat cijfer,
+            dan kost elke gemiste speeldag je een beetje.
           </p>
         </div>
 

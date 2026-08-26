@@ -1,5 +1,5 @@
 // De vluchtdraad op de homepage: één doorlopende rode lijn van kurk tot slot,
-// altijd volledig zichtbaar. De pluim staat statisch in de hero (puur CSS).
+// met de scroll getekend. De pluim staat statisch in de hero (puur CSS).
 
 // Alle DOM-ankers van de draad op één plek: hernoem je een id in index.astro,
 // dan is dit de inventaris die mee moet.
@@ -37,6 +37,25 @@ function middenVan(el: Element, wrect: DOMRect) {
 }
 
 /**
+ * Meet de baan uit in monsters (paginahoogte → afgelegde lengte). De staart
+ * leeft in slot-lokale coördinaten, dus schuift `slotTop` erbij.
+ */
+function meetBaan(kern: SVGPathElement, staart: SVGPathElement, slotTop: number) {
+  const kernLengte = kern.getTotalLength();
+  const staartLengte = staart.getTotalLength();
+  const monsters: { y: number; len: number }[] = [];
+  for (let i = 0; i <= 240; i++) {
+    const len = (kernLengte * i) / 240;
+    monsters.push({ y: kern.getPointAtLength(len).y, len });
+  }
+  for (let i = 0; i <= 40; i++) {
+    const len = (staartLengte * i) / 40;
+    monsters.push({ y: slotTop + staart.getPointAtLength(len).y, len: kernLengte + len });
+  }
+  return { kernLengte, staartLengte, monsters };
+}
+
+/**
  * Start de landing-animatie (.vlucht → .geland) en bouwt de vluchtdraad.
  * Geeft `herbouw` terug zodat dataloaders de draad kunnen herberekenen wanneer
  * secties van hoogte veranderen of dichtklappen.
@@ -58,6 +77,13 @@ export function initDraad(): { herbouw: () => void } {
   const wrapper = document.getElementById(IDS.wrapper);
   const kern = document.getElementById(IDS.kern) as SVGPathElement | null;
   const staart = document.getElementById(IDS.staart) as SVGPathElement | null;
+  const rustig = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Hoogtes langs de baan (y → afgelegde lengte): per scrollstand weten we zo
+  // hoeveel draad er getekend mag zijn.
+  let monsters: { y: number; len: number }[] = [];
+  let kernLengte = 0;
+  let staartLengte = 0;
+  let totaleLengte = 0;
 
   function bouwDraad() {
     const kurk = document.getElementById(IDS.kurk);
@@ -140,10 +166,54 @@ export function initDraad(): { herbouw: () => void } {
       staart.setAttribute('d', `M ${staartX} 0 C ${staartX} ${landY * 0.7}, ${landX - 120} ${landY - 40}, ${landX} ${landY}`);
     }
 
-    kern.style.strokeDasharray = staart.style.strokeDasharray = 'none';
-    kern.style.strokeDashoffset = staart.style.strokeDashoffset = '0';
+    ({ kernLengte, staartLengte, monsters } = meetBaan(kern, staart, slotTop));
+    totaleLengte = kernLengte + staartLengte;
+
+    if (rustig) {
+      kern.style.strokeDasharray = staart.style.strokeDasharray = 'none';
+      kern.style.strokeDashoffset = staart.style.strokeDashoffset = '0';
+    } else {
+      // Eén streep zo lang als het pad: de offset schuift hem naar binnen.
+      kern.style.strokeDasharray = String(kernLengte + 2);
+      staart.style.strokeDasharray = String(staartLengte + 2);
+      tekenDraad();
+    }
   }
 
+  /**
+   * Tekent de draad tot waar de scroll staat: alles boven de leeslijn (85% van
+   * het beeld) is gevlogen, de rest wacht.
+   */
+  function tekenDraad() {
+    if (!wrapper || !kern || !staart || !monsters.length) return;
+    const zichtbaarTot = -wrapper.getBoundingClientRect().top + window.innerHeight * 0.85;
+    let len = 0;
+    for (const m of monsters) {
+      if (m.y > zichtbaarTot) break;
+      len = m.len;
+    }
+    // De hero komt leeg binnen. Het kurkpunt staat in het eerste beeld, dus de
+    // leeslijn hierboven zou de hele klim al bij scrollstand 0 tekenen; deze
+    // poort laat de vlucht pas lopen naarmate je scrollt en staat na één beeld
+    // scrollen helemaal open, waarna de leeslijn weer alleen beslist.
+    len = Math.min(len, totaleLengte * Math.min(1, window.scrollY / window.innerHeight));
+    kern.style.strokeDashoffset = String(Math.max(0, kernLengte - len));
+    staart.style.strokeDashoffset = String(Math.max(0, staartLengte - Math.max(0, len - kernLengte)));
+  }
+
+  let scrollTik = false;
+  window.addEventListener(
+    'scroll',
+    () => {
+      if (rustig || scrollTik) return;
+      scrollTik = true;
+      requestAnimationFrame(() => {
+        tekenDraad();
+        scrollTik = false;
+      });
+    },
+    { passive: true },
+  );
   let herbouwTimer: ReturnType<typeof setTimeout>;
   window.addEventListener('resize', () => {
     clearTimeout(herbouwTimer);

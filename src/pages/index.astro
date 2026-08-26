@@ -102,20 +102,33 @@ const fotoSnedes = [
         ))}
       </svg>
 
-      {/* Pluim uit het clublogo: statisch op het hangmoment, achter de hero-inhoud
-           maar vóór de rode vluchtlijn (zie z-index op #pagina). */}
+      {/* Het clublogo: statisch op het hangmoment, achter de hero-inhoud maar vóór
+           de rode vluchtlijn (zie z-index op #pagina). Vanaf 900px staat het
+           volledige logo er — pluim mét de getekende clubnaam — zodat het
+           hangmoment een clubsignatuur is en niet enkel een mikpunt voor de draad.
+           Het moet daarvoor groot en rechtop staan: op pluimmaat wordt de
+           getekende naam een veeg, en gekanteld leest hij niet. Die 900px is
+           nagemeten, niet gekozen: de herokop springt vanaf md in met ml-[22%] en
+           meet op text-6xl zo'n 470px, dus pas rond 900px ligt de rechterbovenhoek
+           vrij. Smaller draagt de hero de losse pluim in zijn oude stand. In beide
+           bestanden staat de pluim op dezelfde plek in het kader, dus het
+           hangmoment verschuift niet mee. De draad landt op het midden van deze box
+           (zie lib/draad.ts) — dat midden ligt in de pluim, niet in de naam. */}
       <div
         id="shuttle-glyph"
-        class="pointer-events-none absolute right-[5%] top-16 -z-[1] w-20 overflow-visible sm:top-20 sm:w-28"
+        class="pointer-events-none absolute right-[5%] top-16 -z-[1] w-20 overflow-visible sm:top-20 sm:w-28 min-[900px]:top-16 min-[900px]:w-44"
         aria-hidden="true"
       >
-        <img
-          src={url('/images/logo-pluim.svg')}
-          alt=""
-          width="516"
-          height="538"
-          class="h-full w-full -rotate-12 object-contain"
-        />
+        <picture>
+          <source media="(min-width: 900px)" srcset={url('/images/logo-bc1.svg')} />
+          <img
+            src={url('/images/logo-pluim.svg')}
+            alt=""
+            width="516"
+            height="538"
+            class="h-full w-full -rotate-12 object-contain min-[900px]:rotate-0"
+          />
+        </picture>
       </div>
 
       {/* Het kurkpunt is de primaire actie: Word lid! zit op de kurk */}
