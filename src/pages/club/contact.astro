@@ -1,5 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import Kop from '../../components/Kop.astro';
+import Link from '../../components/Link.astro';
 import RailKop from '../../components/RailKop.astro';
 import { url } from '../../lib/url';
 import trainingen from '../../data/trainingen.json';
@@ -36,7 +38,7 @@ const wie = [
 
     {/* Waar we spelen */}
     <section class="mt-12 pl-10">
-      <h2 class="stem-display text-3xl text-inkt-950 sm:text-4xl">Waar we spelen</h2>
+      <Kop>Waar we spelen</Kop>
       <p class="mt-4 max-w-3xl leading-relaxed text-inkt-700">
         <strong class="text-inkt-950">{locatie.naam}</strong><br />
         {locatie.adres}<br />
@@ -62,16 +64,16 @@ const wie = [
 
     {/* Wie je waarvoor aanspreekt */}
     <section class="mt-16 pl-10">
-      <h2 class="stem-display text-3xl text-inkt-950 sm:text-4xl">Bij wie je terechtkan</h2>
+      <Kop>Bij wie je terechtkan</Kop>
       <ul class="mt-6 max-w-3xl">
         {wie.map((item) => (
           <li class="border-b border-inkt-950/10 py-6 first:border-t">
             <h3 class="font-bold text-inkt-950">{item.kop}</h3>
             <p class="mt-2 leading-relaxed text-inkt-700">{item.tekst}</p>
             <p class="mt-3">
-              <a href={`mailto:${item.mail}`} class="stem-baan text-sm font-semibold text-club-700 underline hover:text-club-800">
+              <Link href={`mailto:${item.mail}`} class="stem-baan text-sm">
                 {item.naam ? `${item.naam} — ${item.mail}` : item.mail}
-              </a>
+              </Link>
             </p>
           </li>
         ))}
@@ -82,9 +84,9 @@ const wie = [
             wie het is en hoe je er terechtkan.
           </p>
           <p class="mt-3">
-            <a href={url('/club/aanspreekpunt-integriteit/')} class="stem-baan text-sm font-semibold text-club-700 underline hover:text-club-800">
+            <Link href={url('/club/aanspreekpunt-integriteit/')} class="stem-baan text-sm">
               Naar het aanspreekpunt integriteit
-            </a>
+            </Link>
           </p>
         </li>
         <li class="border-b border-inkt-950/10 py-6">
@@ -92,12 +94,12 @@ const wie = [
           <p class="mt-2 leading-relaxed text-inkt-700">
             Laat het weten, dan halen we die foto uit het album en verdwijnt hij van de site. Dat
             geldt voor alle albums bij
-            <a href={url('/media/')} class="font-semibold text-club-700 underline hover:text-club-800">Foto's</a>.
+            <Link href={url('/media/')}>Foto's</Link>.
           </p>
           <p class="mt-3">
-            <a href="mailto:info@bclandegem.be" class="stem-baan text-sm font-semibold text-club-700 underline hover:text-club-800">
+            <Link href="mailto:info@bclandegem.be" class="stem-baan text-sm">
               info@bclandegem.be
-            </a>
+            </Link>
           </p>
         </li>
         <li class="border-b border-inkt-950/10 py-6">
@@ -107,9 +109,9 @@ const wie = [
             wissen, staat in de privacyverklaring.
           </p>
           <p class="mt-3">
-            <a href={url('/club/privacy/')} class="stem-baan text-sm font-semibold text-club-700 underline hover:text-club-800">
+            <Link href={url('/club/privacy/')} class="stem-baan text-sm">
               Naar de privacyverklaring
-            </a>
+            </Link>
           </p>
         </li>
       </ul>
@@ -117,7 +119,7 @@ const wie = [
 
     {/* Geen formulier, wel duidelijkheid over wat er daarna gebeurt */}
     <section class="mt-16 max-w-3xl pl-10">
-      <h2 class="stem-display text-2xl text-inkt-950 sm:text-3xl">Wat je meestuurt</h2>
+      <Kop maat="klein">Wat je meestuurt</Kop>
       <p class="mt-3 leading-relaxed text-inkt-700">
         Wil je eens komen meespelen, zet er dan bij wie er komt, hoe oud die is en welke avond je
         zou willen. Dan weten we wie we mogen verwachten en staat er iemand klaar om je wegwijs te
@@ -129,7 +131,7 @@ const wie = [
   <section class="border-y-8 border-club-800 bg-club-600 text-white">
     <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-6 px-4 py-12">
       <div class="flex-[1_1_28rem]">
-        <h2 class="stem-display text-3xl sm:text-4xl">Mail ons gerust</h2>
+        <Kop kleur="erft">Mail ons gerust</Kop>
         <p class="mt-2 max-w-xl text-xl font-bold text-white">
           Elke vraag mag naar info@bclandegem.be. Ook als je nog nooit een racket vasthad en niet
           weet of dit iets voor jou is.

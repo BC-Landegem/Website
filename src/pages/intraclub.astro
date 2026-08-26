@@ -1,5 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import Kop from '../components/Kop.astro';
+import Pil from '../components/Pil.astro';
+import Punt from '../components/Punt.astro';
 import ArchiefLink from '../components/ArchiefLink.astro';
 import RailKop from '../components/RailKop.astro';
 import { url } from '../lib/url';
@@ -43,13 +46,13 @@ const tabs = [
     </div>
 
     <p id="intra-laden" class="mt-10 flex items-center gap-3 pl-10 text-sm font-medium text-inkt-500" aria-live="polite">
-      <span class="h-3.5 w-3.5 rounded-full bg-club-500 ring-4 ring-veer-50 motion-safe:animate-pulse" aria-hidden="true"></span>
+      <Punt klopt />
       Standen laden…
     </p>
 
     <div id="intra-inhoud" class="mt-12 hidden max-w-3xl pl-10">
       <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
-        <h2 class="stem-display text-2xl text-inkt-950 sm:text-3xl">Klassement</h2>
+        <Kop maat="klein">Klassement</Kop>
         <a id="intra-laatste" href="#" class="stem-baan hidden items-center gap-2 text-xs text-club-700 hover:text-club-800 hover:underline">
           <span id="intra-laatste-tekst"></span>
           <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
@@ -60,16 +63,14 @@ const tabs = [
 
       <div class="mt-6 flex flex-wrap gap-2" role="tablist" aria-label="Overzicht">
         {tabs.map((tab, i) => (
-          <button
-            type="button"
+          <Pil
             role="tab"
             data-tab={tab.key}
             data-soort={tab.soort}
             aria-selected={i === 0 ? 'true' : 'false'}
-            class="stem-baan rounded-full border-2 border-inkt-950/20 px-4 py-1.5 text-xs text-inkt-700 transition-colors hover:border-club-600 hover:text-club-600 aria-selected:border-club-600 aria-selected:bg-club-600 aria-selected:text-white"
           >
             {tab.label}
-          </button>
+          </Pil>
         ))}
       </div>
 

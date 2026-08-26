@@ -1,5 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import Kop from '../../components/Kop.astro';
+import Link from '../../components/Link.astro';
 import RailKop from '../../components/RailKop.astro';
 import { url } from '../../lib/url';
 import trainingen from '../../data/trainingen.json';
@@ -50,8 +52,7 @@ const aanbod = [
 
       <li class="relative border-b border-inkt-950/10 py-10 pl-10 first:border-t">
         <span class="stem-cijfer absolute left-[6px] top-12 flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full bg-club-600 text-sm text-white ring-4 ring-veer-50" aria-hidden="true">1</span>
-        <p class="stem-baan text-xs text-club-700">Stap 1</p>
-        <h2 class="stem-display mt-1 text-3xl text-inkt-950 sm:text-4xl">Kom gewoon eens meespelen</h2>
+        <Kop bovenkop="Stap 1">Kom gewoon eens meespelen</Kop>
 
         <div class="mt-5 max-w-3xl space-y-4 leading-relaxed text-inkt-700">
           <p>
@@ -65,7 +66,7 @@ const aanbod = [
           </p>
           <p>
             Je mag zonder afspraak binnenwandelen, maar met een seintje vooraf
-            via <a href="mailto:info@bclandegem.be" class="font-semibold text-club-700 underline hover:text-club-800">info@bclandegem.be</a> verloopt
+            via <Link href="mailto:info@bclandegem.be">info@bclandegem.be</Link> verloopt
             je eerste avond vlotter. We geven je dan een korte rondleiding en leggen uit hoe het bij ons werkt.
           </p>
         </div>
@@ -88,16 +89,15 @@ const aanbod = [
         <p class="mt-6 max-w-3xl leading-relaxed text-inkt-700">
           Alles gaat door in <strong class="text-inkt-950">{locatie.naam}</strong>, {locatie.adres},
           {locatie.gemeente} —
-          <a href={locatie.kaart} target="_blank" rel="noopener" class="font-semibold text-club-700 underline hover:text-club-800">bekijk op de kaart</a>.
+          <Link href={locatie.kaart}>bekijk op de kaart</Link>.
           De exacte data, ook wanneer er uitzonderlijk niet gespeeld wordt, vind je
-          <a href={url('/kalender/')} class="font-semibold text-club-700 underline hover:text-club-800">in de kalender</a>.
+          <Link href={url('/kalender/')}>in de kalender</Link>.
         </p>
       </li>
 
       <li class="relative border-b border-inkt-950/10 py-10 pl-10">
         <span class="stem-cijfer absolute left-[6px] top-12 flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full bg-club-600 text-sm text-white ring-4 ring-veer-50" aria-hidden="true">2</span>
-        <p class="stem-baan text-xs text-club-700">Stap 2</p>
-        <h2 class="stem-display mt-1 text-3xl text-inkt-950 sm:text-4xl">Wat je meebrengt</h2>
+        <Kop bovenkop="Stap 2">Wat je meebrengt</Kop>
 
         <ul class="mt-5 max-w-3xl space-y-4">
           <li class="grid grid-cols-[1.25rem_1fr] items-baseline gap-2 leading-relaxed text-inkt-700">
@@ -137,8 +137,7 @@ const aanbod = [
 
       <li class="relative border-b border-inkt-950/10 py-10 pl-10">
         <span class="stem-cijfer absolute left-[6px] top-12 flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full bg-club-600 text-sm text-white ring-4 ring-veer-50" aria-hidden="true">3</span>
-        <p class="stem-baan text-xs text-club-700">Stap 3</p>
-        <h2 class="stem-display mt-1 text-3xl text-inkt-950 sm:text-4xl">Wat het kost</h2>
+        <Kop bovenkop="Stap 3">Wat het kost</Kop>
 
         <p class="mt-5 max-w-3xl leading-relaxed text-inkt-700">
           Wat je betaalt, hangt af van hoe vaak je komt spelen. In elk tarief zitten de
@@ -178,7 +177,7 @@ const aanbod = [
 
     {/* Ouders lezen deze pagina met een andere vraag dan volwassen spelers. */}
     <section class="mt-14 max-w-3xl pl-10">
-      <h2 class="stem-display text-2xl text-inkt-950 sm:text-3xl">Gaat het over een kind?</h2>
+      <Kop maat="klein">Gaat het over een kind?</Kop>
       <div class="mt-3 space-y-4 leading-relaxed text-inkt-700">
         <p>
           Jeugdspelers zijn welkom vanaf 8 jaar. Nieuwe spelers starten
@@ -190,8 +189,8 @@ const aanbod = [
         <p>
           Midden in het seizoen starten kan vaak ook, al hangt het af van leeftijd en groep.
           Vraag het gerust
-          aan <a href="mailto:vantornhoutluc@skynet.be" class="font-semibold text-club-700 underline hover:text-club-800">Luc Van Tornhout</a>,
-          of lees <a href={url('/jeugd/')} class="font-semibold text-club-700 underline hover:text-club-800">alles over onze jeugdwerking</a>.
+          aan <Link href="mailto:vantornhoutluc@skynet.be">Luc Van Tornhout</Link>,
+          of lees <Link href={url('/jeugd/')}>alles over onze jeugdwerking</Link>.
         </p>
       </div>
     </section>
@@ -203,7 +202,7 @@ const aanbod = [
       <div class="flex-[1_1_24rem]">
         {/* Op de club-600-band is álle tekst wit: inkt-950 haalt daar geen 4,5:1. Rangorde komt van grootte en gewicht. */}
         <p class="stem-baan text-xs text-white">Stap 4</p>
-        <h2 class="stem-display mt-1 text-3xl sm:text-4xl">Schrijf je in</h2>
+        <Kop kleur="erft" class="mt-1">Schrijf je in</Kop>
         <p class="mt-2 max-w-xl text-xl font-bold text-white">
           Vul het online formulier in. Daarna krijg je van ons het bedrag en de betaalgegevens,
           en pas dan betaal je.
@@ -227,7 +226,7 @@ const aanbod = [
 
   <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
     <section class="pl-10">
-      <h2 class="stem-display text-2xl text-inkt-950 sm:text-3xl">Wat je bij ons kan doen</h2>
+      <Kop maat="klein">Wat je bij ons kan doen</Kop>
       <ul class="mt-5 grid max-w-3xl gap-2 leading-relaxed text-inkt-700 sm:grid-cols-2">
         {aanbod.map((item) => (
           <li class="grid grid-cols-[1.25rem_1fr] items-baseline">
@@ -239,7 +238,7 @@ const aanbod = [
 
       <p class="mt-8 max-w-3xl leading-relaxed text-inkt-700">
         Staat je vraag hier niet bij? Mail
-        <a href="mailto:info@bclandegem.be" class="font-semibold text-club-700 underline hover:text-club-800">info@bclandegem.be</a>,
+        <Link href="mailto:info@bclandegem.be">info@bclandegem.be</Link>,
         we antwoorden graag.
       </p>
 
