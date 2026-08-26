@@ -37,9 +37,9 @@ const plaatsOp = new Map(opSterkte.map((speler, i) => [speler.id, i]));
 const spelerOp = new Map(spelers.map((speler) => [speler.id, speler]));
 
 const groepen = [
-  { soort: 'boven', kop: 'Alleen de bovenste band', spelers: opSterkte.slice(0, vanOnder) },
-  { soort: 'overlap', kop: 'In beide banden', spelers: opSterkte.slice(vanOnder, totBoven) },
-  { soort: 'onder', kop: 'Alleen de onderste band', spelers: opSterkte.slice(totBoven) },
+  { soort: 'boven', kop: 'Alleen de bovenste groep', spelers: opSterkte.slice(0, vanOnder) },
+  { soort: 'overlap', kop: 'In beide groepen', spelers: opSterkte.slice(vanOnder, totBoven) },
+  { soort: 'onder', kop: 'Alleen de onderste groep', spelers: opSterkte.slice(totBoven) },
 ] as const;
 
 const baanVan = new Map<string, Baan>();
@@ -54,6 +54,7 @@ function bronVan(baan: Baan) {
 }
 const echteBronnen = banen.map(bronVan);
 const restbaanNummer = echteBronnen.indexOf('rest') + 1;
+const heeftRestbaan = restbaanNummer > 0;
 
 // De speler die het verhaal draagt tot je zelf iemand kiest: iemand uit de
 // overlapband — die laat zien dat je naar boven én naar onder geloot kan worden —
@@ -109,7 +110,7 @@ const bonusRegels = [
   { wie: 'Dubbelklassement 1 tot 4', punten: '0' },
 ];
 
-const bronLabel = { boven: 'bovenste band', onder: 'onderste band', rest: 'restbaan' } as const;
+const bronLabel = { boven: 'bovenste groep', onder: 'onderste groep', rest: 'restbaan' } as const;
 const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
 ---
 
@@ -117,10 +118,10 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
   title="Zo werkt intraclub"
   description="Hoe de loting, de bonuspunten en het klassement van de intraclub werken. Uitgelegd met de namen en de uitslagen van een echte speeldag."
 >
-  <div class="mx-auto max-w-4xl px-4 py-14 sm:py-16">
+  <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
     <RailKop
       title="Zo werkt intraclub"
-      intro={`Om de twee weken is het woensdag intraclub. Je wordt bij drie andere spelers geloot, je speelt drie sets met telkens een andere partner, en achteraf schuift je plaats in het klassement op. Hieronder staat wat er die avond gebeurt, met de cijfers van speeldag ${speeldag.nummer}.`}
+      intro={`Om de twee weken is het woensdag intraclub. Je wordt bij drie andere spelers geloot, je speelt drie sets met telkens een andere partner, en achteraf wordt je plaats in het klassement bijgewerkt. Hieronder staat wat er die avond gebeurt, met de cijfers van speeldag ${speeldag.nummer}.`}
       doorlopend
     >
       <p class="mt-4 max-w-2xl text-sm text-inkt-500">
@@ -129,7 +130,9 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
       </p>
     </RailKop>
 
-    <div class="mt-16 space-y-16">
+    {/* De container is max-w-6xl zoals elke andere pagina, zodat de rail links op
+        dezelfde lijn staat. De inhoud zelf blijft smaller en lijnt links uit. */}
+    <div class="mt-16 max-w-4xl space-y-16">
       {/* ─────────────────────────── STAP 1 ─────────────────────────── */}
       <section class="relative pl-10">
         <span class="absolute -top-16 bottom-0 left-[6px] w-1 -translate-x-1/2 bg-club-500" aria-hidden="true"></span>
@@ -179,20 +182,21 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
         <p class="stem-baan text-xs text-club-700">Stap 2 · 20u30</p>
         <h2 class="stem-display mt-1 text-3xl text-inkt-950 sm:text-4xl">De loting</h2>
         <p class="mt-4 max-w-2xl text-inkt-700">
-          De aanwezigen worden op sterkte gezet en in twee banden verdeeld. Elke band beslaat 60% van
-          de zaal: de bovenste vanaf de beste speler, de onderste tot de zwakste. Wie in de middelste
-          20% valt, zit dus in allebei en kan naar boven én naar onder geloot worden.
+          De aanwezigen worden op sterkte gezet en in twee groepen verdeeld. Elke groep beslaat 60% van
+          de aanwezigen: de eerste groep vanaf de best gerangschikte speler naar beneden, de tweede groep vanaf de laatst gerangschikte speler naar boven. Wie in de middelste
+          20% valt, zit dus in allebei de groepen en kan naar boven én naar onder geloot worden.
         </p>
         <p class="mt-3 max-w-2xl text-inkt-700">
-          Daarna trekt de computer beurtelings vier namen uit de bovenste band en vier uit de onderste,
-          tot er niemand meer overblijft. Wie geloot is, verdwijnt uit allebei de banden. Zo speel je
-          tegen je eigen niveau en sta je toch bijna elke speeldag met andere mensen op de baan.
+          Daarna trekt de computer beurtelings vier namen uit de bovenste groep en vier uit de onderste,
+          tot er in geen van beide groepen nog vier namen overblijven. Wie geloot is, verdwijnt uit
+          allebei de groepen. Zo speel je zelden ver boven of onder je eigen niveau, en sta je toch
+          bijna elke speeldag met andere mensen op de baan.
         </p>
 
         {/* De pot: iedereen die aanwezig was, op sterkte, met de overlap als eigen baan. */}
         <div class="mt-8">
           <p class="stem-baan text-xs text-inkt-500">
-            De {aantal} aanwezigen, op sterkte
+            De {aantal} aanwezigen, op rangschikking
             <span class="text-inkt-950/40">· de stand zoals die vóór deze speeldag was</span>
           </p>
           <p class="mt-1 text-xs text-inkt-500">
@@ -222,7 +226,7 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
                           ? 'border-club-500 bg-club-100 font-bold text-inkt-950'
                           : 'border-inkt-950/15 bg-white text-inkt-700',
                       ]}
-                    >{volledigeNaam(speler)}</span>
+                    ><span class="stem-cijfer text-club-700">{speler.rangOpAvond}.</span> {volledigeNaam(speler)}</span>
                   ))}
                 </div>
               </div>
@@ -256,7 +260,13 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
 
         <div class="mt-5 grid gap-2 sm:grid-cols-2">
           {banen.map((baan, i) => (
-            <div data-baan={i} tabindex="0" class="vlucht geland border border-inkt-950/10 bg-white p-3 transition-colors hover:border-club-500 focus-visible:border-club-500">
+            <div
+              data-baan={i}
+              tabindex="0"
+              role="button"
+              aria-pressed="false"
+              class="vlucht geland cursor-pointer border border-inkt-950/10 bg-white p-3 transition-colors hover:border-club-500 focus-visible:border-club-500"
+            >
               <p class="flex items-baseline justify-between gap-2">
                 <span class="stem-baan text-[0.65rem] text-club-700">Baan {i + 1}</span>
                 <span data-bron class="stem-baan text-[0.65rem] text-inkt-500">{bronLabel[echteBronnen[i]]}</span>
@@ -277,11 +287,21 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
         </div>
 
         <p class="mt-5 max-w-2xl text-sm text-inkt-500">
-          Deelt het aantal aanwezigen niet door vier, dan schuiven de laatste namen samen in een
-          <strong class="font-bold text-inkt-700">restbaan</strong>. Dat is de enige baan waar de
-          sterkste en de zwakste van de zaal samen op kunnen staan. Op {datumTekst} was dat baan
-           {restbaanNummer}. Blijven er minder dan vier over, dan spelen die niet mee. Zij krijgen
-          hetzelfde cijfer als wie er die avond niet was, dus kost het hen ook niets.
+          De twee groepen lopen zelden gelijk leeg. De spelers uit de middelste 20% worden nu eens naar
+          boven, dan weer naar onder geloot, en daardoor blijft er op de meeste speeldagen een handvol
+          namen over — ook wanneer het aantal aanwezigen netjes door vier deelt. Die komen samen op de
+          <strong class="font-bold text-inkt-700">restbaan</strong>, de enige baan waar de sterkste en
+          de zwakste van de zaal naast elkaar kunnen staan.
+          {heeftRestbaan ? (
+            <> Op {datumTekst} was dat baan {restbaanNummer}.</>
+          ) : (
+            <> Op {datumTekst} viel dat niet voor: alle {aantal} aanwezigen pasten precies op banen.</>
+          )}
+        </p>
+        <p class="mt-3 max-w-2xl text-sm text-inkt-500">
+          Blijven er minder dan vier namen over, dan wordt de baan aangevuld door iemand die al gespeeld
+          heeft. Die tweede match telt niet mee voor de rangschikking: wie de baan mee helpt vol maken,
+          speelt voor het plezier.
         </p>
       </section>
 
@@ -510,8 +530,8 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
             Dan krijg je geen nul, maar het gemiddelde van alle verliezende duo's van die avond.
             Op {datumTekst} was dat
              <strong class="stem-cijfer font-bold text-inkt-950">{komma(afwezig)}</strong>, terwijl de
-            top van de stand rond {komma(spelers[0].gemiddelde, 1)} zit. Een keer overslaan is dus geen
-            drama, maar wie vaak ontbreekt zakt langzaam weg.
+            top van de stand rond {komma(spelers[0].gemiddelde, 1)} zit. Sta je hoger dan dat cijfer,
+            dan kost elke gemiste speeldag je een beetje.
           </p>
         </div>
 
@@ -593,7 +613,7 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
           <div class="bg-club-500 p-5 text-inkt-950">
             <p class="stem-baan text-xs">Nog nooit meegedaan?</p>
             <p class="mt-2 text-sm font-medium">
-              Je hoeft er niets voor te kunnen. Door de banden speel je tegen je eigen niveau, en met de
+              Je hoeft er niets voor te kunnen. Door de groepen speel je tegen je eigen niveau, en met de
               bonuspunten klopt een recreant geregeld een competitiespeler. Kom gewoon eens langs op
               woensdag, vanaf 20u in Sporthal Oostbroek.
             </p>
@@ -665,8 +685,8 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
   const bijschrift = el('loting-bijschrift');
 
   const bronNaam: Record<Baanbron, string> = {
-    boven: 'bovenste band',
-    onder: 'onderste band',
+    boven: 'bovenste groep',
+    onder: 'onderste groep',
     rest: 'restbaan',
     uitgeloot: 'uitgeloot',
   };
@@ -720,6 +740,9 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
       ]);
     }
 
+    werktChipHighlight();
+    werktBaanSelectie();
+
     if (animeer) {
       requestAnimationFrame(() =>
         requestAnimationFrame(() => baanRijen.forEach((rij) => rij.classList.add('geland'))),
@@ -749,19 +772,59 @@ const pijl = 'M4 12h16m0 0l-6-6m6 6l-6 6';
   // Een baan aanwijzen licht zijn vier spelers op in de lijst hierboven: zo zie je
   // meteen uit welk deel van de zaal ze geplukt zijn.
   const chipOp = new Map(chips.map((chip) => [chip.dataset.chip!, chip]));
-  function lichtOp(index: number, aan: boolean) {
-    for (const speler of huidigeLoting[index]?.spelers ?? []) {
-      chipOp.get(speler.id)?.classList.toggle('ring-2', aan);
-      chipOp.get(speler.id)?.classList.toggle('ring-club-500', aan);
+  let geselecteerdeBaan: number | null = null;
+  let hoverBaan: number | null = null;
+
+  function werktChipHighlight() {
+    const actief = hoverBaan ?? geselecteerdeBaan;
+    for (const chip of chips) chip.classList.remove('ring-2', 'ring-club-500');
+    if (actief === null) return;
+    for (const speler of huidigeLoting[actief]?.spelers ?? []) {
+      chipOp.get(speler.id)?.classList.add('ring-2', 'ring-club-500');
     }
   }
+
+  function werktBaanSelectie() {
+    baanRijen.forEach((rij, i) => {
+      const geselecteerd = i === geselecteerdeBaan;
+      rij.classList.toggle('border-2', geselecteerd);
+      rij.classList.toggle('border-club-600', geselecteerd);
+      rij.classList.toggle('border-inkt-950/10', !geselecteerd);
+      rij.classList.toggle('bg-club-50', geselecteerd);
+      rij.setAttribute('aria-pressed', String(geselecteerd));
+    });
+  }
+
+  function kiesBaan(index: number) {
+    geselecteerdeBaan = geselecteerdeBaan === index ? null : index;
+    werktBaanSelectie();
+    werktChipHighlight();
+  }
+
   baanRijen.forEach((rij, i) => {
-    for (const gebeurtenis of ['mouseenter', 'focus'] as const) {
-      rij.addEventListener(gebeurtenis, () => lichtOp(i, true));
-    }
-    for (const gebeurtenis of ['mouseleave', 'blur'] as const) {
-      rij.addEventListener(gebeurtenis, () => lichtOp(i, false));
-    }
+    rij.addEventListener('click', () => kiesBaan(i));
+    rij.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        kiesBaan(i);
+      }
+    });
+    rij.addEventListener('mouseenter', () => {
+      hoverBaan = i;
+      werktChipHighlight();
+    });
+    rij.addEventListener('mouseleave', () => {
+      hoverBaan = null;
+      werktChipHighlight();
+    });
+    rij.addEventListener('focus', () => {
+      hoverBaan = i;
+      werktChipHighlight();
+    });
+    rij.addEventListener('blur', () => {
+      hoverBaan = null;
+      werktChipHighlight();
+    });
   });
 
   /* ── Stap 3: duo's en voorsprongen ─────────────────────────────────── */
