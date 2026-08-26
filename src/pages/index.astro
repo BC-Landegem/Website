@@ -640,7 +640,7 @@ const fotoSnedes = [
       const li = document.createElement('li');
       li.className = 'relative border-b border-inkt-950/10 py-5 pl-10 first:border-t';
       li.innerHTML = `
-        <Punt top="top-7" />
+        <span class="absolute left-[6px] top-7 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-club-500 ring-4 ring-veer-50" aria-hidden="true"></span>
         <p class="stem-cijfer text-lg text-club-700">${esc(rij.wanneer)}</p>
         <p class="mt-0.5 font-bold">${esc(rij.titel)}</p>
         ${rij.plaats ? `<p class="mt-0.5 text-sm text-inkt-500">${esc(rij.plaats)}</p>` : ''}`;
