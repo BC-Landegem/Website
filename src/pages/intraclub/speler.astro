@@ -294,7 +294,7 @@ const careerIds = (await allCareers())
   }
 
   /** Wat er onder de grafiek staat, per modus. */
-  const BIJSCHRIFT: Record<ProgressionMode, string> = {
+  const CAPTIONS: Record<ProgressionMode, string> = {
     rank:
       'Je plaats in het klassement na elke berekende speeldag. De as staat omgekeerd: ' +
       'hoe hoger in beeld, hoe hoger in de stand.',
@@ -327,65 +327,65 @@ const careerIds = (await allCareers())
     const chart = drawProgression(figure, history, mode);
     renderHistoryTable(history);
 
-    const toon = () => {
-      caption.textContent = BIJSCHRIFT[mode];
+    const show = () => {
+      caption.textContent = CAPTIONS[mode];
       for (const pill of pills) {
         pill.setAttribute('aria-selected', String(pill.dataset.mode === mode));
       }
     };
-    toon();
+    show();
 
     for (const pill of pills) {
-      const doel = pill.dataset.mode as ProgressionMode;
+      const target = pill.dataset.mode as ProgressionMode;
       // Zonder berekende plaatsen valt er niets te tonen op die as.
-      if (doel === 'rank' && counts.rank < 2) {
+      if (target === 'rank' && counts.rank < 2) {
         pill.disabled = true;
         pill.classList.add('cursor-not-allowed', 'opacity-40');
         continue;
       }
       pill.addEventListener('click', () => {
-        if (doel === mode) return;
-        mode = doel;
+        if (target === mode) return;
+        mode = target;
         chart.setMode(mode);
-        toon();
+        show();
       });
     }
   }
 
   /* --------------------------------------------------------------------- pairings */
 
-  const PAIRINGS_ZICHTBAAR = 8;
+  const PAIRINGS_VISIBLE = 8;
 
   function renderPairings(rows: Pairing[]) {
     if (!rows.length) return;
     const section = document.getElementById('pairings-section')!;
     const table = document.getElementById('pairings-table')!;
 
-    const rij = (row: Pairing) => `<tr class="border-b border-ink-950/10">
+    const renderRow = (row: Pairing) => `<tr class="border-b border-ink-950/10">
       <td class="w-full py-2.5 pr-3"><a href="${playerUrl(row.player.id)}" class="font-medium hover:text-club-600 hover:underline">${esc(displayName(row.player.full_name))}</a></td>
       <td class="type-numeral whitespace-nowrap py-2.5 pr-3 text-right">${row.games}</td>
       <td class="type-numeral whitespace-nowrap py-2.5 pr-3 text-right">${row.as_partner.sets_won}<span class="text-ink-500">/${row.as_partner.sets}</span></td>
       <td class="type-numeral whitespace-nowrap py-2.5 text-right">${row.as_opponent.sets_won}<span class="text-ink-500">/${row.as_opponent.sets}</span></td>
     </tr>`;
 
-    let alles = false;
-    const teken = () => {
-      table.innerHTML = (alles ? rows : rows.slice(0, PAIRINGS_ZICHTBAAR)).map(rij).join('');
+    let showAll = false;
+    const render = () => {
+      table.innerHTML = (showAll ? rows : rows.slice(0, PAIRINGS_VISIBLE)).map(renderRow).join('');
     };
-    teken();
+    render();
 
     document.getElementById('pairings-intro')!.textContent =
       `${rows.length} spelers dit seizoen, van vaakst naar minst samen op een baan.`;
 
-    if (rows.length > PAIRINGS_ZICHTBAAR) {
+    if (rows.length > PAIRINGS_VISIBLE) {
       const more = document.getElementById('pairings-more')!;
       const toggle = document.getElementById('pairings-toggle') as HTMLButtonElement;
       toggle.textContent = `Toon alle ${rows.length}`;
       more.classList.remove('hidden');
       toggle.addEventListener('click', () => {
-        alles = !alles;
-        teken();
-        toggle.textContent = alles ? 'Toon er minder' : `Toon alle ${rows.length}`;
+        showAll = !showAll;
+        render();
+        toggle.textContent = showAll ? 'Toon er minder' : `Toon alle ${rows.length}`;
       });
     }
     section.classList.remove('hidden');
@@ -417,22 +417,22 @@ const careerIds = (await allCareers())
       );
       if (!player?.id) throw new Error('onbekende speler');
 
-      const naam = displayName(player.full_name);
-      document.getElementById('player-name')!.textContent = naam;
-      document.title = `${naam} — intraclub | BC Landegem`;
+      const name = displayName(player.full_name);
+      document.getElementById('player-name')!.textContent = name;
+      document.title = `${name} — intraclub | BC Landegem`;
 
       const history = player.ranking_history ?? [];
       const stats = player.statistics;
       const current = history.at(-1);
-      const delen: string[] = [];
+      const parts: string[] = [];
       if (current?.rank) {
-        const geplaatst = history.filter((row) => row.rank !== null);
-        const best = Math.min(...geplaatst.map((row) => row.rank!));
-        const bestRow = geplaatst.findLast((row) => row.rank === best)!;
-        delen.push(`Plaats ${current.rank}`, `beste ${best} (speeldag ${bestRow.number})`);
+        const ranked = history.filter((row) => row.rank !== null);
+        const best = Math.min(...ranked.map((row) => row.rank!));
+        const bestRow = ranked.findLast((row) => row.rank === best)!;
+        parts.push(`Plaats ${current.rank}`, `beste ${best} (speeldag ${bestRow.number})`);
       }
-      delen.push(`basispunten ${decimal(stats.base_points)}`);
-      document.getElementById('player-ranking')!.textContent = delen.join(' · ');
+      parts.push(`basispunten ${decimal(stats.base_points)}`);
+      document.getElementById('player-ranking')!.textContent = parts.join(' · ');
 
       fillStat('present', stats.rounds.present, history.length, `${stats.rounds.present} van ${history.length} speeldagen`);
       fillStat('sets', stats.sets.won, stats.sets.total, `${stats.sets.won} van ${stats.sets.total} sets`);

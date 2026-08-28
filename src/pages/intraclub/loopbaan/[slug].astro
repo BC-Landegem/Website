@@ -7,6 +7,7 @@ import {
   getData,
   allCareers,
   currentFormatCareer,
+  prewarm,
   seasonSlug,
   type CareerPerson,
   type CareerSeason,
@@ -23,6 +24,7 @@ export async function getStaticPaths() {
    * van de namen in een eindstand klikbaar is en de andere helft niet — en dat
    * leest als een bug, niet als een keuze.
    */
+  await prewarm();
   const people = await allCareers();
   return people.map((person) => ({ params: { slug: person.slug }, props: { person } }));
 }
@@ -38,8 +40,8 @@ const { person } = Astro.props;
  * van elk seizoen. Die zijn er maar zeventien en ze zitten in de build-cache,
  * dus kosten ze hier niets extra — hoeveel loopbaanpagina's er ook zijn.
  */
-let archiefRijen: CareerSeason[] = [];
-let basisPunten: number | null = null;
+let archiveRows: CareerSeason[] = [];
+let basePoints: number | null = null;
 
 if (person.archiveId) {
   /*
@@ -52,29 +54,29 @@ if (person.archiveId) {
   const detail = await getData<
     ArchivePlayerDetail & { ranking_history?: (CareerRound & { season_id: number; round_id: number })[] }
   >(`/archive/players/${person.archiveId}?include=games`);
-  const seizoenen = detail.seasons ?? [];
-  basisPunten = seizoenen[0]?.base_points ?? null;
+  const seasons = detail.seasons ?? [];
+  basePoints = seasons[0]?.base_points ?? null;
 
-  const gespeeld = new Set((detail.games ?? []).map((game) => game.round_id));
-  const verloop = new Map<number, Map<number, CareerRound>>();
-  for (const rij of detail.ranking_history ?? []) {
-    if (!gespeeld.has(rij.round_id)) continue;
-    const groep = verloop.get(rij.season_id) ?? new Map<number, CareerRound>();
-    groep.set(rij.round_id, {
-      number: rij.number,
-      date: rij.date,
-      average: rij.average,
+  const played = new Set((detail.games ?? []).map((game) => game.round_id));
+  const history = new Map<number, Map<number, CareerRound>>();
+  for (const row of detail.ranking_history ?? []) {
+    if (!played.has(row.round_id)) continue;
+    const group = history.get(row.season_id) ?? new Map<number, CareerRound>();
+    group.set(row.round_id, {
+      number: row.number,
+      date: row.date,
+      average: row.average,
       day_score: null,
       rank: null,
     });
-    verloop.set(rij.season_id, groep);
+    history.set(row.season_id, group);
   }
 
-  archiefRijen = await Promise.all(
-    seizoenen.map(async (seizoen) => {
+  archiveRows = await Promise.all(
+    seasons.map(async (season) => {
       const [standings, rounds] = await Promise.all([
-        getData<ArchiveStanding[]>(`/archive/seasons/${seizoen.season_id}/standings`),
-        getData<ArchiveRound[]>(`/archive/seasons/${seizoen.season_id}/rounds`),
+        getData<ArchiveStanding[]>(`/archive/seasons/${season.season_id}/standings`),
+        getData<ArchiveRound[]>(`/archive/seasons/${season.season_id}/rounds`),
       ]);
       const index = standings.findIndex((row) => row.archive_player_id === person.archiveId);
       const stand = index >= 0 ? standings[index] : null;
@@ -82,45 +84,45 @@ if (person.archiveId) {
       // De speeldagen waarop hij speelde, met het gemiddelde erbij waar het
       // bewaard is. Zo krijgt ook 2009-2013 een lijst in plaats van een lege
       // uitklap: nummer, datum en een weg naar de uitslagen.
-      const bewaard = verloop.get(seizoen.season_id);
-      const history = rounds
-        .filter((round) => gespeeld.has(round.id))
+      const stored = history.get(season.season_id);
+      const rounds_ = rounds
+        .filter((round) => played.has(round.id))
         .map((round) => ({
           number: round.number,
           date: round.date,
-          average: bewaard?.get(round.id)?.average ?? null,
+          average: stored?.get(round.id)?.average ?? null,
           day_score: null,
           rank: null,
         }));
 
       return {
-        slug: seasonSlug(seizoen.season_name),
-        label: seasonSlug(seizoen.season_name),
+        slug: seasonSlug(season.season_name),
+        label: seasonSlug(season.season_name),
         rank: stand ? index + 1 : null,
         field: standings.length,
         average: stand?.average ?? null,
-        sets: seizoen.sets,
-        games: seizoen.games,
-        present: seizoen.rounds.present,
+        sets: season.sets,
+        games: season.games,
+        present: season.rounds.present,
         rounds_count: rounds.length,
-        history,
+        history: rounds_,
       } satisfies CareerSeason;
     }),
   );
 }
 
-const huidigeRijen = person.playerId ? await currentFormatCareer(person.playerId) : [];
-const rijen = [...archiefRijen, ...huidigeRijen].sort((a, b) => a.slug.localeCompare(b.slug));
+const currentRows = person.playerId ? await currentFormatCareer(person.playerId) : [];
+const rows = [...archiveRows, ...currentRows].sort((a, b) => a.slug.localeCompare(b.slug));
 
-const totaalWedstrijden = rijen.reduce((som, rij) => som + rij.games.total, 0);
-const beste = rijen.filter((rij) => rij.rank !== null).sort((a, b) => a.rank! - b.rank!)[0];
-const naam = displayName(person.name) || 'Onbekende speler';
+const totalGames = rows.reduce((sum, row) => sum + row.games.total, 0);
+const best = rows.filter((row) => row.rank !== null).sort((a, b) => a.rank! - b.rank!)[0];
+const name = displayName(person.name) || 'Onbekende speler';
 // Twee formats naast elkaar: "gewonnen wedstrijden" bestaat alleen links van 2023.
-const gemengd = huidigeRijen.length > 0 && archiefRijen.length > 0;
+const mixedFormats = currentRows.length > 0 && archiveRows.length > 0;
 
 // Zes kolommen die de summary en de kop delen, zodat de rij uitlijnt als een tabel
 // maar wél kan openklappen. Onder sm stapelt alles; daar zetten labels de kolommen.
-const kolommen = 'grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-[7rem_7rem_4.5rem_5rem_5rem_5rem]';
+const columns = 'grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-[7rem_7rem_4.5rem_5rem_5rem_5rem]';
 ---
 
 {/*
@@ -128,8 +130,8 @@ const kolommen = 'grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-[7rem_7rem_4.5re
   eindstanden en via de eigen spelerspagina, niet vindbaar op naam in Google.
 */}
 <Layout
-  title={`${naam} — intraclub loopbaan`}
-  description={`Alle intraclubseizoenen van ${naam} bij BC Landegem.`}
+  title={`${name} — intraclub loopbaan`}
+  description={`Alle intraclubseizoenen van ${name} bij BC Landegem.`}
   noindex
 >
   <div class="bg-feather-100">
@@ -147,11 +149,11 @@ const kolommen = 'grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-[7rem_7rem_4.5re
       </div>
 
       <div class="mt-3">
-        <RailHeading title={naam} accent="cork" />
+        <RailHeading title={name} accent="cork" />
       </div>
 
       <div class="mt-6 max-w-4xl pl-10">
-        {rijen.length === 0 ? (
+        {rows.length === 0 ? (
           <p class="text-ink-700">
             Van deze speler is geen enkel volledig seizoen bewaard — enkel losse vermeldingen in
             uitslagen.
@@ -159,20 +161,20 @@ const kolommen = 'grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-[7rem_7rem_4.5re
         ) : (
           <>
             <p class="text-ink-700">
-              {rijen.length === 1
-                ? `Speelde één seizoen mee: ${rijen[0].label}.`
-                : `Speelde ${rijen.length} seizoenen mee, van ${rijen[0].label} tot ${rijen[rijen.length - 1].label}.`}
-              {totaalWedstrijden > 0 && ` Samen ${totaalWedstrijden} wedstrijden.`}
-              {beste?.rank && ` Beste eindplaats: ${beste.rank} van ${beste.field}, in ${beste.label}.`}
+              {rows.length === 1
+                ? `Speelde één seizoen mee: ${rows[0].label}.`
+                : `Speelde ${rows.length} seizoenen mee, van ${rows[0].label} tot ${rows[rows.length - 1].label}.`}
+              {totalGames > 0 && ` Samen ${totalGames} wedstrijden.`}
+              {best?.rank && ` Beste eindplaats: ${best.rank} van ${best.field}, in ${best.label}.`}
             </p>
             <p class="mt-2 text-sm text-ink-500">
-              Klap een seizoen open voor de speeldagen waarop {naam.split(" ")[0]} speelde.
+              Klap een seizoen open voor de speeldagen waarop {name.split(" ")[0]} speelde.
             </p>
 
             {/* Kolomkoppen los van de lijst: de rijen zijn geen tabel maar
                 uitklapbare blokken, en delen hetzelfde raster. */}
             <div
-              class:list={['mt-8 hidden border-b-[3px] border-ink-950/20 pb-2.5 sm:grid', kolommen]}
+              class:list={['mt-8 hidden border-b-[3px] border-ink-950/20 pb-2.5 sm:grid', columns]}
               aria-hidden="true"
             >
               <span class="type-label pl-6 text-xs text-cork-600">Seizoen</span>
@@ -184,10 +186,10 @@ const kolommen = 'grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-[7rem_7rem_4.5re
             </div>
 
             <div class="mt-2 sm:mt-0">
-              {rijen.map((rij) => (
-                <details id={rij.slug} class="group border-b border-ink-950/10">
+              {rows.map((row) => (
+                <details id={row.slug} class="group border-b border-ink-950/10">
                   <summary class="cursor-pointer list-none py-3 hover:bg-cork-300/10">
-                    <span class:list={['items-baseline', kolommen]}>
+                    <span class:list={['items-baseline', columns]}>
                       <span class="col-span-2 flex items-baseline gap-2 sm:col-span-1">
                         {/* Chevron als getekende SVG, niet als teken: iconen op deze
                             site zijn altijd inline SVG. */}
@@ -201,14 +203,14 @@ const kolommen = 'grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-[7rem_7rem_4.5re
                         >
                           <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
                         </svg>
-                        <span class="font-semibold text-cork-600">{rij.label}</span>
+                        <span class="font-semibold text-cork-600">{row.label}</span>
                       </span>
 
                       <span class="type-numeral text-right text-sm">
                         <span class="type-label mr-2 text-[0.65rem] text-ink-500 sm:hidden">Plaats</span>
-                        {rij.rank ? (
+                        {row.rank ? (
                           <>
-                            {rij.rank}<span class="text-ink-500"> van {rij.field}</span>
+                            {row.rank}<span class="text-ink-500"> van {row.field}</span>
                           </>
                         ) : (
                           /* Dat seizoen heeft geen bewaarde eindstand, of deze
@@ -219,39 +221,39 @@ const kolommen = 'grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-[7rem_7rem_4.5re
 
                       <span class="type-numeral text-right text-sm">
                         <span class="type-label mr-2 text-[0.65rem] text-ink-500 sm:hidden">Gem.</span>
-                        {decimal(rij.average)}
+                        {decimal(row.average)}
                       </span>
 
                       <span class="type-numeral text-right text-sm">
                         <span class="type-label mr-2 text-[0.65rem] text-ink-500 sm:hidden">Sets</span>
-                        {rij.sets.won}<span class="text-ink-500">/{rij.sets.total}</span>
+                        {row.sets.won}<span class="text-ink-500">/{row.sets.total}</span>
                       </span>
 
                       {/* Het aantal gespeelde wedstrijden bestaat in beide formats;
                           een gewónnen wedstrijd alleen in het oude. */}
                       <span class="type-numeral text-right text-sm">
                         <span class="type-label mr-2 text-[0.65rem] text-ink-500 sm:hidden">Matchen</span>
-                        {rij.games.won === null ? (
+                        {row.games.won === null ? (
                           <span class="text-ink-950/30">–</span>
                         ) : (
-                          rij.games.won
+                          row.games.won
                         )}
-                        <span class="text-ink-500">/{rij.games.total}</span>
+                        <span class="text-ink-500">/{row.games.total}</span>
                       </span>
 
                       <span class="type-numeral text-right text-sm">
                         <span class="type-label mr-2 text-[0.65rem] text-ink-500 sm:hidden">Aanwezig</span>
-                        {rij.present}
+                        {row.present}
                       </span>
                     </span>
                   </summary>
 
                   <div class="pb-5 pl-6 pt-1">
-                    {rij.history.length === 0 ? (
+                    {row.history.length === 0 ? (
                       <p class="text-sm text-ink-500">
                         Van dit seizoen is niet bijgehouden welke speeldagen hij speelde — enkel de eindtotalen
                         hierboven en de <a
-                          href={url(`/intraclub/seizoen/${rij.slug}/`)}
+                          href={url(`/intraclub/seizoen/${row.slug}/`)}
                           class="font-semibold text-cork-600 underline">uitslagen van elke speeldag</a
                         >.
                       </p>
@@ -263,19 +265,19 @@ const kolommen = 'grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-[7rem_7rem_4.5re
                               <tr class="border-b border-ink-950/10">
                                 <th scope="col" class="type-label pb-2 text-xs text-ink-500">Speeldag</th>
                                 <th scope="col" class="type-label pb-2 text-xs text-ink-500">Datum</th>
-                                {rij.history.some((r) => r.day_score !== null) && (
+                                {row.history.some((r) => r.day_score !== null) && (
                                   <th scope="col" class="type-label pb-2 text-right text-xs text-ink-500">
                                     Die avond
                                   </th>
                                 )}
                                 {/* Voor 2009-2013 bewaarde het archief geen enkel gemiddelde per
                                     speeldag; een kolom vol streepjes is dan geen informatie. */}
-                                {rij.history.some((r) => r.average !== null) && (
+                                {row.history.some((r) => r.average !== null) && (
                                   <th scope="col" class="type-label pb-2 text-right text-xs text-ink-500">
                                     Gemiddelde
                                   </th>
                                 )}
-                                {rij.history.some((r) => r.rank !== null) && (
+                                {row.history.some((r) => r.rank !== null) && (
                                   <th scope="col" class="type-label pb-2 text-right text-xs text-ink-500">
                                     Plaats
                                   </th>
@@ -283,38 +285,38 @@ const kolommen = 'grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-[7rem_7rem_4.5re
                               </tr>
                             </thead>
                             <tbody>
-                              {rij.history.map((ronde) => (
+                              {row.history.map((round) => (
                                 <tr class="border-b border-ink-950/10 last:border-0">
                                   <td class="py-2">
                                     <a
-                                      href={url(`/intraclub/seizoen/${rij.slug}/speeldag/${ronde.number}/`)}
+                                      href={url(`/intraclub/seizoen/${row.slug}/speeldag/${round.number}/`)}
                                       class="type-numeral text-cork-600 hover:underline"
                                     >
-                                      {ronde.number}
+                                      {round.number}
                                     </a>
                                   </td>
-                                  <td class="py-2 text-ink-500">{formatDate(ronde.date)}</td>
-                                  {rij.history.some((r) => r.day_score !== null) && (
+                                  <td class="py-2 text-ink-500">{formatDate(round.date)}</td>
+                                  {row.history.some((r) => r.day_score !== null) && (
                                     <td class="type-numeral py-2 text-right text-ink-700">
-                                      {ronde.day_score === null ? (
+                                      {round.day_score === null ? (
                                         <span class="text-ink-950/30">uitgeloot</span>
                                       ) : (
-                                        decimal(ronde.day_score)
+                                        decimal(round.day_score)
                                       )}
                                     </td>
                                   )}
-                                  {rij.history.some((r) => r.average !== null) && (
+                                  {row.history.some((r) => r.average !== null) && (
                                     <td class="type-numeral py-2 text-right text-ink-950">
-                                      {ronde.average === null ? (
+                                      {round.average === null ? (
                                         <span class="text-ink-950/30">–</span>
                                       ) : (
-                                        decimal(ronde.average)
+                                        decimal(round.average)
                                       )}
                                     </td>
                                   )}
-                                  {rij.history.some((r) => r.rank !== null) && (
+                                  {row.history.some((r) => r.rank !== null) && (
                                     <td class="type-numeral py-2 text-right text-ink-700">
-                                      {ronde.rank ?? '–'}
+                                      {round.rank ?? '–'}
                                     </td>
                                   )}
                                 </tr>
@@ -323,11 +325,11 @@ const kolommen = 'grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-[7rem_7rem_4.5re
                           </table>
                         </div>
                         <p class="mt-3 text-xs text-ink-500">
-                          {rij.history.length} van de {rij.rounds_count || rij.history.length} speeldagen — de avonden
+                          {row.history.length} van de {row.rounds_count || row.history.length} speeldagen — de avonden
                           waarop hij niet speelde staan er niet bij.
-                          {rij.history.every((r) => r.average === null)
+                          {row.history.every((r) => r.average === null)
                             ? ' Van dit seizoen bewaarde het archief per speeldag niets meer dan de datum — geen gemiddelde, geen plaats. De uitslagen zelf staan er wel.'
-                            : rij.history.every((r) => r.rank === null) &&
+                            : row.history.every((r) => r.rank === null) &&
                               ' Het archief bewaarde per speeldag alleen het gemiddelde; de plaats van toen en wat die avond opbracht, zijn niet mee overgezet.'}
                         </p>
                       </>
@@ -339,9 +341,9 @@ const kolommen = 'grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-[7rem_7rem_4.5re
 
             <p class="mt-6 text-xs text-ink-500">
               De uitslagen zelf staan bij de speeldagen van elk seizoen.
-              {gemengd &&
+              {mixedFormats &&
                 ' Vanaf 2023-2024 verandert het format: vier spelers per baan met een andere combinatie per set. Een wedstrijd heeft daar geen winnend team meer, dus staat er in die kolom enkel het aantal gespeelde wedstrijden.'}
-              {basisPunten !== null && ` Basispunten in het eerste seizoen: ${decimal(basisPunten)}.`}
+              {basePoints !== null && ` Basispunten in het eerste seizoen: ${decimal(basePoints)}.`}
             </p>
           </>
         )}
@@ -354,7 +356,7 @@ const kolommen = 'grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-[7rem_7rem_4.5re
             <span>
               <span class="type-label block text-[0.65rem] text-club-700">Het lopende seizoen</span>
               <span class="mt-1 block text-sm text-ink-700">
-                Sets, aanwezigheid en klassementsverloop van {naam} in de stand van vandaag.
+                Sets, aanwezigheid en klassementsverloop van {name} in de stand van vandaag.
               </span>
             </span>
             <span class="type-label shrink-0 text-xs text-ink-950 group-hover:text-club-700" aria-hidden="true">
@@ -373,14 +375,14 @@ const kolommen = 'grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-[7rem_7rem_4.5re
    * browser daar netjes naartoe met het blok dicht; met script staat het meteen
    * open, want dát is waarvoor er geklikt werd.
    */
-  function openSeizoen() {
+  function openSeason() {
     if (!location.hash) return;
-    const doel = document.getElementById(decodeURIComponent(location.hash.slice(1)));
-    if (!(doel instanceof HTMLDetailsElement)) return;
-    doel.open = true;
-    doel.scrollIntoView({ block: 'center', behavior: 'instant' });
+    const target = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+    if (!(target instanceof HTMLDetailsElement)) return;
+    target.open = true;
+    target.scrollIntoView({ block: 'center', behavior: 'instant' });
   }
 
-  openSeizoen();
-  addEventListener('hashchange', openSeizoen);
+  openSeason();
+  addEventListener('hashchange', openSeason);
 </script>

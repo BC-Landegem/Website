@@ -44,7 +44,7 @@ function shape<K extends keyof SVGElementTagNameMap>(
 }
 
 /** Twee decimalen met een komma, zoals de rest van de site cijfers zet. */
-const cijfer = (value: number) => value.toFixed(2).replace('.', ',');
+const decimal = (value: number) => value.toFixed(2).replace('.', ',');
 
 /** Ronde stap (1, 2, 5, 10, 20 …) zodat de as-waarden leesbare getallen blijven. */
 function niceStep(raw: number): number {
@@ -102,7 +102,7 @@ function averageScale(values: number[]) {
     ticks.push(Number(tick.toFixed(1)));
   }
   const label = (value: number) =>
-    step < 1 ? cijfer(value).replace(',00', '') : String(Math.round(value));
+    step < 1 ? decimal(value).replace(',00', '') : String(Math.round(value));
   return { from, to, ticks, label };
 }
 
@@ -160,7 +160,7 @@ export function drawProgression(
       'aria-label',
       mode === 'rank'
         ? `Klassementsverloop over ${rows.length} speeldagen: van plaats ${first.rank} op speeldag ${first.number} naar ${latest.rank} op speeldag ${latest.number}. Beste plaats: ${Math.min(...values)}.`
-        : `Verloop van het gemiddelde over ${rows.length} speeldagen: van ${cijfer(first.average)} op speeldag ${first.number} naar ${cijfer(latest.average)} op speeldag ${latest.number}. Beste: ${cijfer(Math.max(...values))}.`,
+        : `Verloop van het gemiddelde over ${rows.length} speeldagen: van ${decimal(first.average)} op speeldag ${first.number} naar ${decimal(latest.average)} op speeldag ${latest.number}. Beste: ${decimal(Math.max(...values))}.`,
     );
   }
 
@@ -181,7 +181,7 @@ export function drawProgression(
     svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
     svg.setAttribute('height', String(height));
 
-    const domein =
+    const domain =
       mode === 'rank'
         ? rankScale(values)
         : // Het gemiddelde deelt zijn as met de dagscores, dus tellen die mee
@@ -190,7 +190,7 @@ export function drawProgression(
             ...values,
             ...rows.map((pt) => pt.day_score).filter((v): v is number => v !== null),
           ]);
-    const { from, to, ticks, label } = domein;
+    const { from, to, ticks, label } = domain;
 
     // Plaats 1 hoort bovenaan, een hoger gemiddelde ook: de ene as staat dus op
     // zijn kop en de andere niet.
@@ -299,7 +299,7 @@ export function drawProgression(
 
     // Selectief labelen: het eindpunt en de beste stand. Nooit een cijfer per
     // punt — de as, de tooltip en de tabel dragen de rest.
-    const toon = (value: number) => (mode === 'rank' ? String(value) : cijfer(value));
+    const show = (value: number) => (mode === 'rank' ? String(value) : decimal(value));
     const endY = Math.min(points.at(-1)!.y, bottom - 13);
     const end = shape('text', {
       x: margin.left + areaWidth + 12,
@@ -307,7 +307,7 @@ export function drawProgression(
       fill: 'currentColor',
       class: 'type-numeral text-sm',
     });
-    end.textContent = toon(mode === 'rank' ? latest.rank! : latest.average);
+    end.textContent = show(mode === 'rank' ? latest.rank! : latest.average);
     const endCaption = shape('text', {
       x: margin.left + areaWidth + 12,
       y: endY + 17,
@@ -330,7 +330,7 @@ export function drawProgression(
         fill: 'currentColor',
         class: 'type-numeral text-sm',
       });
-      bestLabel.textContent = toon(best);
+      bestLabel.textContent = show(best);
       const caption = shape('text', {
         x: pt.x,
         y: pt.y - 26,
@@ -383,15 +383,15 @@ export function drawProgression(
   }
 
   /** Wat die speeldag opleverde, in woorden — ook voor wie de grafiek niet ziet. */
-  function bijschrift(pt: ProgressionPoint): string {
+  function caption(pt: ProgressionPoint): string {
     if (mode === 'rank') {
       return pt.day_score === null
         ? `Speeldag ${pt.number} · uitgeloot`
-        : `Speeldag ${pt.number} · gemiddelde ${cijfer(pt.average)}`;
+        : `Speeldag ${pt.number} · gemiddelde ${decimal(pt.average)}`;
     }
     return pt.day_score === null
       ? `Speeldag ${pt.number} · uitgeloot, telt niet mee`
-      : `Speeldag ${pt.number} · die avond ${cijfer(pt.day_score)}`;
+      : `Speeldag ${pt.number} · die avond ${decimal(pt.day_score)}`;
   }
 
   /** Het kruisdraad zoekt de x: de lezer mikt op een speeldag, nooit op een lijn van 2px. */
@@ -404,10 +404,10 @@ export function drawProgression(
       shape('circle', { cx: pt.x, cy: pt.y, r: 8, fill: 'none', stroke: 'currentColor', 'stroke-width': 2 }),
     );
 
-    const rij = rows[active];
+    const row = rows[active];
     tooltipValue.textContent =
-      mode === 'rank' ? `Plaats ${rij.rank}` : `Gemiddelde ${cijfer(rij.average)}`;
-    tooltipCaption.textContent = bijschrift(rij);
+      mode === 'rank' ? `Plaats ${row.rank}` : `Gemiddelde ${decimal(row.average)}`;
+    tooltipCaption.textContent = caption(row);
     tooltip.hidden = false;
     // Onder 280px container-breedte schaalt de viewBox mee; reken dan terug naar CSS-pixels.
     const scaleFactor = svg.clientWidth / lastWidth || 1;
@@ -417,7 +417,7 @@ export function drawProgression(
     const bound = figure.clientWidth;
     tooltip.style.left = `${Math.min(Math.max(pt.x * scaleFactor, half), Math.max(half, bound - half))}px`;
     tooltip.style.top = `${pt.y * scaleFactor}px`;
-    message.textContent = `${tooltipValue.textContent}. ${bijschrift(rij)}.`;
+    message.textContent = `${tooltipValue.textContent}. ${caption(row)}.`;
   }
 
   function hide() {

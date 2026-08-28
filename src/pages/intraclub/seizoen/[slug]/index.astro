@@ -7,6 +7,7 @@ import { careerUrl, formatDate, decimal, displayName } from '../../../../lib/int
 import {
   allSeasons,
   getData,
+  prewarm,
   type SeasonEntry,
   type ArchiveStanding,
   type ArchiveRound,
@@ -14,6 +15,7 @@ import {
 import type { RankingRow, Round, Player } from '../../../../lib/intra';
 
 export async function getStaticPaths() {
+  await prewarm();
   const seasons = await allSeasons();
   // Een seizoen dat nog loopt krijgt geen bevroren kopie: zijn stand leeft op
   // /intraclub/. Zodra het afgelopen is, wordt het hier wel een pagina — ook al
@@ -60,10 +62,10 @@ let rows: StandRow[] = [];
 let matchdays: MatchdayRow[] = [];
 let categories: { label: string; name: string; average: number }[] = [];
 
-const speeldagUrl = (nummer: number) =>
-  url(`/intraclub/seizoen/${season.slug}/speeldag/${nummer}/`);
+const matchdayPath = (number: number) =>
+  url(`/intraclub/seizoen/${season.slug}/speeldag/${number}/`);
 
-if (season.format === 'archief') {
+if (season.format === 'archive') {
   const [standings, rounds] = await Promise.all([
     getData<ArchiveStanding[]>(`/archive/seasons/${season.id}/standings`),
     getData<ArchiveRound[]>(`/archive/seasons/${season.id}/rounds`),
@@ -83,7 +85,7 @@ if (season.format === 'archief') {
 
   matchdays = rounds.map((round) => ({
     number: round.number,
-    href: speeldagUrl(round.number),
+    href: matchdayPath(round.number),
     date: round.date,
     games: round.games_count,
     averageAbsent: round.average_absent,
@@ -100,8 +102,8 @@ if (season.format === 'archief') {
     getData<RankingRow[]>(`/rankings/general?season=${season.id}&members=0`),
     getData<Statistic[]>(`/seasons/${season.id}/statistics?members=0`),
     getData<Round[]>(`/rounds?season=${season.id}`),
-    ...(['women', 'recreants', 'veterans'] as const).map((categorie) =>
-      getData<RankingRow[]>(`/rankings/${categorie}?season=${season.id}&members=0&limit=1`),
+    ...(['women', 'recreants', 'veterans'] as const).map((category) =>
+      getData<RankingRow[]>(`/rankings/${category}?season=${season.id}&members=0&limit=1`),
     ),
   ]);
 
@@ -121,7 +123,7 @@ if (season.format === 'archief') {
 
   matchdays = rounds.map((round) => ({
     number: round.number,
-    href: speeldagUrl(round.number),
+    href: matchdayPath(round.number),
     date: round.date,
     games: round.games_count,
     averageAbsent: round.average_absent,
@@ -130,8 +132,8 @@ if (season.format === 'archief') {
 
   const labels = ['Dames', 'Recreanten', 'Veteranen'];
   categories = others
-    .map((lijst, i) => {
-      const winner = lijst[0];
+    .map((list, i) => {
+      const winner = list[0];
       return winner ? { label: labels[i], name: displayName(winner.full_name), average: winner.average } : null;
     })
     .filter((entry): entry is { label: string; name: string; average: number } => entry !== null);
@@ -140,8 +142,8 @@ if (season.format === 'archief') {
 // Nieuwste speeldag bovenaan, zoals op /intraclub/.
 matchdays.reverse();
 
-const formatUitleg =
-  season.format === 'archief'
+const formatNote =
+  season.format === 'archive'
     ? 'Gespeeld in het oude format: vaste teams, best of three. Het archief bewaart daarvan ook het aantal gewonnen wedstrijden — een cijfer dat het huidige format niet meer kent.'
     : 'Gespeeld in het huidige format: vier spelers per baan, elke set een andere combinatie.';
 ---
@@ -168,20 +170,20 @@ const formatUitleg =
         <RailHeading
           title={`Seizoen ${season.label}`}
           accent="cork"
-          intro={`${season.rounds_count} speeldagen, ${season.players_count} spelers. ${formatUitleg}`}
+          intro={`${season.rounds_count} speeldagen, ${season.players_count} spelers. ${formatNote}`}
         />
       </div>
 
       {categories.length > 0 && (
-        <section class="mt-12 pl-10" aria-labelledby="categorie-heading">
-          <h2 id="categorie-heading" class="type-label text-xs text-ink-500">Ook eerste in hun reeks</h2>
+        <section class="mt-12 pl-10" aria-labelledby="category-heading">
+          <h2 id="category-heading" class="type-label text-xs text-ink-500">Ook eerste in hun reeks</h2>
           <ul class="mt-4 grid gap-px border border-ink-950/10 bg-ink-950/10 sm:grid-cols-3">
-            {categories.map((categorie) => (
+            {categories.map((category) => (
               <li class="bg-feather-100 p-4">
-                <span class="type-label block text-[0.65rem] text-cork-600">{categorie.label}</span>
-                <span class="mt-1 block font-bold text-ink-950">{categorie.name}</span>
+                <span class="type-label block text-[0.65rem] text-cork-600">{category.label}</span>
+                <span class="mt-1 block font-bold text-ink-950">{category.name}</span>
                 <span class="type-numeral mt-0.5 block text-sm text-ink-500">
-                  {decimal(categorie.average)}
+                  {decimal(category.average)}
                 </span>
               </li>
             ))}
@@ -202,7 +204,7 @@ const formatUitleg =
           </p>
         ) : (
           <>
-            {season.format === 'archief' && (
+            {season.format === 'archive' && (
               <p class="mt-3 max-w-2xl text-sm text-ink-500">
                 De kolom "aanwezig" staat er niet voor de volledigheid: in dit format kon je het
                 klassement winnen zonder elke speeldag te spelen, en dat maakt de eindstand pas
@@ -217,7 +219,7 @@ const formatUitleg =
                     <th class="w-full py-2.5 pr-3 font-bold">Naam</th>
                     <th class="whitespace-nowrap py-2.5 pr-3 text-right font-bold">Gem.</th>
                     <th class="whitespace-nowrap py-2.5 pr-3 text-right font-bold">Sets</th>
-                    {season.format === 'archief' && (
+                    {season.format === 'archive' && (
                       <th class="whitespace-nowrap py-2.5 pr-3 text-right font-bold">Matchen</th>
                     )}
                     <th class="whitespace-nowrap py-2.5 text-right font-bold">Aanwezig</th>
@@ -242,7 +244,7 @@ const formatUitleg =
                       <td class="type-numeral whitespace-nowrap py-2.5 pr-3 text-right">
                         {row.sets ? `${row.sets.won}/${row.sets.total}` : '–'}
                       </td>
-                      {season.format === 'archief' && (
+                      {season.format === 'archive' && (
                         <td class="type-numeral whitespace-nowrap py-2.5 pr-3 text-right">
                           {row.games ? `${row.games.won}/${row.games.total}` : '–'}
                         </td>

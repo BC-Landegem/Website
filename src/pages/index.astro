@@ -704,9 +704,9 @@ const photoCuts = [
 
       const round = meta?.round;
       if (round) {
-        const staat = seasonState(round);
+        const state = seasonState(round);
         document.getElementById('intra-standing-after')!.textContent =
-          staat === 'af'
+          state === 'ended'
             ? `Eindstand ${seasonLabel(meta!.season.name)} · na speeldag ${round.number}`
             : `Stand na speeldag ${round.number} · ${formatDate(round.date)}`;
       }

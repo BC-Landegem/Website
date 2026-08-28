@@ -20,7 +20,7 @@ const tabs = [
 // De zijdeur naar de bevroren helft. Het aantal seizoenen komt uit de API en
 // niet uit een getal in de tekst: volgend jaar zijn het er achttien.
 const seasons = await allSeasons();
-const oudste = seasons[0]?.label.slice(0, 4);
+const oldest = seasons[0]?.label.slice(0, 4);
 ---
 
 <Layout
@@ -146,7 +146,7 @@ const oudste = seasons[0]?.label.slice(0, 4);
         <span>
           <span class="type-label block text-[0.65rem] text-cork-600">Uit de geschiedenis</span>
           <span class="mt-1 block text-sm text-ink-700">
-            {seasons.length} seizoenen intraclub, van {oudste} tot nu. Erelijst, eindstanden en clubrecords.
+            {seasons.length} seizoenen intraclub, van {oldest} tot nu. Erelijst, eindstanden en clubrecords.
           </span>
         </span>
         <span class="type-label shrink-0 text-xs text-ink-950 group-hover:text-cork-600" aria-hidden="true">
@@ -294,11 +294,11 @@ const oudste = seasons[0]?.label.slice(0, 4);
     line.innerHTML = standingLine(meta);
     line.classList.remove('hidden');
 
-    const staat = seasonState(meta.round);
-    if (staat === 'loopt') return;
+    const state = seasonState(meta.round);
+    if (state === 'running') return;
     const note = document.getElementById('intra-season-note')!;
     note.textContent =
-      staat === 'af'
+      state === 'ended'
         ? `Het seizoen ${seasonLabel(meta.season.name)} is afgelopen. Het nieuwe seizoen start in september.`
         : 'Er is nog geen speeldag berekend, dus staat iedereen op zijn basispunten.';
     note.classList.remove('hidden');

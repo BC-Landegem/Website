@@ -6,21 +6,21 @@ import { champions } from '../../lib/intra-build';
 
 // Bevroren data: één keer ophalen bij de build, daarna platte HTML. Nul fetches
 // in de browser, meteen indexeerbaar, en leesbaar zonder netwerk.
-const lijst = await champions();
-const oudste = lijst[lijst.length - 1]?.season.label.slice(0, 4);
-const nieuwste = lijst[0]?.season.label.slice(-4);
+const list = await champions();
+const oldest = list[list.length - 1]?.season.label.slice(0, 4);
+const newest = list[0]?.season.label.slice(-4);
 
-const seizoenUrl = (entry: (typeof lijst)[number]) =>
+const seasonUrl = (entry: (typeof list)[number]) =>
   entry.season.isRunning
     ? url('/intraclub/')
     : url(`/intraclub/seizoen/${entry.season.slug}/`);
 
-const decimaal = (value: number) => value.toFixed(2).replace('.', ',');
+const decimal = (value: number) => value.toFixed(2).replace('.', ',');
 ---
 
 <Layout
   title="Erelijst intraclub"
-  description={`Wie de intraclub van BC Landegem won, seizoen per seizoen, van ${oudste} tot ${nieuwste}.`}
+  description={`Wie de intraclub van BC Landegem won, seizoen per seizoen, van ${oldest} tot ${newest}.`}
 >
   <div class="bg-feather-100">
     <div class="mx-auto max-w-5xl px-4 py-14 sm:py-16">
@@ -28,7 +28,7 @@ const decimaal = (value: number) => value.toFixed(2).replace('.', ',');
         title="Erelijst"
         accent="cork"
         continuous
-        intro={`Wie het seizoen op kop afsloot, van ${oudste} tot vandaag.`}
+        intro={`Wie het seizoen op kop afsloot, van ${oldest} tot vandaag.`}
       >
         <p class="mt-3 max-w-2xl text-sm text-ink-500">
           Het gemiddelde is dat van de laatste berekende speeldag. Het aantal spelers staat erbij
@@ -46,7 +46,7 @@ const decimaal = (value: number) => value.toFixed(2).replace('.', ',');
           niet als aparte titel uitgereikt. Recreanten en veteranen staan niet in deze lijst: het
           archief bewaart geen categorie per seizoen, dus zou de site een titel tonen die nooit
           bestaan heeft. Voor de recente seizoenen staan ze op de <a
-            href={url(`/intraclub/seizoen/${lijst.find((entry) => entry.season.format === 'huidig' && !entry.season.isRunning)?.season.slug ?? ''}/`)}
+            href={url(`/intraclub/seizoen/${list.find((entry) => entry.season.format === 'current' && !entry.season.isRunning)?.season.slug ?? ''}/`)}
             class="font-semibold text-cork-600 underline">seizoenspagina's</a
           >.
         </p>
@@ -58,10 +58,10 @@ const decimaal = (value: number) => value.toFixed(2).replace('.', ',');
           class="absolute bottom-3 left-[6px] top-2 w-1 -translate-x-1/2 bg-cork-400"
           aria-hidden="true"></span>
 
-        {lijst.map((entry) => (
+        {list.map((entry) => (
           <li class="relative border-b border-ink-950/10 last:border-0">
             <a
-              href={seizoenUrl(entry)}
+              href={seasonUrl(entry)}
               class="group block py-4 transition-transform duration-300 hover:translate-x-2"
             >
               {/* Op de rail-x: de bol staat 6px vanaf de linkerrand van de lijst,
@@ -86,7 +86,7 @@ const decimaal = (value: number) => value.toFixed(2).replace('.', ',');
                     {entry.winner.name}
                   </span>
                   <span class="mt-0.5 block text-sm text-ink-500">
-                    <span class="type-numeral text-ink-700">{decimaal(entry.winner.average)}</span>
+                    <span class="type-numeral text-ink-700">{decimal(entry.winner.average)}</span>
                     {' gemiddelde · '}
                     <span class="type-numeral text-ink-700">{entry.season.players_count}</span>
                     {' spelers · '}
@@ -109,7 +109,7 @@ const decimaal = (value: number) => value.toFixed(2).replace('.', ',');
                         <>
                           <span class="text-ink-700">{entry.women.name}</span>
                           {' · '}
-                          <span class="type-numeral text-ink-700">{decimaal(entry.women.average)}</span>
+                          <span class="type-numeral text-ink-700">{decimal(entry.women.average)}</span>
                         </>
                       )}
                     </span>

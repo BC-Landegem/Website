@@ -148,9 +148,9 @@ function kebab(name: string): string {
  * moet kunnen samenstellen om naar de loopbaan door te linken.
  */
 export function careerSlug(person: { playerId?: number | null; archiveId?: number | null; name: string }): string {
-  const sleutel = person.playerId ? `s${person.playerId}` : `a${person.archiveId}`;
-  const naam = kebab(person.name);
-  return naam ? `${sleutel}-${naam}` : sleutel;
+  const key = person.playerId ? `s${person.playerId}` : `a${person.archiveId}`;
+  const name = kebab(person.name);
+  return name ? `${key}-${name}` : key;
 }
 
 export function careerUrl(person: { playerId?: number | null; archiveId?: number | null; name: string }): string {
@@ -178,14 +178,14 @@ export function decimal(value: number | null | undefined, digits = 2): string {
  * is. Zonder deze afleiding staat er van juni tot september een bevroren
  * eindstand op de pagina alsof het de stand van deze week is.
  */
-export type SeasonState = 'loopt' | 'af' | 'nieuw';
+export type SeasonState = 'running' | 'ended' | 'new';
 
 /** Acht weken zonder berekende speeldag: dan is het geen lopend seizoen meer. */
-const STILGEVALLEN_MS = 8 * 7 * 24 * 60 * 60 * 1000;
+const STALE_AFTER_MS = 8 * 7 * 24 * 60 * 60 * 1000;
 
 export function seasonState(round: RankingRound | null, now = new Date()): SeasonState {
-  if (!round) return 'nieuw';
-  return now.getTime() - new Date(round.date).getTime() > STILGEVALLEN_MS ? 'af' : 'loopt';
+  if (!round) return 'new';
+  return now.getTime() - new Date(round.date).getTime() > STALE_AFTER_MS ? 'ended' : 'running';
 }
 
 /**
@@ -194,12 +194,12 @@ export function seasonState(round: RankingRound | null, now = new Date()): Seaso
  */
 export function standingLine(meta: RankingMeta, now = new Date()): string {
   const state = seasonState(meta.round, now);
-  if (state === 'nieuw') {
+  if (state === 'new') {
     return `Seizoen ${esc(seasonLabel(meta.season.name))} — de stand vertrekt van de basispunten.`;
   }
   const round = meta.round!;
   const link = `<a href="${matchdayUrl(round.id)}" class="font-semibold text-club-700 hover:text-club-800 hover:underline">speeldag ${round.number} (${formatDate(round.date)})</a>`;
-  return state === 'af'
+  return state === 'ended'
     ? `Eindstand ${esc(seasonLabel(meta.season.name))}, na ${link}`
     : `Stand na ${link}`;
 }

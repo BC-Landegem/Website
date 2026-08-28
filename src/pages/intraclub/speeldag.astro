@@ -95,7 +95,7 @@ import { url } from '../../lib/url';
    * uitslag. Het gevolg ervan — het verliezersgemiddelde — staat wel onder de
    * tabel, als getal zonder namen.
    */
-  function aanwezigen(rows: Attendance[]): Attendance[] {
+  function attendees(rows: Attendance[]): Attendance[] {
     return rows
       .filter((row) => row.is_present || row.is_drawn_out)
       .sort((a, b) => (b.day_score ?? -1) - (a.day_score ?? -1));
@@ -132,19 +132,19 @@ import { url } from '../../lib/url';
       // Het aantal aanwezigen werd hier vroeger geraden uit het aantal
       // wedstrijden; players_present staat nu in de payload en telt ook wie
       // uitgeloot werd.
-      const delen = [
+      const parts = [
         formatDate(round.date),
         `${round.players_present} aanwezig`,
         `${round.games_count} ${round.games_count === 1 ? 'baan' : 'banen'}`,
       ];
-      if (round.players_drawn_out) delen.push(`${round.players_drawn_out} uitgeloot`);
-      document.getElementById('matchday-info')!.textContent = delen.join(' · ');
+      if (round.players_drawn_out) parts.push(`${round.players_drawn_out} uitgeloot`);
+      document.getElementById('matchday-info')!.textContent = parts.join(' · ');
 
       document.getElementById('matchday-matches')!.innerHTML = round.games
         .map((game) => renderGameCard(game))
         .join('');
 
-      const rows = aanwezigen(round.attendances ?? []);
+      const rows = attendees(round.attendances ?? []);
       renderAttendance(rows);
       document.getElementById('matchday-attendance-intro')!.textContent =
         'De dagscore is wat deze avond opleverde; het gemiddelde ernaast is de stand ná die verrekening.';

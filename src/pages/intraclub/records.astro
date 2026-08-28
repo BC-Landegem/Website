@@ -49,26 +49,26 @@ interface Records {
  */
 const records = await getData<Records>('/records?limit=10');
 const seasons = await allSeasons();
-const huidig = seasons.filter((season) => season.format === 'huidig');
-const vanaf = huidig[0]?.label.slice(0, 4);
+const current = seasons.filter((season) => season.format === 'current');
+const since = current[0]?.label.slice(0, 4);
 
 /**
  * Vijf mensen die alle zeventien speeldagen haalden zijn geen ranglijst maar
  * één record dat vijf keer gedeeld wordt. Genummerd tonen zou een volgorde
  * suggereren die er niet is, dus groeperen we op lengte.
  */
-const reeksen = new Map<number, Streak[]>();
+const streaks = new Map<number, Streak[]>();
 for (const streak of records.longest_streaks ?? []) {
-  const groep = reeksen.get(streak.length) ?? [];
-  groep.push(streak);
-  reeksen.set(streak.length, groep);
+  const group = streaks.get(streak.length) ?? [];
+  group.push(streak);
+  streaks.set(streak.length, group);
 }
-const reeksGroepen = [...reeksen.entries()].sort((a, b) => b[0] - a[0]).slice(0, 3);
+const streakGroups = [...streaks.entries()].sort((a, b) => b[0] - a[0]).slice(0, 3);
 
-const namenlijst = (namen: string[]) =>
-  namen.length === 1
-    ? namen[0]
-    : `${namen.slice(0, -1).join(', ')} en ${namen[namen.length - 1]}`;
+const nameList = (names: string[]) =>
+  names.length === 1
+    ? names[0]
+    : `${names.slice(0, -1).join(', ')} en ${names[names.length - 1]}`;
 ---
 
 <Layout
@@ -91,7 +91,7 @@ const namenlijst = (namen: string[]) =>
     <div class="mt-3">
       <RailHeading
         title="Clubrecords"
-        intro={`Sinds ${vanaf}, toen het format veranderde naar vier spelers per baan met een andere combinatie per set.`}
+        intro={`Sinds ${since}, toen het format veranderde naar vier spelers per baan met een andere combinatie per set.`}
       >
         <p class="mt-3 max-w-2xl text-sm text-ink-500">
           De veertien seizoenen daarvoor doen niet mee: die speelden met vaste teams in best of
@@ -150,18 +150,18 @@ const namenlijst = (namen: string[]) =>
         iedereen die hetzelfde deed — vandaar geen nummers.
       </p>
       <ul class="border-t border-ink-950/10">
-        {reeksGroepen.map(([lengte, groep]) => (
+        {streakGroups.map(([length, group]) => (
           <li class="border-b border-ink-950/10 py-4">
             <p class="type-numeral text-2xl text-ink-950">
-              {lengte}
+              {length}
               <span class="text-base text-ink-500"> speeldagen op rij</span>
             </p>
             <p class="mt-1.5 text-sm text-ink-700">
-              {namenlijst(groep.map((streak) => streak.player.full_name))}
+              {nameList(group.map((streak) => streak.player.full_name))}
             </p>
             <p class="mt-1 text-xs text-ink-500">
-              {[...new Set(groep.map((streak) => seasonLabel(streak.season.name)))].join(', ')}
-              {groep.some((streak) => streak.length === streak.rounds_in_season) &&
+              {[...new Set(group.map((streak) => seasonLabel(streak.season.name)))].join(', ')}
+              {group.some((streak) => streak.length === streak.rounds_in_season) &&
                 ' — een volledig seizoen'}
             </p>
           </li>
