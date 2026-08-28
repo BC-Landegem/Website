@@ -1,10 +1,19 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import Heading from '../../components/Heading.astro';
 import Dot from '../../components/Dot.astro';
 import { url } from '../../lib/url';
 ---
 
-<Layout title="Intraclub speeldag" description="De uitslagen van een intraclub-speeldag van BC Landegem.">
+{/*
+  noindex: wie de link heeft ziet deze pagina, maar Google zet geen clublid met
+  naam en dagscore in de zoekresultaten. Hetzelfde geldt voor /intraclub/speler/.
+*/}
+<Layout
+  title="Intraclub speeldag"
+  description="De uitslagen van een intraclub-speeldag van BC Landegem."
+  noindex
+>
   <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
     <div class="relative pl-10">
       <Dot top="top-11" />
@@ -37,44 +46,110 @@ import { url } from '../../lib/url';
 
     <div id="matchday-content" class="mt-12 hidden max-w-3xl pl-10">
       <p class="mb-6 text-sm text-ink-500">
-        Elke match wordt gespeeld door vier spelers die per set in een andere samenstelling dubbelen.
-        Het winnende duo staat in het vet.
+        Elke wedstrijd wordt gespeeld door vier spelers die per set in een andere samenstelling
+        dubbelen. Het winnende duo staat in het vet; het kleine cijfer achter een duo is de som van
+        hun bonuspunten — het verschil tussen de twee is de voorsprong waarmee het zwakkere duo
+        begint.
       </p>
       <div id="matchday-matches" class="space-y-4"></div>
+
+      <section class="mt-14">
+        <Heading size="small">Wie er was</Heading>
+        <p id="matchday-attendance-intro" class="mb-6 mt-3 text-sm text-ink-500"></p>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead>
+              <tr class="type-label border-b-[3px] border-ink-950/20 text-xs text-club-700">
+                <th class="w-full py-2.5 pr-3 font-bold">Naam</th>
+                <th class="whitespace-nowrap py-2.5 pr-3 text-right font-bold">Dagscore</th>
+                <th class="whitespace-nowrap py-2.5 pr-3 text-right font-bold">Gemiddelde</th>
+                <th class="whitespace-nowrap py-2.5 text-right font-bold">Plaats</th>
+              </tr>
+            </thead>
+            <tbody id="matchday-attendance"></tbody>
+          </table>
+        </div>
+        <p id="matchday-absent" class="mt-4 text-sm text-ink-500"></p>
+      </section>
     </div>
   </div>
 </Layout>
 
 <script>
-  import { fetchJson, formatDate, renderMatchCard } from '../../lib/intra';
-  import type { Match } from '../../lib/intra';
-
-  interface Round {
-    id?: string;
-    number: string;
-    date: string;
-    averageAbsent: string;
-    matches: Match[];
-  }
+  import {
+    fetchData,
+    esc,
+    formatDate,
+    decimal,
+    playerUrl,
+    renderGameCard,
+  } from '../../lib/intra';
+  import type { RoundDetail, Attendance } from '../../lib/intra';
 
   const error = document.getElementById('matchday-error')!;
   const loading = document.getElementById('matchday-loading')!;
+
+  /**
+   * De API geeft élke speler met een statistiekrij voor deze speeldag mee, dus
+   * ook wie er niet was. Die namen horen hier niet: afwezig zijn is geen
+   * uitslag. Het gevolg ervan — het verliezersgemiddelde — staat wel onder de
+   * tabel, als getal zonder namen.
+   */
+  function aanwezigen(rows: Attendance[]): Attendance[] {
+    return rows
+      .filter((row) => row.is_present || row.is_drawn_out)
+      .sort((a, b) => (b.day_score ?? -1) - (a.day_score ?? -1));
+  }
+
+  function renderAttendance(rows: Attendance[]) {
+    document.getElementById('matchday-attendance')!.innerHTML = rows
+      .map((row) => {
+        // Uitgeloot zonder wedstrijd: die avond telt niet mee, dus is er geen
+        // dagscore. Een streepje, geen 0 — dat laatste zou een score zijn.
+        const score = row.is_drawn_out && row.day_score === null
+          ? '<span class="text-ink-950/30">uitgeloot</span>'
+          : decimal(row.day_score);
+        return `<tr class="border-b border-ink-950/10">
+          <td class="w-full py-2.5 pr-3"><a href="${playerUrl(row.player.id)}" class="font-medium hover:text-club-600 hover:underline">${esc(row.player.full_name)}</a></td>
+          <td class="type-numeral whitespace-nowrap py-2.5 pr-3 text-right">${score}</td>
+          <td class="type-numeral whitespace-nowrap py-2.5 pr-3 text-right">${decimal(row.average)}</td>
+          <td class="type-numeral whitespace-nowrap py-2.5 text-right">${row.rank ?? '<span class="text-ink-950/30">–</span>'}</td>
+        </tr>`;
+      })
+      .join('');
+  }
 
   async function loadMatchday() {
     const id = new URLSearchParams(location.search).get('id');
     try {
       if (!id) throw new Error('geen id');
-      const round = await fetchJson<Round>(`/rounds/${encodeURIComponent(id)}`);
-      if (!round.id) throw new Error('onbekende speeldag');
+      const round = await fetchData<RoundDetail>(`/rounds/${encodeURIComponent(id)}`);
+      if (!round?.id) throw new Error('onbekende speeldag');
 
       document.getElementById('matchday-title')!.textContent = `Speeldag ${round.number}`;
       document.title = `Intraclub speeldag ${round.number} | BC Landegem`;
-      document.getElementById('matchday-info')!.textContent =
-        `${formatDate(round.date)} — gemiddelde van de afwezigen: ${round.averageAbsent}`;
 
-      document.getElementById('matchday-matches')!.innerHTML = round.matches
-        .map((match) => renderMatchCard(match))
+      // Het aantal aanwezigen werd hier vroeger geraden uit het aantal
+      // wedstrijden; players_present staat nu in de payload en telt ook wie
+      // uitgeloot werd.
+      const delen = [
+        formatDate(round.date),
+        `${round.players_present} aanwezig`,
+        `${round.games_count} ${round.games_count === 1 ? 'baan' : 'banen'}`,
+      ];
+      if (round.players_drawn_out) delen.push(`${round.players_drawn_out} uitgeloot`);
+      document.getElementById('matchday-info')!.textContent = delen.join(' · ');
+
+      document.getElementById('matchday-matches')!.innerHTML = round.games
+        .map((game) => renderGameCard(game))
         .join('');
+
+      const rows = aanwezigen(round.attendances ?? []);
+      renderAttendance(rows);
+      document.getElementById('matchday-attendance-intro')!.textContent =
+        'De dagscore is wat deze avond opleverde; het gemiddelde ernaast is de stand ná die verrekening.';
+      document.getElementById('matchday-absent')!.textContent =
+        `Wie er niet was, kreeg ${decimal(round.average_absent)} — het gemiddelde van de verliezers van deze speeldag.`;
 
       loading.classList.add('hidden');
       document.getElementById('matchday-content')!.classList.remove('hidden');

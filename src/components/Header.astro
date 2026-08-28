@@ -13,10 +13,20 @@ const clubItems = [
   { label: 'Archief', href: '/archief/' },
 ];
 
+// De intraclub is meer dan het klassement geworden: er hangen zeventien
+// seizoenen historiek en een recordpagina aan. Dat wordt een submenu en geen
+// tiende item in de balk — die telt er al negen en past pas vanaf ~893px.
+const intraclubItems = [
+  { label: 'Klassement', href: '/intraclub/', exact: true },
+  { label: 'Erelijst', href: '/intraclub/erelijst/' },
+  { label: 'Clubrecords', href: '/intraclub/records/' },
+  { label: 'Zo werkt het', href: '/intraclub/zo-werkt-het/' },
+];
+
 const mainItems = [
   { label: 'Jeugd', href: '/jeugd/' },
   { label: 'Recreatief', href: '/recreatief/' },
-  { label: 'Intraclub', href: '/intraclub/' },
+  { label: 'Intraclub', href: '/intraclub/', children: intraclubItems },
   { label: 'Kalender', href: '/kalender/' },
   { label: "Foto's", href: '/media/' },
 ];
@@ -26,6 +36,11 @@ const divisions = ['Heren', 'Gemengd', 'Dames'];
 
 const currentPath = Astro.url.pathname;
 const isActive = (href: string) => currentPath.startsWith(url(href).replace(/\/$/, ''));
+/**
+ * "Klassement" wijst naar /intraclub/ zelf, en dat pad is het begin van elke
+ * intraclub-URL. Met startsWith zou het dus op de erelijst óók actief staan.
+ */
+const isExact = (href: string) => currentPath.replace(/\/$/, '') === url(href).replace(/\/$/, '');
 ---
 
 <header class="sticky top-0 z-50 border-b border-ink-950/10 bg-feather-50/95 backdrop-blur">
@@ -110,13 +125,41 @@ const isActive = (href: string) => currentPath.startsWith(url(href).replace(/\/$
           </ul>
         </li>
 
-        {mainItems.map((item) => (
-          <li>
-            <a href={url(item.href)} class:list={['navlink', isActive(item.href) && 'active']}>
-              {item.label}
-            </a>
-          </li>
-        ))}
+        {mainItems.map((item) =>
+          item.children ? (
+            /* Zelfde patroon als Club: een submenu in plaats van een extra item in de balk */
+            <li class="menu">
+              <a href={url(item.href)} class:list={['navlink', isActive(item.href) && 'active']}>
+                {item.label}
+                <svg class="chevron h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </a>
+              <span class="subnav-heading type-label px-3 pt-2 text-xs text-ink-500">{item.label}</span>
+              <ul class="subnav">
+                {item.children.map((child) => (
+                  <li>
+                    <a
+                      href={url(child.href)}
+                      class:list={[
+                        'subnavlink',
+                        (child.exact ? isExact(child.href) : isActive(child.href)) && 'active',
+                      ]}
+                    >
+                      {child.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </li>
+          ) : (
+            <li>
+              <a href={url(item.href)} class:list={['navlink', isActive(item.href) && 'active']}>
+                {item.label}
+              </a>
+            </li>
+          ),
+        )}
 
         {/* Club met submenu */}
         <li class="menu">

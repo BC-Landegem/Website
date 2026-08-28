@@ -1,8 +1,18 @@
 /**
- * Klassementsverloop als inline SVG.
+ * Verloop van één speler als inline SVG.
  *
- * Vervangt ApexCharts (263 kB gzip voor één lijn). De vorm is bewust smal: één
- * reeks, tijd op x, ranking op y met de as omgekeerd — rank 1 hoort bovenaan.
+ * Vervangt ApexCharts (263 kB gzip voor één lijn). De figuur draagt twee
+ * verhalen die niet op één as passen:
+ *
+ * - **Plaats** loopt van 1 tot ruim honderd, omgekeerd (1 hoort bovenaan), en is
+ *   waar de meeste leden hun seizoen aan afmeten.
+ * - **Gemiddelde** loopt in tienden tussen 15 en 21 en deelt zijn eenheid met de
+ *   dagscore, zodat de rekenregel uit "zo werkt het" zichtbaar wordt: de lijn is
+ *   niets anders dan het lopend gemiddelde van de losse punten erachter.
+ *
+ * Ze samen in één vlak persen zou één van de twee onleesbaar maken, dus schakelt
+ * de pagina ertussen en past de as zich aan. `setMode()` hertekent zonder de
+ * ResizeObserver of de luisteraars opnieuw op te hangen.
  *
  * Kleur komt uit de wereld zelf: elke laag draagt zijn kleur via een Tailwind
  * text-* klasse op de <g> in het sjabloon, en de vormen hieronder tekenen met
@@ -12,8 +22,14 @@
 
 export interface ProgressionPoint {
   number: number;
-  rank: number;
+  average: number;
+  /** Wat die avond opbracht. `null` bij uitgeloot: die speeldag telt niet mee. */
+  day_score: number | null;
+  /** `null` voor wie die speeldag niet in het klassement stond. */
+  rank: number | null;
 }
+
+export type ProgressionMode = 'rank' | 'average';
 
 const NS = 'http://www.w3.org/2000/svg';
 const MOTION_OK = matchMedia('(prefers-reduced-motion: no-preference)').matches;
@@ -27,6 +43,9 @@ function shape<K extends keyof SVGElementTagNameMap>(
   return node;
 }
 
+/** Twee decimalen met een komma, zoals de rest van de site cijfers zet. */
+const cijfer = (value: number) => value.toFixed(2).replace('.', ',');
+
 /** Ronde stap (1, 2, 5, 10, 20 …) zodat de as-waarden leesbare getallen blijven. */
 function niceStep(raw: number): number {
   if (!(raw > 0)) return 1;
@@ -39,13 +58,13 @@ function niceStep(raw: number): number {
 }
 
 /**
- * Het domein volgt de data, niet de volledige ledenlijst. Een speler die tussen
- * 68 en 81 schommelt kreeg bij een as van 1 tot 81 een vlakke lijn tegen de
+ * Het domein volgt de data, niet het volledige bereik. Een speler die tussen 68
+ * en 81 schommelt kreeg bij een as van 1 tot 81 een vlakke lijn tegen de
  * onderrand: 83% van het vlak leeg. Hier ademt het verloop het hele vlak.
  */
-function scale(ranks: number[]) {
-  let lowest = Math.min(...ranks);
-  let highest = Math.max(...ranks);
+function rankScale(values: number[]) {
+  let lowest = Math.min(...values);
+  let highest = Math.max(...values);
   if (lowest === highest) {
     lowest -= 1;
     highest += 1;
@@ -57,9 +76,34 @@ function scale(ranks: number[]) {
   const from = Math.max(1, lowest - margin);
   const to = highest + margin;
   const step = niceStep((to - from) / 4);
-  const values: number[] = [];
-  for (let tick = Math.max(step, Math.ceil(from / step) * step); tick <= to; tick += step) values.push(tick);
-  return { from, to, values };
+  const ticks: number[] = [];
+  for (let tick = Math.max(step, Math.ceil(from / step) * step); tick <= to; tick += step) {
+    ticks.push(tick);
+  }
+  return { from, to, ticks, label: (value: number) => String(value) };
+}
+
+/** Zelfde idee, maar een gemiddelde beweegt in tienden en niet in eenheden. */
+function averageScale(values: number[]) {
+  let lowest = Math.min(...values);
+  let highest = Math.max(...values);
+  if (lowest === highest) {
+    lowest -= 0.5;
+    highest += 0.5;
+  }
+  const margin = Math.max(0.15, (highest - lowest) * 0.08);
+  const from = Math.max(0, lowest - margin);
+  const to = highest + margin;
+  // Hele punten als as-waarde. Halve punten pas wanneer het bereik zo smal is
+  // dat er anders maar één streep in beeld staat.
+  const step = to - from > 3.5 ? 1 : 0.5;
+  const ticks: number[] = [];
+  for (let tick = Math.ceil(from / step) * step; tick <= to; tick += step) {
+    ticks.push(Number(tick.toFixed(1)));
+  }
+  const label = (value: number) =>
+    step < 1 ? cijfer(value).replace(',00', '') : String(Math.round(value));
+  return { from, to, ticks, label };
 }
 
 /** Welke speeldagen krijgen een label: nooit dichter dan ~26px op elkaar, eerste en laatste altijd. */
@@ -73,7 +117,19 @@ function labelIndices(count: number, width: number): Set<number> {
   return shown;
 }
 
-export function drawProgression(figure: HTMLElement, history: ProgressionPoint[]): void {
+/** Hoeveel speeldagen elke modus kan tonen; onder de twee is er geen verloop. */
+export function progressionCounts(history: ProgressionPoint[]) {
+  return {
+    rank: history.filter((pt) => pt.rank !== null).length,
+    average: history.length,
+  };
+}
+
+export function drawProgression(
+  figure: HTMLElement,
+  history: ProgressionPoint[],
+  initial: ProgressionMode = 'rank',
+): { setMode: (mode: ProgressionMode) => void } {
   const svg = figure.querySelector('svg')!;
   const layer = (name: string) => figure.querySelector<SVGGElement>(`[data-layer="${name}"]`)!;
   const tooltip = figure.querySelector<HTMLElement>('[data-tooltip]')!;
@@ -81,17 +137,10 @@ export function drawProgression(figure: HTMLElement, history: ProgressionPoint[]
   const tooltipValue = tooltip.querySelector<HTMLElement>('[data-tooltip-value]')!;
   const tooltipCaption = tooltip.querySelector<HTMLElement>('[data-tooltip-caption]')!;
 
-  const ranks = history.map((pt) => pt.rank);
-  const first = history[0];
-  const latest = history[history.length - 1];
-  const best = Math.min(...ranks);
-  // De laatste keer dat de speler zijn beste plaats haalde: dat is de speeldag die telt.
-  const bestIndex = ranks.lastIndexOf(best);
-  svg.setAttribute(
-    'aria-label',
-    `Klassementsverloop over ${history.length} speeldagen: van ${first.rank} op speeldag ${first.number} ` +
-      `naar ${latest.rank} op speeldag ${latest.number}. Beste plaats: ${best}.`,
-  );
+  let mode: ProgressionMode = initial;
+  /** De rijen die in deze modus getekend worden; zonder rank valt een rij weg. */
+  let rows: ProgressionPoint[] = [];
+  let values: number[] = [];
 
   let drawn = false;
   let active = -1;
@@ -100,16 +149,29 @@ export function drawProgression(figure: HTMLElement, history: ProgressionPoint[]
   let areaBottom = 0;
   let lastWidth = 0;
 
+  function prepare() {
+    rows = mode === 'rank' ? history.filter((pt) => pt.rank !== null) : history;
+    values = rows.map((pt) => (mode === 'rank' ? pt.rank! : pt.average));
+
+    const first = rows[0];
+    const latest = rows[rows.length - 1];
+    if (!first || !latest) return;
+    svg.setAttribute(
+      'aria-label',
+      mode === 'rank'
+        ? `Klassementsverloop over ${rows.length} speeldagen: van plaats ${first.rank} op speeldag ${first.number} naar ${latest.rank} op speeldag ${latest.number}. Beste plaats: ${Math.min(...values)}.`
+        : `Verloop van het gemiddelde over ${rows.length} speeldagen: van ${cijfer(first.average)} op speeldag ${first.number} naar ${cijfer(latest.average)} op speeldag ${latest.number}. Beste: ${cijfer(Math.max(...values))}.`,
+    );
+  }
+
   function draw() {
     const width = Math.max(280, figure.clientWidth);
-    // De ResizeObserver vuurt ook meteen bij observe(); zonder deze poort zou die
-    // tweede tekening de net gestarte lijnanimatie weggooien.
-    if (width === lastWidth) return;
-    lastWidth = width;
     const height = width < 480 ? 240 : 320;
-    // Boven is ruim: de beste plaats is per definitie het hoogste punt, en zijn
-    // label moet erboven passen zonder op de bovenste as-waarde te gaan staan.
-    const margin = { top: 46, right: 48, bottom: 46, left: 32 };
+    if (!rows.length) return;
+
+    // Boven is ruim: het beste punt is per definitie het hoogste, en zijn label
+    // moet erboven passen zonder op de bovenste as-waarde te gaan staan.
+    const margin = { top: 46, right: 48, bottom: 46, left: mode === 'rank' ? 32 : 38 };
     const areaWidth = width - margin.left - margin.right;
     const areaHeight = height - margin.top - margin.bottom;
     const bottom = margin.top + areaHeight;
@@ -119,21 +181,41 @@ export function drawProgression(figure: HTMLElement, history: ProgressionPoint[]
     svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
     svg.setAttribute('height', String(height));
 
-    const { from, to, values } = scale(ranks);
-    // Omgekeerd: de laagste rank (de beste plaats) hoort bovenaan.
-    const y = (rank: number) => margin.top + ((rank - from) / (to - from)) * areaHeight;
+    const domein =
+      mode === 'rank'
+        ? rankScale(values)
+        : // Het gemiddelde deelt zijn as met de dagscores, dus tellen die mee
+          // voor het domein: anders vallen de losse punten buiten beeld.
+          averageScale([
+            ...values,
+            ...rows.map((pt) => pt.day_score).filter((v): v is number => v !== null),
+          ]);
+    const { from, to, ticks, label } = domein;
+
+    // Plaats 1 hoort bovenaan, een hoger gemiddelde ook: de ene as staat dus op
+    // zijn kop en de andere niet.
+    const y = (value: number) =>
+      mode === 'rank'
+        ? margin.top + ((value - from) / (to - from)) * areaHeight
+        : margin.top + ((to - value) / (to - from)) * areaHeight;
     const x = (index: number) =>
-      margin.left + (history.length === 1 ? areaWidth / 2 : (index / (history.length - 1)) * areaWidth);
-    points = history.map((pt, index) => ({ x: x(index), y: y(pt.rank) }));
+      margin.left + (rows.length === 1 ? areaWidth / 2 : (index / (rows.length - 1)) * areaWidth);
+    points = rows.map((pt, index) => ({ x: x(index), y: y(values[index]) }));
+
+    const best = mode === 'rank' ? Math.min(...values) : Math.max(...values);
+    // De laatste keer dat hij zijn beste stand haalde: dat is de speeldag die telt.
+    const bestIndex = values.lastIndexOf(best);
+    const latest = rows[rows.length - 1];
 
     const grid = layer('grid');
     const axis = layer('axis');
+    const daysLayer = layer('days');
     const area = layer('area');
     const labels = layer('labels');
-    for (const group of [grid, axis, area, labels]) group.replaceChildren();
+    for (const group of [grid, axis, daysLayer, area, labels]) group.replaceChildren();
 
     // Hairlines, solide en één stap van de grond: het raster mag nooit meelezen.
-    for (const value of values) {
+    for (const value of ticks) {
       grid.append(
         shape('line', {
           x1: margin.left,
@@ -144,21 +226,31 @@ export function drawProgression(figure: HTMLElement, history: ProgressionPoint[]
           'stroke-width': 1,
         }),
       );
-      const tick = shape('text', { x: margin.left - 8, y: y(value) + 4, 'text-anchor': 'end', fill: 'currentColor' });
-      tick.textContent = String(value);
+      const tick = shape('text', {
+        x: margin.left - 8,
+        y: y(value) + 4,
+        'text-anchor': 'end',
+        fill: 'currentColor',
+      });
+      tick.textContent = label(value);
       axis.append(tick);
     }
 
-    const visible = labelIndices(history.length, areaWidth);
-    for (const [index, pt] of history.entries()) {
+    const visible = labelIndices(rows.length, areaWidth);
+    for (const [index, pt] of rows.entries()) {
       if (!visible.has(index)) continue;
-      const tick = shape('text', { x: x(index), y: bottom + 18, 'text-anchor': 'middle', fill: 'currentColor' });
+      const tick = shape('text', {
+        x: x(index),
+        y: bottom + 18,
+        'text-anchor': 'middle',
+        fill: 'currentColor',
+      });
       tick.textContent = String(pt.number);
       axis.append(tick);
     }
 
     const heading = shape('text', { x: 0, y: 10, fill: 'currentColor', class: 'type-label' });
-    heading.textContent = 'Ranking';
+    heading.textContent = mode === 'rank' ? 'Plaats' : 'Gemiddelde';
     const footer = shape('text', {
       x: margin.left + areaWidth / 2,
       y: bottom + 38,
@@ -168,6 +260,17 @@ export function drawProgression(figure: HTMLElement, history: ProgressionPoint[]
     });
     footer.textContent = 'Speeldag';
     axis.append(heading, footer);
+
+    // De dagscores: losse punten, geen tweede lijn. Ze zijn geen verloop maar
+    // losse avonden, en de lijn ertussen is precies wat de rode lijn al is.
+    if (mode === 'average') {
+      for (const [index, pt] of rows.entries()) {
+        if (pt.day_score === null) continue;
+        daysLayer.append(
+          shape('circle', { cx: x(index), cy: y(pt.day_score), r: 3, fill: 'currentColor' }),
+        );
+      }
+    }
 
     // De lijn: 2px, ronde verbindingen — dezelfde vluchtdraad, hier met echte data.
     const line = shape('path', {
@@ -194,8 +297,9 @@ export function drawProgression(figure: HTMLElement, history: ProgressionPoint[]
       );
     }
 
-    // Selectief labelen: het eindpunt en de beste plaats. Nooit een cijfer per punt —
-    // de as, de tooltip en de tabel dragen de rest.
+    // Selectief labelen: het eindpunt en de beste stand. Nooit een cijfer per
+    // punt — de as, de tooltip en de tabel dragen de rest.
+    const toon = (value: number) => (mode === 'rank' ? String(value) : cijfer(value));
     const endY = Math.min(points.at(-1)!.y, bottom - 13);
     const end = shape('text', {
       x: margin.left + areaWidth + 12,
@@ -203,7 +307,7 @@ export function drawProgression(figure: HTMLElement, history: ProgressionPoint[]
       fill: 'currentColor',
       class: 'type-numeral text-sm',
     });
-    end.textContent = String(latest.rank);
+    end.textContent = toon(mode === 'rank' ? latest.rank! : latest.average);
     const endCaption = shape('text', {
       x: margin.left + areaWidth + 12,
       y: endY + 17,
@@ -213,8 +317,8 @@ export function drawProgression(figure: HTMLElement, history: ProgressionPoint[]
     endCaption.textContent = 'nu';
     labels.append(end, endCaption);
 
-    // Alleen als de beste plaats niet tegen het eindpunt aan ligt — anders overlappen de labels.
-    if (bestIndex < history.length - 2) {
+    // Alleen als het beste punt niet tegen het eindpunt aan ligt — anders overlappen de labels.
+    if (bestIndex < rows.length - 2) {
       const pt = points[bestIndex];
       // Aan de randen zou een gecentreerd label buiten het vlak steken — over de
       // as-waarden links, of over de rand rechts. Anker het dan aan het punt zelf.
@@ -226,7 +330,7 @@ export function drawProgression(figure: HTMLElement, history: ProgressionPoint[]
         fill: 'currentColor',
         class: 'type-numeral text-sm',
       });
-      bestLabel.textContent = String(best);
+      bestLabel.textContent = toon(best);
       const caption = shape('text', {
         x: pt.x,
         y: pt.y - 26,
@@ -270,17 +374,40 @@ export function drawProgression(figure: HTMLElement, history: ProgressionPoint[]
     else layer('cross').replaceChildren();
   }
 
+  /** Alleen hertekenen als de breedte echt veranderde: anders sneuvelt de lijnanimatie. */
+  function onResize() {
+    const width = Math.max(280, figure.clientWidth);
+    if (width === lastWidth) return;
+    lastWidth = width;
+    draw();
+  }
+
+  /** Wat die speeldag opleverde, in woorden — ook voor wie de grafiek niet ziet. */
+  function bijschrift(pt: ProgressionPoint): string {
+    if (mode === 'rank') {
+      return pt.day_score === null
+        ? `Speeldag ${pt.number} · uitgeloot`
+        : `Speeldag ${pt.number} · gemiddelde ${cijfer(pt.average)}`;
+    }
+    return pt.day_score === null
+      ? `Speeldag ${pt.number} · uitgeloot, telt niet mee`
+      : `Speeldag ${pt.number} · die avond ${cijfer(pt.day_score)}`;
+  }
+
   /** Het kruisdraad zoekt de x: de lezer mikt op een speeldag, nooit op een lijn van 2px. */
   function point(index: number) {
-    active = Math.min(Math.max(index, 0), history.length - 1);
+    active = Math.min(Math.max(index, 0), rows.length - 1);
     const pt = points[active];
+    if (!pt) return;
     layer('cross').replaceChildren(
       shape('line', { x1: pt.x, x2: pt.x, y1: areaTop, y2: areaBottom, stroke: 'currentColor', 'stroke-width': 1 }),
       shape('circle', { cx: pt.x, cy: pt.y, r: 8, fill: 'none', stroke: 'currentColor', 'stroke-width': 2 }),
     );
 
-    tooltipValue.textContent = `Ranking ${history[active].rank}`;
-    tooltipCaption.textContent = `Speeldag ${history[active].number}`;
+    const rij = rows[active];
+    tooltipValue.textContent =
+      mode === 'rank' ? `Plaats ${rij.rank}` : `Gemiddelde ${cijfer(rij.average)}`;
+    tooltipCaption.textContent = bijschrift(rij);
     tooltip.hidden = false;
     // Onder 280px container-breedte schaalt de viewBox mee; reken dan terug naar CSS-pixels.
     const scaleFactor = svg.clientWidth / lastWidth || 1;
@@ -290,7 +417,7 @@ export function drawProgression(figure: HTMLElement, history: ProgressionPoint[]
     const bound = figure.clientWidth;
     tooltip.style.left = `${Math.min(Math.max(pt.x * scaleFactor, half), Math.max(half, bound - half))}px`;
     tooltip.style.top = `${pt.y * scaleFactor}px`;
-    message.textContent = `Speeldag ${history[active].number}: ranking ${history[active].rank}.`;
+    message.textContent = `${tooltipValue.textContent}. ${bijschrift(rij)}.`;
   }
 
   function hide() {
@@ -313,21 +440,37 @@ export function drawProgression(figure: HTMLElement, history: ProgressionPoint[]
     point(nearest(((event.clientX - box.left) / box.width) * lastWidth));
   });
   svg.addEventListener('pointerleave', hide);
-  svg.addEventListener('focus', () => point(active < 0 ? history.length - 1 : active));
+  svg.addEventListener('focus', () => point(active < 0 ? rows.length - 1 : active));
   svg.addEventListener('blur', hide);
   svg.addEventListener('keydown', (event) => {
     const jumps: Record<string, number> = {
       ArrowLeft: -1,
       ArrowRight: 1,
-      Home: -history.length,
-      End: history.length,
+      Home: -rows.length,
+      End: rows.length,
     };
     const step = jumps[event.key];
     if (step === undefined) return;
     event.preventDefault();
-    point((active < 0 ? history.length - 1 : active) + step);
+    point((active < 0 ? rows.length - 1 : active) + step);
   });
 
+  prepare();
+  lastWidth = Math.max(280, figure.clientWidth);
   draw();
-  new ResizeObserver(draw).observe(figure);
+  new ResizeObserver(onResize).observe(figure);
+
+  return {
+    setMode(next: ProgressionMode) {
+      if (next === mode) return;
+      mode = next;
+      // De aanwijzer hoort niet op een speeldag te blijven staan die in de
+      // andere reeks een ander punt is.
+      hide();
+      // De lijn opnieuw laten tekenen: het is een andere reeks, geen resize.
+      drawn = false;
+      prepare();
+      draw();
+    },
+  };
 }

@@ -28,10 +28,16 @@ npm run preview   # dist/ lokaal serveren zoals Pages het doet
 > bestaat die index dus niet en zegt het zoekveld op `/archief/` dat gewoon;
 > zoeken testen doe je met `npm run build && npm run preview`.
 
+> **De build haalt data op en duurt daardoor ~2 minuten.** De intraclub-historiek
+> (erelijst, seizoenen, speeldagen, loopbanen, records) wordt bij het bouwen uit
+> de API gehaald in plaats van in de browser. Zonder netwerk faalt de build; zie
+> "Databronnen · Intraclub-API".
+
 > **Let op de base-prefix.** De site staat op GitHub Pages onder `/Website`, en
 > Astro past die prefix ook in dev toe. De dev-server draait dus op
 > <http://localhost:4321/Website/> — niet op de root. `http://localhost:4321/`
-> geeft een 404; dat is verwacht gedrag, geen defect.
+> geeft een 404; dat is verwacht gedrag, geen defect. Blijf ook op **4321**: dat
+> is het enige lokale origin dat de intraclub-API toelaat.
 
 ## Mappenstructuur
 
@@ -98,12 +104,29 @@ Google Calendar-key juist referrer-restricted is. Breekt de scrape, dan blijft d
 vorige data staan, kleurt de workflow rood en draait de site gewoon door. Een
 foto van de site halen doe je in het Google Photos-album zelf.
 
-**Intraclub-API** — `src/lib/intra.ts` roept
-`https://www.bclandegem.be/intra-app/api/index.php` aan vanuit de browser. Die
-API draait op het oude domein: verdwijnt hij, dan vallen de intraclub-pagina's
-stil. Houd daar rekening mee bij de domeinswitch (zie PRODUCT.md).
-`/intraclub/zo-werkt-het/` is de uitzondering — die draait op een bevroren
-snapshot in `src/data/intraclub-example.json` en doet geen enkel request.
+**Intraclub-API** — `https://intra.bclandegem.be/api` (Laravel), instelbaar via
+`PUBLIC_INTRA_API` (zie `.env.example`). Deze bron wordt op **twee momenten**
+aangesproken, en dat onderscheid is de kern van de intraclub-pagina's:
+
+- `src/lib/intra.ts` draait **in de browser** en bedient het lopende seizoen:
+  `/intraclub/`, `/intraclub/speler/?id=` en `/intraclub/speeldag/?id=`. Valt de
+  API weg, dan tonen die drie een foutmelding en blijft de rest van de site staan.
+- `src/lib/intra-build.ts` draait **tijdens de build** en maakt platte HTML van
+  alles wat bevroren is: de erelijst, 17 seizoenspagina's, 275 speeldagpagina's,
+  256 loopbaanpagina's en de clubrecords. Nul fetches in de browser, meteen
+  indexeerbaar, leesbaar zonder netwerk. Die module cachet per pad binnen één
+  build en haalt met acht tegelijk op; de zware antwoorden gaan bewust langs de
+  cache heen zodat niet het hele archief tegelijk in het geheugen staat.
+
+`/intraclub/zo-werkt-het/` is de uitzondering op allebei — die draait op een
+bevroren snapshot in `src/data/intraclub-example.json` en doet geen enkel request.
+
+> **CORS is per origin.** De API laat `http://localhost:4321` en
+> `https://bc-landegem.github.io` toe. Draai je de dev-server of preview op een
+> andere poort, dan faalt elke browsercall met `net::ERR_FAILED` en zegt de
+> pagina "De standen konden niet geladen worden" — dat lijkt op een codefout maar
+> is er geen. Bij de domeinswitch moet het nieuwe origin bij
+> `CORS_ALLOWED_ORIGINS` aan de kant van de API.
 
 **Twizzit** — het inschrijfformulier is één externe link in
 `src/data/trainings.json`. Geen integratie, geen sleutel.
@@ -207,7 +230,14 @@ Blijft die stil, dan is de conversie schoon.
 ## Bouwen en deployen
 
 Een push naar `master` start `deploy.yml`: Astro bouwt en GitHub Pages
-publiceert. Geen handmatige stap, geen secrets.
+publiceert. Geen handmatige stap, geen secrets — wel één omgevingsvariabele,
+`PUBLIC_INTRA_API`, die in de workflow staat.
+
+> **De build praat met de intraclub-API.** De historiekpagina's worden gebouwd,
+> niet opgehaald in de browser, dus doet één build ruim vijfhonderd verzoeken en
+> duurt hij ongeveer twee minuten. Ligt `intra.bclandegem.be` plat, dan faalt de
+> deploy — met opzet: een halve historiek is erger dan geen deploy. Er zit een
+> herkansing op elk verzoek voor losse haperingen.
 
 `media-sync.yml` draait elke nacht om 03:00 UTC — in de winter 4u, in de zomer 5u Belgische tijd (en kan met de hand via Actions). Vindt
 hij nieuwe foto's, dan commit hij `src/data/media.json` en **start hij zelf een
@@ -238,6 +268,20 @@ workflows triggert.
   met de hand, maar het bijhouden ervan is wél hoe je weet wat er ontbreekt.
 - **Service workers houden vast.** Test je de PWA lokaal, ruim dan af en toe je
   registratie op in DevTools → Application; anders debug je een oude cache.
+- **De intraclub-pagina's hangen aan poort 4321.** De API laat alleen dat origin
+  toe (en dat van Pages). `--port 4322` geeft `net::ERR_FAILED` op elke call — een
+  CORS-weigering, geen bug in de site.
+- **Seizoenspagina's verschijnen pas als het seizoen niet meer loopt.** De API
+  blijft een afgesloten seizoen maandenlang `current` noemen; `intra-build.ts`
+  leidt uit de datum van de laatste berekende speeldag af of het écht nog loopt.
+  Zolang dat zo is, leeft die stand op `/intraclub/` en wordt er geen bevroren
+  kopie gebouwd.
+- **Het archief is niet volledig, en dat is zichtbaar.** Van 2009-2013 is per
+  speeldag niets bewaard dan de datum, en van 2013-2023 alleen het gemiddelde —
+  geen plaats, geen dagscore. De pagina's laten die kolommen dan weg in plaats van
+  ze met streepjes te vullen. Ook `ranking` staat er maar één keer per persoon en
+  niet per seizoen: daarom draagt de erelijst wél een dameslijn en géén
+  recreantenlijn.
 
 ## De README bijhouden
 

@@ -1,0 +1,156 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import RailHeading from '../../components/RailHeading.astro';
+import { url } from '../../lib/url';
+import { champions } from '../../lib/intra-build';
+
+// Bevroren data: één keer ophalen bij de build, daarna platte HTML. Nul fetches
+// in de browser, meteen indexeerbaar, en leesbaar zonder netwerk.
+const lijst = await champions();
+const oudste = lijst[lijst.length - 1]?.season.label.slice(0, 4);
+const nieuwste = lijst[0]?.season.label.slice(-4);
+
+const seizoenUrl = (entry: (typeof lijst)[number]) =>
+  entry.season.isRunning
+    ? url('/intraclub/')
+    : url(`/intraclub/seizoen/${entry.season.slug}/`);
+
+const decimaal = (value: number) => value.toFixed(2).replace('.', ',');
+---
+
+<Layout
+  title="Erelijst intraclub"
+  description={`Wie de intraclub van BC Landegem won, seizoen per seizoen, van ${oudste} tot ${nieuwste}.`}
+>
+  <div class="bg-feather-100">
+    <div class="mx-auto max-w-5xl px-4 py-14 sm:py-16">
+      <RailHeading
+        title="Erelijst"
+        accent="cork"
+        continuous
+        intro={`Wie het seizoen op kop afsloot, van ${oudste} tot vandaag.`}
+      >
+        <p class="mt-3 max-w-2xl text-sm text-ink-500">
+          Het gemiddelde is dat van de laatste berekende speeldag. Het aantal spelers staat erbij
+          omdat het meetelt: eerste worden tussen 55 mensen is iets anders dan eerste worden tussen
+          147.
+        </p>
+        {/*
+          Waarom er wél een dameslijn staat en geen recreantenlijn: geslacht ligt
+          per persoon vast, de badmintonranking in het archief niet per seizoen.
+          Die uitleg hoort hier en niet in een commit.
+        */}
+        <p class="mt-3 max-w-2xl text-sm text-ink-500">
+          Vanaf 2023-2024 houdt de club een apart damesklassement bij. Voor de seizoenen daarvóór is
+          de dameswinnares de hoogste vrouw in de algemene eindstand — dezelfde berekening, alleen
+          niet als aparte titel uitgereikt. Recreanten en veteranen staan niet in deze lijst: het
+          archief bewaart geen categorie per seizoen, dus zou de site een titel tonen die nooit
+          bestaan heeft. Voor de recente seizoenen staan ze op de <a
+            href={url(`/intraclub/seizoen/${lijst.find((entry) => entry.season.format === 'huidig' && !entry.season.isRunning)?.season.slug ?? ''}/`)}
+            class="font-semibold text-cork-600 underline">seizoenspagina's</a
+          >.
+        </p>
+      </RailHeading>
+
+      <ol class="relative mt-12 pl-10">
+        {/* Statische rail: dezelfde grammatica als de speeluren, zonder script. */}
+        <span
+          class="absolute bottom-3 left-[6px] top-2 w-1 -translate-x-1/2 bg-cork-400"
+          aria-hidden="true"></span>
+
+        {lijst.map((entry) => (
+          <li class="relative border-b border-ink-950/10 last:border-0">
+            <a
+              href={seizoenUrl(entry)}
+              class="group block py-4 transition-transform duration-300 hover:translate-x-2"
+            >
+              {/* Op de rail-x: de bol staat 6px vanaf de linkerrand van de lijst,
+                  dus 2.5rem terug vanaf de inhoud, en dan half over de lijn heen. */}
+              <span
+                class:list={[
+                  'absolute left-[calc(-2.5rem+6px)] top-[1.4rem] h-3.5 w-3.5 -translate-x-1/2 rounded-full ring-4 ring-feather-100 transition-transform duration-300 group-hover:scale-125',
+                  entry.winner ? 'bg-cork-400' : 'bg-feather-100 inset-ring-2 inset-ring-cork-400',
+                ]}
+                aria-hidden="true"></span>
+
+              <span class="type-label block text-xs text-cork-600">
+                {entry.season.label}
+                {/* Alleen wanneer het seizoen ook echt nog loopt: van juni tot
+                    september blijft de API hetzelfde seizoen "current" noemen. */}
+                {entry.season.isRunning && <span class="ml-2 text-ink-500">lopend seizoen</span>}
+              </span>
+
+              {entry.winner ? (
+                <>
+                  <span class="mt-1 block font-bold text-ink-950 group-hover:text-cork-600">
+                    {entry.winner.name}
+                  </span>
+                  <span class="mt-0.5 block text-sm text-ink-500">
+                    <span class="type-numeral text-ink-700">{decimaal(entry.winner.average)}</span>
+                    {' gemiddelde · '}
+                    <span class="type-numeral text-ink-700">{entry.season.players_count}</span>
+                    {' spelers · '}
+                    <span class="type-numeral text-ink-700">{entry.season.rounds_count}</span>
+                    {' speeldagen'}
+                    {entry.note && <span class="text-ink-500"> — {entry.note}</span>}
+                  </span>
+
+                  {/*
+                    Een tweede regel, geen tweede kolom: op een telefoon zou een
+                    kolommenrij van drie namen omvallen, en de rail draagt hier
+                    één punt per seizoen.
+                  */}
+                  {entry.women && (
+                    <span class="mt-1.5 block text-sm text-ink-500">
+                      <span class="type-label text-[0.65rem] text-cork-600">Dames</span>{' '}
+                      {entry.women.name === entry.winner?.name ? (
+                        <span>dezelfde — zij won ook de algemene stand</span>
+                      ) : (
+                        <>
+                          <span class="text-ink-700">{entry.women.name}</span>
+                          {' · '}
+                          <span class="type-numeral text-ink-700">{decimaal(entry.women.average)}</span>
+                        </>
+                      )}
+                    </span>
+                  )}
+                </>
+              ) : (
+                /*
+                  Een seizoen zonder bewaarde eindstand. De rail loopt door en de
+                  uitslagen blijven bereikbaar — een leeg tabelletje zou hier
+                  lezen als een fout in plaats van als een gat in het archief.
+                */
+                <>
+                  <span class="mt-1 block font-bold text-ink-700">Geen eindstand bewaard</span>
+                  <span class="mt-0.5 block text-sm text-ink-500">
+                    De <span class="type-numeral text-ink-700">{entry.season.rounds_count}</span>
+                    {' speeldagen van dat seizoen staan er wel.'}
+                  </span>
+                </>
+              )}
+            </a>
+          </li>
+        ))}
+      </ol>
+
+      <div class="mt-12 pl-10">
+        <a
+          href={url('/intraclub/records/')}
+          class="group flex items-baseline justify-between gap-4 border-l-2 border-club-500 bg-club-50 px-5 py-4 transition-colors hover:bg-club-100"
+        >
+          <span>
+            <span class="type-label block text-[0.65rem] text-club-700">Clubrecords</span>
+            <span class="mt-1 block text-sm text-ink-700">
+              Beste seizoenen, langste reeksen en het meest gespeelde duo — over de seizoenen in het
+              huidige format.
+            </span>
+          </span>
+          <span class="type-label shrink-0 text-xs text-ink-950 group-hover:text-club-700" aria-hidden="true">
+            Bekijk
+          </span>
+        </a>
+      </div>
+    </div>
+  </div>
+</Layout>

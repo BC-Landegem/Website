@@ -22,6 +22,12 @@ jobs:
         uses: actions/checkout@v7
       - name: Build with Astro
         uses: withastro/action@v6
+        env:
+          # De erelijst, de zeventien seizoenspagina's, de speeldagen en de
+          # spelerspagina's uit het archief worden hier gebouwd: de build praat
+          # dus met de intraclub-API. Valt die weg, dan faalt de deploy — en dat
+          # is de bedoeling, want een halve historiek is erger dan geen deploy.
+          PUBLIC_INTRA_API: https://intra.bclandegem.be/api
 
   deploy:
     needs: build

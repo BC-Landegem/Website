@@ -1,0 +1,303 @@
+---
+import Layout from '../../../../layouts/Layout.astro';
+import RailHeading from '../../../../components/RailHeading.astro';
+import Heading from '../../../../components/Heading.astro';
+import { url } from '../../../../lib/url';
+import { careerUrl, formatDate, decimal, displayName } from '../../../../lib/intra';
+import {
+  allSeasons,
+  getData,
+  type SeasonEntry,
+  type ArchiveStanding,
+  type ArchiveRound,
+} from '../../../../lib/intra-build';
+import type { RankingRow, Round, Player } from '../../../../lib/intra';
+
+export async function getStaticPaths() {
+  const seasons = await allSeasons();
+  // Een seizoen dat nog loopt krijgt geen bevroren kopie: zijn stand leeft op
+  // /intraclub/. Zodra het afgelopen is, wordt het hier wel een pagina — ook al
+  // blijft de API het nog maandenlang "current" noemen.
+  return seasons
+    .filter((season) => !season.isRunning)
+    .map((season) => ({ params: { slug: season.slug }, props: { season } }));
+}
+
+interface Props {
+  season: SeasonEntry;
+}
+
+const { season } = Astro.props;
+
+/** Eén rij eindstand, ongeacht uit welk format ze komt. */
+interface StandRow {
+  rank: number;
+  name: string;
+  href: string | null;
+  average: number;
+  sets: { won: number; total: number } | null;
+  /** Gewonnen wedstrijden — alleen het oude format telde die. */
+  games: { won: number; total: number } | null;
+  present: number;
+}
+
+interface Statistic {
+  player: Player;
+  statistics: { sets: { won: number; total: number }; rounds: { present: number } };
+}
+
+interface MatchdayRow {
+  number: number;
+  href: string;
+  date: string;
+  games: number;
+  averageAbsent: number;
+  /** Alleen het huidige format telt aanwezigen; het archief bewaarde dat niet. */
+  present: number | null;
+}
+
+let rows: StandRow[] = [];
+let matchdays: MatchdayRow[] = [];
+let categories: { label: string; name: string; average: number }[] = [];
+
+const speeldagUrl = (nummer: number) =>
+  url(`/intraclub/seizoen/${season.slug}/speeldag/${nummer}/`);
+
+if (season.format === 'archief') {
+  const [standings, rounds] = await Promise.all([
+    getData<ArchiveStanding[]>(`/archive/seasons/${season.id}/standings`),
+    getData<ArchiveRound[]>(`/archive/seasons/${season.id}/rounds`),
+  ]);
+
+  rows = standings.map((row, i) => ({
+    rank: i + 1,
+    name: displayName(row.full_name),
+    // Het anker opent op de loopbaanpagina meteen dít seizoen: wie hier op een
+    // naam klikt, wil weten hoe die persoon het dát jaar deed.
+    href: `${careerUrl({ playerId: row.player_id, archiveId: row.archive_player_id, name: row.full_name })}#${season.slug}`,
+    average: row.average,
+    sets: row.sets,
+    games: row.games,
+    present: row.rounds.present,
+  }));
+
+  matchdays = rounds.map((round) => ({
+    number: round.number,
+    href: speeldagUrl(round.number),
+    date: round.date,
+    games: round.games_count,
+    averageAbsent: round.average_absent,
+    present: null,
+  }));
+} else {
+  /*
+   * ?members=0 is hier verplicht. Zonder die parameter filtert ook een
+   * afgesloten klassement op wie er vandaag nog lid is, en dan mist de
+   * eindstand van 2023-2024 er 36 van de 96 — inclusief mensen die toen in de
+   * top tien stonden.
+   */
+  const [ranking, statistics, rounds, ...others] = await Promise.all([
+    getData<RankingRow[]>(`/rankings/general?season=${season.id}&members=0`),
+    getData<Statistic[]>(`/seasons/${season.id}/statistics?members=0`),
+    getData<Round[]>(`/rounds?season=${season.id}`),
+    ...(['women', 'recreants', 'veterans'] as const).map((categorie) =>
+      getData<RankingRow[]>(`/rankings/${categorie}?season=${season.id}&members=0&limit=1`),
+    ),
+  ]);
+
+  const stats = new Map(statistics.map((row) => [row.player.id, row.statistics]));
+  rows = ranking.map((row) => {
+    const stat = stats.get(row.id);
+    return {
+      rank: row.rank,
+      name: displayName(row.full_name),
+      href: `${careerUrl({ playerId: row.id, name: row.full_name })}#${season.slug}`,
+      average: row.average,
+      sets: stat?.sets ?? null,
+      games: null,
+      present: stat?.rounds.present ?? 0,
+    };
+  });
+
+  matchdays = rounds.map((round) => ({
+    number: round.number,
+    href: speeldagUrl(round.number),
+    date: round.date,
+    games: round.games_count,
+    averageAbsent: round.average_absent,
+    present: round.players_present,
+  }));
+
+  const labels = ['Dames', 'Recreanten', 'Veteranen'];
+  categories = others
+    .map((lijst, i) => {
+      const winner = lijst[0];
+      return winner ? { label: labels[i], name: displayName(winner.full_name), average: winner.average } : null;
+    })
+    .filter((entry): entry is { label: string; name: string; average: number } => entry !== null);
+}
+
+// Nieuwste speeldag bovenaan, zoals op /intraclub/.
+matchdays.reverse();
+
+const formatUitleg =
+  season.format === 'archief'
+    ? 'Gespeeld in het oude format: vaste teams, best of three. Het archief bewaart daarvan ook het aantal gewonnen wedstrijden — een cijfer dat het huidige format niet meer kent.'
+    : 'Gespeeld in het huidige format: vier spelers per baan, elke set een andere combinatie.';
+---
+
+<Layout
+  title={`Intraclub ${season.label}`}
+  description={`De eindstand en de speeldagen van het intraclubseizoen ${season.label} van BC Landegem.`}
+>
+  <div class="bg-feather-100">
+    <div class="mx-auto max-w-5xl px-4 py-14 sm:py-16">
+      <div class="pl-10">
+        <a
+          href={url('/intraclub/erelijst/')}
+          class="type-label inline-flex items-center gap-2 text-xs text-cork-600 hover:underline"
+        >
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4m0 0l6-6m-6 6l6 6" />
+          </svg>
+          Erelijst
+        </a>
+      </div>
+
+      <div class="mt-3">
+        <RailHeading
+          title={`Seizoen ${season.label}`}
+          accent="cork"
+          intro={`${season.rounds_count} speeldagen, ${season.players_count} spelers. ${formatUitleg}`}
+        />
+      </div>
+
+      {categories.length > 0 && (
+        <section class="mt-12 pl-10" aria-labelledby="categorie-heading">
+          <h2 id="categorie-heading" class="type-label text-xs text-ink-500">Ook eerste in hun reeks</h2>
+          <ul class="mt-4 grid gap-px border border-ink-950/10 bg-ink-950/10 sm:grid-cols-3">
+            {categories.map((categorie) => (
+              <li class="bg-feather-100 p-4">
+                <span class="type-label block text-[0.65rem] text-cork-600">{categorie.label}</span>
+                <span class="mt-1 block font-bold text-ink-950">{categorie.name}</span>
+                <span class="type-numeral mt-0.5 block text-sm text-ink-500">
+                  {decimal(categorie.average)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <section class="mt-12 pl-10">
+        <Heading size="small">Eindstand</Heading>
+        {rows.length === 0 ? (
+          /*
+            Dit seizoen werd destijds nooit gearchiveerd: enkel de uitslagen
+            bleven bewaard. Een lege tabel zou hier als een fout lezen.
+          */
+          <p class="mt-4 max-w-2xl text-ink-700">
+            Van dit seizoen is geen eindstand bewaard gebleven — alleen de uitslagen van de
+            speeldagen. Die staan hieronder.
+          </p>
+        ) : (
+          <>
+            {season.format === 'archief' && (
+              <p class="mt-3 max-w-2xl text-sm text-ink-500">
+                De kolom "aanwezig" staat er niet voor de volledigheid: in dit format kon je het
+                klassement winnen zonder elke speeldag te spelen, en dat maakt de eindstand pas
+                leesbaar.
+              </p>
+            )}
+            <div class="mt-6 overflow-x-auto">
+              <table class="w-full text-left text-sm">
+                <thead>
+                  <tr class="type-label border-b-[3px] border-ink-950/20 text-xs text-cork-600">
+                    <th class="py-2.5 pr-3 font-bold">#</th>
+                    <th class="w-full py-2.5 pr-3 font-bold">Naam</th>
+                    <th class="whitespace-nowrap py-2.5 pr-3 text-right font-bold">Gem.</th>
+                    <th class="whitespace-nowrap py-2.5 pr-3 text-right font-bold">Sets</th>
+                    {season.format === 'archief' && (
+                      <th class="whitespace-nowrap py-2.5 pr-3 text-right font-bold">Matchen</th>
+                    )}
+                    <th class="whitespace-nowrap py-2.5 text-right font-bold">Aanwezig</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((row) => (
+                    <tr class="border-b border-ink-950/10">
+                      <td class="type-numeral py-2.5 pr-3 text-cork-600">{row.rank}</td>
+                      <td class="w-full py-2.5 pr-3">
+                        {row.href ? (
+                          <a href={row.href} class="font-medium hover:text-cork-600 hover:underline">
+                            {row.name}
+                          </a>
+                        ) : (
+                          row.name
+                        )}
+                      </td>
+                      <td class="type-numeral whitespace-nowrap py-2.5 pr-3 text-right">
+                        {decimal(row.average)}
+                      </td>
+                      <td class="type-numeral whitespace-nowrap py-2.5 pr-3 text-right">
+                        {row.sets ? `${row.sets.won}/${row.sets.total}` : '–'}
+                      </td>
+                      {season.format === 'archief' && (
+                        <td class="type-numeral whitespace-nowrap py-2.5 pr-3 text-right">
+                          {row.games ? `${row.games.won}/${row.games.total}` : '–'}
+                        </td>
+                      )}
+                      <td class="type-numeral whitespace-nowrap py-2.5 text-right">
+                        {row.present}<span class="text-ink-500">/{season.rounds_count}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
+      </section>
+
+      <section class="mt-14 pl-10">
+        <Heading size="small">De speeldagen</Heading>
+        <div class="mt-6 overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead>
+              <tr class="type-label border-b-[3px] border-ink-950/20 text-xs text-cork-600">
+                <th class="py-2.5 pr-3 font-bold">Speeldag</th>
+                <th class="py-2.5 pr-3 font-bold">Datum</th>
+                {matchdays.some((day) => day.present !== null) && (
+                  <th class="whitespace-nowrap py-2.5 pr-3 text-right font-bold">Aanwezig</th>
+                )}
+                <th class="whitespace-nowrap py-2.5 pr-3 text-right font-bold">Banen</th>
+                <th class="whitespace-nowrap py-2.5 text-right font-bold">Gem. afwezigen</th>
+              </tr>
+            </thead>
+            <tbody>
+              {matchdays.map((day) => (
+                <tr class="border-b border-ink-950/10">
+                  <td class="py-2.5 pr-3">
+                    <a href={day.href} class="font-semibold text-cork-600 hover:underline">
+                      Speeldag {day.number}
+                    </a>
+                  </td>
+                  <td class="py-2.5 pr-3">{formatDate(day.date)}</td>
+                  {matchdays.some((row) => row.present !== null) && (
+                    <td class="type-numeral whitespace-nowrap py-2.5 pr-3 text-right">
+                      {day.present ?? '–'}
+                    </td>
+                  )}
+                  <td class="type-numeral whitespace-nowrap py-2.5 pr-3 text-right">{day.games}</td>
+                  <td class="type-numeral whitespace-nowrap py-2.5 text-right">
+                    {decimal(day.averageAbsent)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
+</Layout>

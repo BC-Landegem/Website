@@ -449,8 +449,8 @@ const photoCuts = [
     fetchCalendar,
     type CalendarItem,
   } from '../lib/calendar-client';
-  import { fetchJson, fullName, playerUrl, formatDate, lastCalculated } from '../lib/intra';
-  import type { RankingRow, Round } from '../lib/intra';
+  import { fetchApi, playerUrl, formatDate, seasonState, seasonLabel } from '../lib/intra';
+  import type { RankingRow, RankingMeta } from '../lib/intra';
 
   // De vluchtdraad en de landing-animatie leven in lib/thread.ts; `rebuild`
   // herberekent de draad zodra een sectie van hoogte verandert of dichtklapt.
@@ -673,26 +673,16 @@ const photoCuts = [
   async function loadIntra() {
     const section = document.getElementById('intra-section')!;
 
-    // De datumregel loopt náást de top-10, niet ervoor: de API wordt trager van
-    // gelijktijdige verzoeken, dus mag de lijst niet op deze wachten. `min-h-4`
-    // op de regel houdt de ruimte vrij, dus verschuift er niets als ze landt.
-    // Bewust /rounds i.p.v. /rounds/latestCalculated: hetzelfde nummer en
-    // dezelfde datum, maar zonder de matchen en aanwezigheden van die speeldag
-    // (0,3 kB tegen 2,3 kB gzip).
-    fetchJson<Round[]>('/rounds')
-      .then((rounds) => {
-        const last = lastCalculated(rounds);
-        if (!last) return;
-        document.getElementById('intra-standing-after')!.textContent =
-          `Stand na speeldag ${last.number} · ${formatDate(last.date)}`;
-      })
-      .catch(() => {});
-
     try {
-      const rankings = await fetchJson<{ seasonId: number; general: RankingRow[] }>(
-        '/rankings/general?$top=10',
+      // Eén verzoek volstaat nu: `meta.round` zegt zelf na welke speeldag de
+      // stand geldt, dus de aparte /rounds-call ernaast is weg. Wat blijft is
+      // de vraag of dat seizoen nog loopt — de API heeft daar geen vlag voor en
+      // geeft van juni tot september een eindstand alsof het de stand van deze
+      // week is.
+      const { data, meta } = await fetchApi<RankingRow[], RankingMeta>(
+        '/rankings/general?limit=10',
       );
-      const rows = rankings.general ?? [];
+      const rows = data ?? [];
       if (!rows.length) {
         section.classList.add('hidden');
         rebuild();
@@ -707,9 +697,18 @@ const photoCuts = [
           'grid grid-cols-[2.5rem_1fr_auto] items-baseline gap-x-3 border-b border-ink-950/10 py-2.5 first:border-t';
         li.innerHTML = `
           <span class="type-numeral text-lg text-club-700">${row.rank}</span>
-          <a href="${playerUrl(row.id)}" class="truncate font-bold text-ink-950 hover:text-club-600 hover:underline">${esc(fullName(row))}</a>
+          <a href="${playerUrl(row.id)}" class="truncate font-bold text-ink-950 hover:text-club-600 hover:underline">${esc(row.full_name)}</a>
           <span class="type-numeral text-lg text-ink-950">${row.average.toFixed(2)}</span>`;
         list.append(li);
+      }
+
+      const round = meta?.round;
+      if (round) {
+        const staat = seasonState(round);
+        document.getElementById('intra-standing-after')!.textContent =
+          staat === 'af'
+            ? `Eindstand ${seasonLabel(meta!.season.name)} · na speeldag ${round.number}`
+            : `Stand na speeldag ${round.number} · ${formatDate(round.date)}`;
       }
       rebuild();
     } catch {

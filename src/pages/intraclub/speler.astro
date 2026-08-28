@@ -2,10 +2,28 @@
 import Layout from '../../layouts/Layout.astro';
 import Heading from '../../components/Heading.astro';
 import Dot from '../../components/Dot.astro';
+import Pill from '../../components/Pill.astro';
 import { url } from '../../lib/url';
+import { allCareers } from '../../lib/intra-build';
+
+/*
+ * Wie een loopbaanpagina heeft, weet alleen de build: die pagina's worden
+ * gemaakt uit het archief plus de afgesloten seizoenen. De spelerspagina leeft
+ * in de browser en zou er anders blind naartoe linken — en een 404 opleveren
+ * voor iedereen die deze zomer lid werd. Een lijst van id's is klein genoeg om
+ * gewoon mee te geven.
+ */
+const careerIds = (await allCareers())
+  .map((person) => person.playerId)
+  .filter((id): id is number => id !== null);
 ---
 
-<Layout title="Intraclub speler" description="Statistieken van een intraclub-speler van BC Landegem.">
+{/* noindex: geen clublid met naam en aanwezigheidspercentage in de zoekresultaten. */}
+<Layout
+  title="Intraclub speler"
+  description="Statistieken van een intraclub-speler van BC Landegem."
+  noindex
+>
   <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
     <div class="relative pl-10">
       <Dot top="top-11" />
@@ -57,16 +75,21 @@ import { url } from '../../lib/url';
       </dl>
 
       <section class="mt-14">
-        <Heading size="small">Klassementsverloop</Heading>
-        {/* De as staat omgekeerd; dat moet in woorden staan, niet enkel in de cijfers. */}
-        <p id="progression-caption" class="mt-3 text-sm text-ink-500">
-          Je plaats in het klassement per speeldag.
-        </p>
+        <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-3">
+          <Heading size="small">Verloop</Heading>
+          {/*
+            Twee verhalen die niet op één as passen: plaats loopt omgekeerd van 1
+            tot ruim honderd, een gemiddelde in tienden tussen 15 en 21. Ze samen
+            in één vlak persen maakt er één onleesbaar, dus schakel je ertussen.
+          */}
+          <div id="progression-modes" class="flex flex-wrap gap-2" role="tablist" aria-label="Wat de grafiek toont">
+            <Pill role="tab" size="small" data-mode="rank" aria-selected="true">Plaats</Pill>
+            <Pill role="tab" size="small" data-mode="average" aria-selected="false">Gemiddelde</Pill>
+          </div>
+        </div>
 
-        {/*
-          Eén reeks, dus geen legende: de kop zegt al wat er staat. Elke laag draagt
-          zijn kleur via de text-* klasse hieronder; progression.ts tekent met currentColor.
-        */}
+        <p id="progression-caption" class="mt-3 text-sm text-ink-500"></p>
+
         <figure id="progression" class="relative mt-5 hidden">
           <svg
             class="w-full touch-pan-y select-none overflow-visible"
@@ -77,6 +100,7 @@ import { url } from '../../lib/url';
             <g data-layer="grid" class="text-ink-950/10"></g>
             <g data-layer="axis" class="text-[11px] tabular-nums text-ink-500"></g>
             <g data-layer="cross" class="text-club-700/40"></g>
+            <g data-layer="days" class="text-ink-950/25"></g>
             <g data-layer="area" class="text-club-500"></g>
             <g data-layer="labels" class="text-[11px] text-ink-950"></g>
             <g data-layer="hit"></g>
@@ -98,11 +122,13 @@ import { url } from '../../lib/url';
           <summary class="type-label cursor-pointer text-xs text-club-700 hover:text-club-800">
             Toon de cijfers
           </summary>
-          <table class="mt-4 w-full max-w-sm text-sm">
+          <table class="mt-4 w-full max-w-md text-sm">
             <thead>
               <tr class="border-b border-ink-950/10 text-left">
                 <th scope="col" class="type-label pb-2 text-xs text-ink-500">Speeldag</th>
-                <th scope="col" class="type-label pb-2 text-xs text-ink-500">Ranking</th>
+                <th scope="col" class="type-label pb-2 text-xs text-ink-500">Die avond</th>
+                <th scope="col" class="type-label pb-2 text-xs text-ink-500">Gemiddelde</th>
+                <th scope="col" class="type-label pb-2 text-right text-xs text-ink-500">Plaats</th>
               </tr>
             </thead>
             <tbody data-table-body class="tabular-nums"></tbody>
@@ -114,34 +140,115 @@ import { url } from '../../lib/url';
         </p>
       </section>
 
+      <section id="pairings-section" class="mt-14 hidden">
+        <Heading size="small">Met wie je op de baan stond</Heading>
+        <p id="pairings-intro" class="mb-6 mt-3 text-sm text-ink-500"></p>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead>
+              <tr class="type-label border-b-[3px] border-ink-950/20 text-xs text-club-700">
+                <th class="w-full py-2.5 pr-3 font-bold">Speler</th>
+                <th class="whitespace-nowrap py-2.5 pr-3 text-right font-bold">Samen</th>
+                <th class="whitespace-nowrap py-2.5 pr-3 text-right font-bold">Als partner</th>
+                <th class="whitespace-nowrap py-2.5 text-right font-bold">Als tegenstander</th>
+              </tr>
+            </thead>
+            <tbody id="pairings-table"></tbody>
+          </table>
+        </div>
+        <p class="mt-4 text-xs text-ink-500">
+          De noemers staan erbij omdat de aantallen klein zijn: op één baan speel je precies één set
+          mét elk van de drie anderen en twee sets tégen elk. Een percentage op drie sets zou meer
+          beweren dan er staat.
+        </p>
+        <p id="pairings-more" class="mt-4 hidden text-sm">
+          <button type="button" id="pairings-toggle" class="type-label text-xs text-club-700 hover:text-club-800 hover:underline"></button>
+        </p>
+      </section>
+
+      {/* Kurk, net als elders op de site: oude inhoud, herkenbaar vóór het klikken. */}
+      <a
+        id="career-link"
+        href="#"
+        class="group mt-14 hidden items-baseline justify-between gap-4 border-l-2 border-cork-400 bg-cork-300/15 px-5 py-4 transition-colors hover:bg-cork-300/30"
+      >
+        <span>
+          <span class="type-label block text-[0.65rem] text-cork-600">Volledige loopbaan</span>
+          {/*
+            Geen aantallen in deze zin. Die stonden er eerst wel, geteld uit het
+            archief — en liepen achter zodra de loopbaanpagina ook de seizoenen
+            uit het huidige format ging tonen.
+          */}
+          <span id="career-line" class="mt-1 block text-sm text-ink-700">
+            Elk seizoen apart, met eindplaats, gemiddelde en aanwezigheid.
+          </span>
+        </span>
+        <span class="type-label shrink-0 text-xs text-ink-950 group-hover:text-cork-600" aria-hidden="true">
+          Bekijk
+        </span>
+      </a>
+
       <section class="mt-14">
         <Heading size="small">Wedstrijden</Heading>
         <p class="mb-6 mt-3 text-sm text-ink-500">
-          Vier spelers per match, per set een andere samenstelling. Het winnende duo staat in het vet;
-          de meest recente speeldag staat bovenaan.
+          Vier spelers per wedstrijd, per set een andere samenstelling. Het winnende duo staat in het
+          vet; de meest recente speeldag staat bovenaan.
         </p>
         <div id="player-matches" class="space-y-6"></div>
       </section>
     </div>
   </div>
+
+  <script id="career-ids" type="application/json" set:html={JSON.stringify(careerIds)} is:inline></script>
 </Layout>
 
 <script>
-  import { fetchJson, renderMatchCard } from '../../lib/intra';
-  import type { Match } from '../../lib/intra';
-  import { drawProgression } from '../../lib/progression';
+  import {
+    fetchData,
+    esc,
+    decimal,
+    displayName,
+    playerUrl,
+    careerUrl,
+    renderGameCard,
+  } from '../../lib/intra';
+  import type { Game, Player } from '../../lib/intra';
+  import { drawProgression, progressionCounts } from '../../lib/progression';
+  import type { ProgressionMode } from '../../lib/progression';
+
+  // Meegegeven door de build: welke spelers een loopbaanpagina hebben.
+  const CAREER_IDS = new Set<number>(
+    JSON.parse(document.getElementById('career-ids')!.textContent!) as number[],
+  );
+
+  interface HistoryRow {
+    round_id: number;
+    number: number;
+    date: string;
+    average: number;
+    day_score: number | null;
+    rank: number | null;
+  }
 
   interface PlayerDetail {
-    id?: string;
-    firstName: string;
-    name: string;
-    matches: Match[];
+    id?: number;
+    full_name: string;
     statistics: {
+      base_points: number;
       points: { won: number; lost: number; total: number };
       sets: { won: number; lost: number; total: number };
+      games: { total: number };
       rounds: { present: number };
-      rankingHistory: { number: number; rank: number }[];
     };
+    games: Game[];
+    ranking_history: HistoryRow[];
+  }
+
+  interface Pairing {
+    player: Player;
+    games: number;
+    as_partner: { sets: number; sets_won: number };
+    as_opponent: { sets: number; sets_won: number };
   }
 
   const error = document.getElementById('player-error')!;
@@ -157,27 +264,176 @@ import { url } from '../../lib/url';
     block.querySelector('[data-context]')!.textContent = context;
   }
 
+  /* ---------------------------------------------------------- klassementsverloop */
+
+  function renderHistoryTable(history: HistoryRow[]) {
+    const table = document.getElementById('progression-table')!;
+    table.classList.remove('hidden');
+    table.querySelector('[data-table-body]')!.replaceChildren(
+      ...history.map((row) => {
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-ink-950/10';
+        const matchday = document.createElement('th');
+        matchday.scope = 'row';
+        matchday.className = 'py-2 text-left font-normal text-ink-700';
+        matchday.textContent = String(row.number);
+        const day = document.createElement('td');
+        day.className = 'py-2 text-ink-700';
+        // Uitgeloot: geen dagscore, want die speeldag telt niet mee in het gemiddelde.
+        day.textContent = row.day_score === null ? 'uitgeloot' : decimal(row.day_score);
+        const average = document.createElement('td');
+        average.className = 'py-2 text-ink-950';
+        average.textContent = decimal(row.average);
+        const rank = document.createElement('td');
+        rank.className = 'py-2 text-right text-ink-700';
+        rank.textContent = row.rank === null ? '–' : String(row.rank);
+        tr.append(matchday, day, average, rank);
+        return tr;
+      }),
+    );
+  }
+
+  /** Wat er onder de grafiek staat, per modus. */
+  const BIJSCHRIFT: Record<ProgressionMode, string> = {
+    rank:
+      'Je plaats in het klassement na elke berekende speeldag. De as staat omgekeerd: ' +
+      'hoe hoger in beeld, hoe hoger in de stand.',
+    average:
+      'De lijn is je gemiddelde na elke speeldag. De losse punten zijn wat die avond zelf ' +
+      'opbracht — je gemiddelde is niets anders dan het gemiddelde van je basispunten en al ' +
+      'die dagscores samen.',
+  };
+
+  /**
+   * De grafiek en zijn schakelaar. Plaats staat standaard aan: dat is wat de
+   * meeste leden komen bekijken. Wie geen enkele berekende plaats heeft — een
+   * speler die dit seizoen buiten de stand viel — krijgt die pil niet.
+   */
+  function setupProgression(history: HistoryRow[]) {
+    const counts = progressionCounts(history);
+    const pills = [...document.querySelectorAll<HTMLButtonElement>('[data-mode]')];
+    const caption = document.getElementById('progression-caption')!;
+
+    // Eén punt is geen verloop maar een cijfer; dat staat al in de kop.
+    if (counts.average < 2) {
+      document.getElementById('progression-empty')!.classList.remove('hidden');
+      document.getElementById('progression-modes')!.classList.add('hidden');
+      return;
+    }
+
+    let mode: ProgressionMode = counts.rank >= 2 ? 'rank' : 'average';
+    const figure = document.getElementById('progression')!;
+    figure.classList.remove('hidden');
+    const chart = drawProgression(figure, history, mode);
+    renderHistoryTable(history);
+
+    const toon = () => {
+      caption.textContent = BIJSCHRIFT[mode];
+      for (const pill of pills) {
+        pill.setAttribute('aria-selected', String(pill.dataset.mode === mode));
+      }
+    };
+    toon();
+
+    for (const pill of pills) {
+      const doel = pill.dataset.mode as ProgressionMode;
+      // Zonder berekende plaatsen valt er niets te tonen op die as.
+      if (doel === 'rank' && counts.rank < 2) {
+        pill.disabled = true;
+        pill.classList.add('cursor-not-allowed', 'opacity-40');
+        continue;
+      }
+      pill.addEventListener('click', () => {
+        if (doel === mode) return;
+        mode = doel;
+        chart.setMode(mode);
+        toon();
+      });
+    }
+  }
+
+  /* --------------------------------------------------------------------- pairings */
+
+  const PAIRINGS_ZICHTBAAR = 8;
+
+  function renderPairings(rows: Pairing[]) {
+    if (!rows.length) return;
+    const section = document.getElementById('pairings-section')!;
+    const table = document.getElementById('pairings-table')!;
+
+    const rij = (row: Pairing) => `<tr class="border-b border-ink-950/10">
+      <td class="w-full py-2.5 pr-3"><a href="${playerUrl(row.player.id)}" class="font-medium hover:text-club-600 hover:underline">${esc(displayName(row.player.full_name))}</a></td>
+      <td class="type-numeral whitespace-nowrap py-2.5 pr-3 text-right">${row.games}</td>
+      <td class="type-numeral whitespace-nowrap py-2.5 pr-3 text-right">${row.as_partner.sets_won}<span class="text-ink-500">/${row.as_partner.sets}</span></td>
+      <td class="type-numeral whitespace-nowrap py-2.5 text-right">${row.as_opponent.sets_won}<span class="text-ink-500">/${row.as_opponent.sets}</span></td>
+    </tr>`;
+
+    let alles = false;
+    const teken = () => {
+      table.innerHTML = (alles ? rows : rows.slice(0, PAIRINGS_ZICHTBAAR)).map(rij).join('');
+    };
+    teken();
+
+    document.getElementById('pairings-intro')!.textContent =
+      `${rows.length} spelers dit seizoen, van vaakst naar minst samen op een baan.`;
+
+    if (rows.length > PAIRINGS_ZICHTBAAR) {
+      const more = document.getElementById('pairings-more')!;
+      const toggle = document.getElementById('pairings-toggle') as HTMLButtonElement;
+      toggle.textContent = `Toon alle ${rows.length}`;
+      more.classList.remove('hidden');
+      toggle.addEventListener('click', () => {
+        alles = !alles;
+        teken();
+        toggle.textContent = alles ? 'Toon er minder' : `Toon alle ${rows.length}`;
+      });
+    }
+    section.classList.remove('hidden');
+  }
+
+  /* ------------------------------------------------------------------ loopbaan */
+
+  /**
+   * De weg naar alle seizoenen van deze speler. Geen netwerkcall meer: de build
+   * weet welke loopbaanpagina's bestaan en welke slug ze dragen, en de slug
+   * volgt uit id en naam die deze pagina al heeft.
+   */
+  function showCareer(player: { id: number; full_name: string }) {
+    if (!CAREER_IDS.has(player.id)) return;
+    const link = document.getElementById('career-link') as HTMLAnchorElement;
+    link.href = careerUrl({ playerId: player.id, name: player.full_name });
+    link.classList.remove('hidden');
+    link.classList.add('flex');
+  }
+
+  /* ------------------------------------------------------------------------ laden */
+
   async function loadPlayer() {
     const id = new URLSearchParams(location.search).get('id');
     try {
       if (!id) throw new Error('geen id');
-      const player = await fetchJson<PlayerDetail>(`/players/${encodeURIComponent(id)}`);
-      if (!player.id) throw new Error('onbekende speler');
+      const player = await fetchData<PlayerDetail>(
+        `/players/${encodeURIComponent(id)}?include=games,ranking_history`,
+      );
+      if (!player?.id) throw new Error('onbekende speler');
 
-      const fullName = `${player.firstName} ${player.name}`;
-      document.getElementById('player-name')!.textContent = fullName;
-      document.title = `${fullName} — intraclub | BC Landegem`;
+      const naam = displayName(player.full_name);
+      document.getElementById('player-name')!.textContent = naam;
+      document.title = `${naam} — intraclub | BC Landegem`;
 
-      const history = player.statistics.rankingHistory;
-      const current = history.at(-1);
-      if (current) {
-        const best = Math.min(...history.map((row) => row.rank));
-        const bestMatchday = history.slice().reverse().find((row) => row.rank === best)!;
-        document.getElementById('player-ranking')!.textContent =
-          `Ranking: ${current.rank} · Beste: ${best} (op speeldag ${bestMatchday.number})`;
-      }
-
+      const history = player.ranking_history ?? [];
       const stats = player.statistics;
+      const current = history.at(-1);
+      const delen: string[] = [];
+      if (current?.rank) {
+        const geplaatst = history.filter((row) => row.rank !== null);
+        const best = Math.min(...geplaatst.map((row) => row.rank!));
+        const bestRow = geplaatst.findLast((row) => row.rank === best)!;
+        delen.push(`Plaats ${current.rank}`, `beste ${best} (speeldag ${bestRow.number})`);
+      }
+      delen.push(`basispunten ${decimal(stats.base_points)}`);
+      document.getElementById('player-ranking')!.textContent = delen.join(' · ');
+
       fillStat('present', stats.rounds.present, history.length, `${stats.rounds.present} van ${history.length} speeldagen`);
       fillStat('sets', stats.sets.won, stats.sets.total, `${stats.sets.won} van ${stats.sets.total} sets`);
       fillStat('points', stats.points.won, stats.points.total, `${stats.points.won} van ${stats.points.total} punten`);
@@ -187,42 +443,23 @@ import { url } from '../../lib/url';
       loading.classList.add('hidden');
       document.getElementById('player-content')!.classList.remove('hidden');
 
-      // Eén punt is geen verloop maar een cijfer; dat staat al in de kop.
-      if (history.length < 2) {
-        document.getElementById('progression-empty')!.classList.remove('hidden');
-      } else {
-        const figure = document.getElementById('progression')!;
-        figure.classList.remove('hidden');
-        drawProgression(figure, history);
+      setupProgression(history);
 
-        const table = document.getElementById('progression-table')!;
-        table.classList.remove('hidden');
-        table.querySelector('[data-table-body]')!.replaceChildren(
-          ...history.map((row) => {
-            const tr = document.createElement('tr');
-            tr.className = 'border-b border-ink-950/10';
-            const matchday = document.createElement('th');
-            matchday.scope = 'row';
-            matchday.className = 'py-2 text-left font-normal text-ink-700';
-            matchday.textContent = String(row.number);
-            const rank = document.createElement('td');
-            rank.className = 'py-2 text-ink-950';
-            rank.textContent = String(row.rank);
-            tr.append(matchday, rank);
-            return tr;
-          }),
-        );
-      }
-
-      const matches = player.matches.slice().reverse();
-      document.getElementById('player-matches')!.innerHTML = matches
-        .map((match) => `
+      const games = (player.games ?? []).slice().reverse();
+      document.getElementById('player-matches')!.innerHTML = games
+        .map((game) => `
           <div>
-            <p class="type-label mb-2 text-xs text-club-700">Speeldag ${match.round?.number ?? ''}</p>
-            ${renderMatchCard(match, player.id)}
+            <p class="type-label mb-2 text-xs text-club-700">Speeldag ${game.round?.number ?? ''}</p>
+            ${renderGameCard(game, player.id)}
           </div>`)
         .join('');
 
+      // Twee extraatjes, na de hoofdinhoud en los van elkaar: ze mogen de
+      // pagina niet ophouden en hun falen mag ze niet breken.
+      fetchData<Pairing[]>(`/players/${encodeURIComponent(id)}/pairings`)
+        .then(renderPairings)
+        .catch(() => {});
+      showCareer({ id: player.id!, full_name: player.full_name });
     } catch {
       loading.classList.add('hidden');
       document.getElementById('player-content')!.classList.add('hidden');

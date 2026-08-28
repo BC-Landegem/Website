@@ -6,6 +6,7 @@ import Dot from '../components/Dot.astro';
 import ArchiveLink from '../components/ArchiveLink.astro';
 import RailHeading from '../components/RailHeading.astro';
 import { url } from '../lib/url';
+import { allSeasons } from '../lib/intra-build';
 
 const tabs = [
   { key: 'general', label: 'Algemeen', kind: 'ranking' },
@@ -15,6 +16,11 @@ const tabs = [
   { key: 'matchdays', label: 'Speeldagen', kind: 'matchdays' },
   { key: 'attendance', label: 'Aanwezigheden', kind: 'attendance' },
 ];
+
+// De zijdeur naar de bevroren helft. Het aantal seizoenen komt uit de API en
+// niet uit een getal in de tekst: volgend jaar zijn het er achttien.
+const seasons = await allSeasons();
+const oudste = seasons[0]?.label.slice(0, 4);
 ---
 
 <Layout
@@ -55,6 +61,12 @@ const tabs = [
         <Heading size="small">Klassement</Heading>
         <p id="intra-latest" class="type-label hidden text-xs text-club-700"></p>
       </div>
+
+      {/*
+        Staat het seizoen stil, dan hoort de pagina dat te zeggen in plaats van
+        een eindstand als de stand van deze week te tonen. Zie seasonState().
+      */}
+      <p id="intra-season-note" class="mt-3 hidden text-sm text-ink-500"></p>
 
       <div class="mt-6 flex flex-wrap gap-2" role="tablist" aria-label="Overzicht">
         {tabs.map((tab, i) => (
@@ -97,7 +109,8 @@ const tabs = [
             <tr class="type-label border-b-[3px] border-ink-950/20 text-xs text-club-700">
               <th class="py-2.5 pr-3 font-bold">Speeldag</th>
               <th class="py-2.5 pr-3 font-bold">Datum</th>
-              <th class="py-2.5 pr-3 text-right font-bold">Spelers</th>
+              <th class="py-2.5 pr-3 text-right font-bold">Aanwezig</th>
+              <th class="py-2.5 pr-3 text-right font-bold">Banen</th>
               <th class="py-2.5 text-right font-bold">Gem. afwezigen</th>
             </tr>
           </thead>
@@ -121,18 +134,48 @@ const tabs = [
       </div>
     </div>
 
+    {/*
+      Kurk in plaats van clubrood, net als ArchiveLink: de bezoeker ziet vóór
+      het klikken al dat hij naar oude inhoud gaat.
+    */}
     <div class="pl-10">
+      <a
+        href={url('/intraclub/erelijst/')}
+        class="group mt-10 flex items-baseline justify-between gap-4 border-l-2 border-cork-400 bg-cork-300/15 px-5 py-4 transition-colors hover:bg-cork-300/30"
+      >
+        <span>
+          <span class="type-label block text-[0.65rem] text-cork-600">Uit de geschiedenis</span>
+          <span class="mt-1 block text-sm text-ink-700">
+            {seasons.length} seizoenen intraclub, van {oudste} tot nu. Erelijst, eindstanden en clubrecords.
+          </span>
+        </span>
+        <span class="type-label shrink-0 text-xs text-ink-950 group-hover:text-cork-600" aria-hidden="true">
+          Bekijk
+        </span>
+      </a>
+
       <ArchiveLink group="intraclub" />
     </div>
   </div>
 </Layout>
 
 <script>
-  import { fetchJson, fullName, playerUrl, matchdayUrl, formatDate, lastCalculated } from '../lib/intra';
-  import type { RankingRow, Rankings, Round } from '../lib/intra';
+  import {
+    fetchApi,
+    fetchData,
+    esc,
+    playerUrl,
+    matchdayUrl,
+    formatDate,
+    decimal,
+    seasonState,
+    seasonLabel,
+    standingLine,
+  } from '../lib/intra';
+  import type { RankingRow, RankingMeta, Round, Player } from '../lib/intra';
 
   interface Statistic {
-    id: string; firstName: string; name: string;
+    player: Player & { bonus_points: number };
     statistics: { rounds: { present: number }; sets: { won: number } };
   }
 
@@ -152,40 +195,34 @@ const tabs = [
   };
 
   /*
-   * De intra-API staat op shared hosting, praat HTTP/1.1 en wordt merkbaar
-   * trager zodra ze meerdere verzoeken tegelijk krijgt: één call landt in
-   * ~0,3 s, vier gelijktijdige calls in 1 tot 2,3 s. Deze pagina haalde vroeger
-   * /rankings (alle vier de klassementen), /rounds, de seizoensstatistieken én
-   * /rounds/latestCalculated op in één Promise.all — dus wachtte je op het
-   * langzaamste van vier verzoeken die elkaar in de weg zaten, voor drie tabs
-   * die je misschien nooit opent.
+   * De intra-API wordt merkbaar trager zodra ze meerdere verzoeken tegelijk
+   * krijgt. Deze pagina haalt bij het openen daarom enkel het algemene
+   * klassement op; de andere klassementen, de speeldagen en de aanwezigheden
+   * komen pas bij een klik op hun tab.
    *
-   * Nu haalt ze bij het openen enkel het algemene klassement en /rounds op. De
-   * andere klassementen en de aanwezigheden komen pas bij een klik op hun tab,
-   * en elk antwoord verschijnt zodra het binnen is in plaats van te wachten op
-   * de rest. /rounds/latestCalculated is helemaal weg: /rounds geeft de laatste
-   * speeldag ook, en is tien keer kleiner.
+   * Sinds de omzetting naar de Laravel-API zit de speeldag waarop de stand
+   * geldt in `meta.round` van datzelfde antwoord. De aparte /rounds-call die
+   * daarvoor nodig was, is dus weg — één verzoek minder op het kritieke pad.
    */
   const promises = new Map<string, Promise<unknown>>();
   function fetchOnce<T>(path: string): Promise<T> {
     let promise = promises.get(path) as Promise<T> | undefined;
     if (!promise) {
-      promise = fetchJson<T>(path);
+      promise = fetchData<T>(path);
       promises.set(path, promise);
     }
     return promise;
   }
 
-  const playerLink = (row: { id: string; firstName: string; name: string }) =>
-    `<a href="${playerUrl(row.id)}" class="font-medium hover:text-club-600 hover:underline">${fullName(row)}</a>`;
+  const playerLink = (player: Player) =>
+    `<a href="${playerUrl(player.id)}" class="font-medium hover:text-club-600 hover:underline">${esc(player.full_name)}</a>`;
 
   // Richting zit in het teken; kleur blijft binnen het palet (daling = club-700)
   const arrowUp = '<svg class="-mt-0.5 inline h-2.5 w-2.5" viewBox="0 0 10 10" fill="currentColor" aria-hidden="true"><path d="M5 1.5l4 7H1z"/></svg>';
   const arrowDown = '<svg class="-mt-0.5 inline h-2.5 w-2.5" viewBox="0 0 10 10" fill="currentColor" aria-hidden="true"><path d="M5 8.5l-4-7h8z"/></svg>';
 
-  // Alle drie de tabellen hebben vier kolommen, dus volstaat één meldingsrij.
-  const message = (text: string, color: string) =>
-    `<tr><td colspan="4" class="py-4 text-sm ${color}">${text}</td></tr>`;
+  const message = (text: string, color: string, cols = 5) =>
+    `<tr><td colspan="${cols}" class="py-4 text-sm ${color}">${text}</td></tr>`;
 
   function renderRanking(rows: RankingRow[]) {
     tables.ranking.innerHTML = rows
@@ -198,23 +235,35 @@ const tabs = [
         return `<tr class="border-b border-ink-950/10">
           <td class="type-numeral py-2.5 pr-3 text-club-700">${row.rank}</td>
           <td class="w-full py-2.5 pr-3">${playerLink(row)}</td>
-          <td class="type-numeral w-0 whitespace-nowrap py-2.5 pl-3 pr-1 text-center">${row.average.toFixed(2)}</td>
+          <td class="type-numeral w-0 whitespace-nowrap py-2.5 pl-3 pr-1 text-center">${decimal(row.average)}</td>
           <td class="w-0 whitespace-nowrap py-2.5 pl-1 text-right">${diff}</td>
         </tr>`;
       })
       .join('');
   }
 
+  /**
+   * "Spelers" werd hier berekend als `matches × 4`. Dat klopt niet zodra er
+   * iemand uitgeloot is: bij een oneven aantal aanwezigen speelt niet iedereen
+   * mee. `players_present` staat nu in de payload, en het aantal uitgelotenen
+   * erbij maakt de rij pas leesbaar.
+   */
   function renderMatchdays(rounds: Round[]) {
     tables.matchdays.innerHTML = rounds
       .slice()
       .reverse()
-      .map((round) => `<tr class="border-b border-ink-950/10">
-        <td class="py-2.5 pr-3"><a href="${matchdayUrl(round.id)}" class="font-semibold text-club-700 hover:text-club-800 hover:underline">Speeldag ${round.number}</a></td>
-        <td class="py-2.5 pr-3">${formatDate(round.date)}</td>
-        <td class="type-numeral py-2.5 pr-3 text-right">${parseInt(round.matches) * 4}</td>
-        <td class="type-numeral py-2.5 text-right">${round.averageAbsent}</td>
-      </tr>`)
+      .map((round) => {
+        const uitgeloot = round.players_drawn_out
+          ? ` <span class="text-ink-500">(${round.players_drawn_out} uitgeloot)</span>`
+          : '';
+        return `<tr class="border-b border-ink-950/10">
+          <td class="py-2.5 pr-3"><a href="${matchdayUrl(round.id)}" class="font-semibold text-club-700 hover:text-club-800 hover:underline">Speeldag ${round.number}</a></td>
+          <td class="py-2.5 pr-3">${formatDate(round.date)}</td>
+          <td class="type-numeral py-2.5 pr-3 text-right">${round.players_present}${uitgeloot}</td>
+          <td class="type-numeral py-2.5 pr-3 text-right">${round.games_count}</td>
+          <td class="type-numeral py-2.5 text-right">${decimal(round.average_absent)}</td>
+        </tr>`;
+      })
       .join('');
   }
 
@@ -222,33 +271,37 @@ const tabs = [
     return total > 0 ? Math.round((part / total) * 100) : 0;
   }
 
-  function countCalculatedMatchdays(rounds: Round[]): number {
-    return rounds.filter((round) => round.calculated === '1').length;
-  }
-
-  function renderAttendance(statistics: Statistic[], totalMatchdays: number) {
-    const sorted = statistics.slice().sort((a, b) => {
-      if (a.statistics.rounds.present === b.statistics.rounds.present) {
-        return b.statistics.sets.won - a.statistics.sets.won;
-      }
-      return b.statistics.rounds.present - a.statistics.rounds.present;
-    });
-    tables.attendance.innerHTML = sorted
+  /**
+   * De API levert deze lijst al gesorteerd op aanwezigheid en dan gewonnen
+   * sets, dus wordt er hier niet meer gesorteerd. De deler voor het percentage
+   * is het aantal berékende speeldagen — een geplande speeldag die nog niet
+   * geteld is, hoort niemands percentage te drukken.
+   */
+  function renderAttendance(statistics: Statistic[], calculated: number) {
+    tables.attendance.innerHTML = statistics
       .map((row, i) => `<tr class="border-b border-ink-950/10">
         <td class="type-numeral py-2.5 pr-3 text-club-700">${i + 1}</td>
-        <td class="py-2.5 pr-3">${playerLink(row)}</td>
-        <td class="type-numeral py-2.5 pr-3">${row.statistics.rounds.present} <span class="text-ink-500">(${percentage(row.statistics.rounds.present, totalMatchdays)}%)</span></td>
+        <td class="py-2.5 pr-3">${playerLink(row.player)}</td>
+        <td class="type-numeral py-2.5 pr-3">${row.statistics.rounds.present} <span class="text-ink-500">(${percentage(row.statistics.rounds.present, calculated)}%)</span></td>
         <td class="type-numeral py-2.5 text-right">${row.statistics.sets.won}</td>
       </tr>`)
       .join('');
   }
 
-  function renderLatestMatchday(rounds: Round[]) {
-    const latest = lastCalculated(rounds);
-    if (!latest) return;
+  /** De regel naast de kop, plus de zin eronder wanneer het seizoen stilstaat. */
+  function renderStandingLine(meta: RankingMeta) {
     const line = document.getElementById('intra-latest')!;
-    line.innerHTML = `Stand na <a href="${matchdayUrl(latest.id)}" class="font-semibold text-club-700 hover:text-club-800 hover:underline">speeldag ${latest.number} (${formatDate(latest.date)})</a>`;
+    line.innerHTML = standingLine(meta);
     line.classList.remove('hidden');
+
+    const staat = seasonState(meta.round);
+    if (staat === 'loopt') return;
+    const note = document.getElementById('intra-season-note')!;
+    note.textContent =
+      staat === 'af'
+        ? `Het seizoen ${seasonLabel(meta.season.name)} is afgelopen. Het nieuwe seizoen start in september.`
+        : 'Er is nog geen speeldag berekend, dus staat iedereen op zijn basispunten.';
+    note.classList.remove('hidden');
   }
 
   /**
@@ -262,31 +315,32 @@ const tabs = [
     const path =
       kind === 'ranking' ? `/rankings/${key}`
       : kind === 'matchdays' ? '/rounds'
-      : '/seasons/latest/statistics';
+      : '/seasons/current/statistics';
     const table = tables[kind];
-    // Nog niet opgehaald (dan staat er data van een andere categorie), of nog
-    // leeg omdat het verzoek van bij het openen nog loopt: in beide gevallen
-    // liever "Laden…" dan een verouderde of blanco tabel.
     if (!promises.has(path) || !table.children.length) {
       table.innerHTML = message('Laden…', 'text-ink-500');
     }
 
     try {
       if (kind === 'ranking') {
-        const data = await fetchOnce<Rankings>(path);
+        const rows = await fetchOnce<RankingRow[]>(path);
         if (selected !== key) return;
-        renderRanking((data[key as keyof Rankings] as RankingRow[]) ?? []);
+        renderRanking(rows);
       } else if (kind === 'matchdays') {
         const rounds = await fetchOnce<Round[]>(path);
         if (selected !== key) return;
         renderMatchdays(rounds);
       } else {
-        const [statistics, rounds] = await Promise.all([
+        // De deler is het aantal berekende speeldagen. Dit was
+        // `rounds.filter(r => r.calculated === '1')` — een stringvergelijking
+        // die tegen `is_calculated: true` altijd false geeft, en dus elk
+        // percentage stil op 0% zou zetten.
+        const [statistics, calculated] = await Promise.all([
           fetchOnce<Statistic[]>(path),
-          fetchOnce<Round[]>('/rounds'),
+          fetchOnce<Round[]>('/rounds?calculated=1'),
         ]);
         if (selected !== key) return;
-        renderAttendance(statistics, countCalculatedMatchdays(rounds));
+        renderAttendance(statistics, calculated.length);
       }
     } catch {
       // Alleen deze tab is mislukt; de belofte weg, zodat een nieuwe klik
@@ -311,18 +365,13 @@ const tabs = [
   }
 
   async function loadData() {
-    // /rounds gaat wel meteen mee: het is het kleinste antwoord van de hele API
-    // (0,3 kB gzip) en levert de regel "Stand na speeldag N" naast de kop. Het
-    // klassement wacht er niet op — beide verschijnen los van elkaar.
-    fetchOnce<Round[]>('/rounds')
-      .then(renderLatestMatchday)
-      // Geen datumregel is geen ramp: het klassement blijft staan, en de
-      // Speeldagen-tab probeert het opnieuw.
-      .catch(() => promises.delete('/rounds'));
-
     try {
-      const data = await fetchOnce<Rankings>('/rankings/general');
-      renderRanking(data.general ?? []);
+      const { data, meta } = await fetchApi<RankingRow[], RankingMeta>('/rankings/general');
+      // De belofte alsnog in de cache, zodat een klik terug naar Algemeen
+      // niet opnieuw ophaalt.
+      promises.set('/rankings/general', Promise.resolve(data));
+      renderRanking(data);
+      if (meta) renderStandingLine(meta);
       loading.classList.add('hidden');
       content.classList.remove('hidden');
     } catch {

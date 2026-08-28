@@ -150,10 +150,18 @@ self.addEventListener('fetch', (event) => {
   // regelt de browsercache prima en ze zouden onze opslag opblazen.
 });
 
-/** De twee live bronnen: Google Calendar en de intraclub-API. */
+/**
+ * De twee live bronnen: Google Calendar en de intraclub-API.
+ *
+ * De intraclub-API stond vroeger op www.bclandegem.be/intra-app/api/ — een pad
+ * op het oude domein, dus volstond een pathname-test. Ze staat nu op een eigen
+ * host, en zonder de hostnaam erbij valt elk API-antwoord in de assetcache of
+ * nergens. Dan verlies je de network-first-met-vangnet die in Sporthal Oostbroek
+ * het nut van de PWA is.
+ */
 function isData(target) {
   if (target.hostname === 'www.googleapis.com' && target.pathname.startsWith('/calendar/v3/')) return true;
-  return target.pathname.startsWith('/intra-app/api/');
+  return target.hostname === 'intra.bclandegem.be' && target.pathname.startsWith('/api/');
 }
 
 function isStatic(target) {

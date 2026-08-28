@@ -1,0 +1,297 @@
+---
+import Layout from '../../../../../layouts/Layout.astro';
+import Heading from '../../../../../components/Heading.astro';
+import Dot from '../../../../../components/Dot.astro';
+import { url } from '../../../../../lib/url';
+import { formatDate, decimal } from '../../../../../lib/intra';
+import type { Attendance, Game, Player } from '../../../../../lib/intra';
+import {
+  allSeasons,
+  getData,
+  getFresh,
+  type SeasonEntry,
+  type ArchiveRound,
+  type ArchiveRoundDetail,
+} from '../../../../../lib/intra-build';
+import type { Round } from '../../../../../lib/intra';
+
+export async function getStaticPaths() {
+  const seasons = (await allSeasons()).filter((season) => !season.isRunning);
+
+  const paden = await Promise.all(
+    seasons.map(async (season) => {
+      const rounds =
+        season.format === 'archief'
+          ? await getData<ArchiveRound[]>(`/archive/seasons/${season.id}/rounds`)
+          : await getData<Round[]>(`/rounds?season=${season.id}`);
+      return rounds.map((round) => ({
+        params: { slug: season.slug, nummer: String(round.number) },
+        props: { season, roundId: round.id },
+      }));
+    }),
+  );
+
+  return paden.flat();
+}
+
+interface Props {
+  season: SeasonEntry;
+  roundId: number;
+}
+
+const { season, roundId } = Astro.props;
+
+/** Eén wedstrijd, in de vorm waarin de pagina ze tekent. */
+interface Duel {
+  /**
+   * Bij vaste teams (oud format) staan de namen één keer boven de sets; bij het
+   * huidige format wisselt de samenstelling per set en is er dus geen kop.
+   */
+  kop: { thuis: string[]; uit: string[]; setsThuis: number; setsUit: number } | null;
+  sets: {
+    label: string;
+    thuis: string[];
+    uit: string[];
+    /**
+     * De score staat gesplitst zodat het winnende cijfer vet kan. Bij vaste
+     * teams is dat de enige aanwijzing wie won: op mobiel vallen de twee
+     * kolommen onder elkaar, en dan zegt links-of-rechts niets meer.
+     */
+    scoreThuis: string;
+    scoreUit: string;
+    winnaar: 'thuis' | 'uit' | null;
+    bonus: { thuis: number; uit: number } | null;
+  }[];
+}
+
+let datum = '';
+let banen = 0;
+let gemiddeldeAfwezigen = 0;
+let aanwezig: number | null = null;
+let uitgeloot = 0;
+let duels: Duel[] = [];
+let aanwezigen: Attendance[] = [];
+
+if (season.format === 'archief') {
+  // Zwaar antwoord dat maar één pagina nodig heeft: bewust langs de cache heen.
+  const round = await getFresh<ArchiveRoundDetail>(`/archive/rounds/${roundId}`);
+  datum = round.date;
+  // Het detailantwoord van het archief telt de wedstrijden niet; de lijst doet
+  // dat wel. Hier is games.length hetzelfde getal en scheelt het een call.
+  banen = round.games.length;
+  gemiddeldeAfwezigen = round.average_absent;
+
+  const namen = (spelers: { full_name: string }[]) => spelers.map((speler) => speler.full_name);
+  duels = round.games.map((game) => ({
+    kop: {
+      thuis: namen(game.team1),
+      uit: namen(game.team2),
+      setsThuis: game.sets_won.team1,
+      setsUit: game.sets_won.team2,
+    },
+    sets: game.sets.map((set, i) => ({
+      label: `Set ${i + 1}`,
+      thuis: [],
+      uit: [],
+      scoreThuis: String(set.team1),
+      scoreUit: String(set.team2),
+      winnaar: set.team1 === set.team2 ? null : set.team1 > set.team2 ? 'thuis' : 'uit',
+      bonus: null,
+    })),
+  }));
+} else {
+  const round = await getFresh<
+    Round & { games: Game[]; attendances: Attendance[] }
+  >(`/rounds/${roundId}`);
+  datum = round.date;
+  banen = round.games_count;
+  gemiddeldeAfwezigen = round.average_absent;
+  aanwezig = round.players_present;
+  uitgeloot = round.players_drawn_out;
+
+  duels = round.games.map((game) => {
+    const byId = new Map(game.players.map((speler) => [speler.id, speler]));
+    const namen = (ids: number[]) =>
+      ids.map((id) => (byId.get(id) as Player | undefined)?.full_name ?? '').filter(Boolean);
+    return {
+      kop: null,
+      sets: game.sets.map((set) => ({
+        label: `Set ${set.number}`,
+        thuis: namen(set.home.player_ids),
+        uit: namen(set.away.player_ids),
+        scoreThuis: set.is_played ? String(set.home.score) : '–',
+        scoreUit: set.is_played ? String(set.away.score) : '–',
+        winnaar: set.winner === 'home' ? 'thuis' : set.winner === 'away' ? 'uit' : null,
+        bonus: { thuis: set.home.bonus, uit: set.away.bonus },
+      })),
+    };
+  });
+
+  // Zelfde regel als op de levende speeldagpagina: wie er niet was, krijgt hier
+  // geen naam. Het gevolg — het verliezersgemiddelde — staat er wel als getal.
+  aanwezigen = (round.attendances ?? [])
+    .filter((row) => row.is_present || row.is_drawn_out)
+    .sort((a, b) => (b.day_score ?? -1) - (a.day_score ?? -1));
+}
+
+const kopregel = [
+  formatDate(datum),
+  aanwezig !== null ? `${aanwezig} aanwezig` : null,
+  `${banen} ${banen === 1 ? 'baan' : 'banen'}`,
+  uitgeloot ? `${uitgeloot} uitgeloot` : null,
+]
+  .filter(Boolean)
+  .join(' · ');
+---
+
+{/*
+  noindex: een speeldag gaat over wie er die avond was en wat ze scoorden. Dat
+  hoort bereikbaar te zijn voor wie de link heeft, niet vindbaar op naam.
+*/}
+<Layout
+  title={`Intraclub ${season.label} — speeldag ${Astro.params.nummer}`}
+  description={`De uitslagen van speeldag ${Astro.params.nummer} van het intraclubseizoen ${season.label}.`}
+  noindex
+>
+  <div class="bg-feather-100">
+    <div class="mx-auto max-w-5xl px-4 py-14 sm:py-16">
+      <div class="relative pl-10">
+        <Dot top="top-11" />
+        <span class="absolute bottom-1 left-[6px] top-[3.75rem] w-1 -translate-x-1/2 rounded-full bg-cork-400" aria-hidden="true"></span>
+        <span class="absolute bottom-0 left-[6px] h-2 w-2 -translate-x-1/2 rounded-full bg-cork-400" aria-hidden="true"></span>
+        <p>
+          <a
+            href={url(`/intraclub/seizoen/${season.slug}/`)}
+            class="type-label inline-flex items-center gap-2 text-xs text-cork-600 hover:underline"
+          >
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4m0 0l6-6m-6 6l6 6" />
+            </svg>
+            Seizoen {season.label}
+          </a>
+        </p>
+        <h1 class="type-display mt-3 page-heading text-ink-950">Speeldag {Astro.params.nummer}</h1>
+        <p class="mt-3 text-ink-700">{kopregel}</p>
+      </div>
+
+      <div class="mt-12 max-w-3xl pl-10">
+        <p class="mb-6 text-sm text-ink-500">
+          {season.format === 'archief'
+            ? 'Twee vaste teams per baan, best of three. Het winnende team staat in het vet.'
+            : 'Vier spelers per baan, elke set een andere samenstelling. Het winnende duo staat in het vet; het kleine cijfer is de som van hun bonuspunten.'}
+        </p>
+
+        <div class="space-y-4">
+          {duels.map((duel) => (
+            <div class="border border-ink-950/10 bg-feather-50 p-4 text-sm">
+              {duel.kop && (
+                <p class="mb-2 flex flex-wrap items-baseline gap-x-2 border-b border-ink-950/10 pb-2 text-ink-950">
+                  <span class:list={[duel.kop.setsThuis > duel.kop.setsUit && 'font-bold']}>
+                    {duel.kop.thuis.join(' & ')}
+                  </span>
+                  <span class="type-numeral bg-feather-100 px-2 py-0.5 text-xs">
+                    {duel.kop.setsThuis}–{duel.kop.setsUit}
+                  </span>
+                  <span class:list={[duel.kop.setsUit > duel.kop.setsThuis && 'font-bold']}>
+                    {duel.kop.uit.join(' & ')}
+                  </span>
+                </p>
+              )}
+              {duel.sets.map((set) => (
+                <div class="grid grid-cols-[2.75rem_minmax(0,1fr)] items-center gap-x-2 gap-y-0.5 border-b border-ink-950/5 py-2 last:border-0 sm:grid-cols-[2.75rem_minmax(0,1fr)_auto_minmax(0,1fr)] sm:border-0 sm:py-1">
+                  <span class="type-label text-xs text-ink-500">{set.label}</span>
+                  {/*
+                    Het winnende cijfer staat vet. Bij vaste teams is dat de enige
+                    aanwijzing wie de set won: de namen staan in de kop, en onder
+                    sm vallen de twee kolommen onder elkaar.
+                  */}
+                  <span class="type-numeral min-w-14 justify-self-start bg-feather-100 px-2 py-0.5 text-center sm:col-start-3 sm:row-start-1 sm:justify-self-auto">
+                    <span class:list={[set.winnaar === 'thuis' && 'font-bold']}>{set.scoreThuis}</span>
+                    <span class="text-ink-500">–</span>
+                    <span class:list={[set.winnaar === 'uit' && 'font-bold']}>{set.scoreUit}</span>
+                  </span>
+                  {/* Bij vaste teams draagt de rij enkel de score; de namen staan boven. */}
+                  {!duel.kop && (
+                    <>
+                      <span
+                        class:list={[
+                          'col-start-2 hyphens-auto break-words sm:row-start-1 sm:text-right',
+                          set.winnaar === 'thuis' && 'font-semibold',
+                        ]}
+                      >
+                        {set.thuis.join(' & ')}
+                        {set.bonus && (
+                          <span class="type-numeral ml-1 text-[0.65rem] font-normal text-ink-500">
+                            +{set.bonus.thuis}
+                          </span>
+                        )}
+                      </span>
+                      <span
+                        class:list={[
+                          'col-start-2 hyphens-auto break-words sm:col-start-4 sm:row-start-1',
+                          set.winnaar === 'uit' && 'font-semibold',
+                        ]}
+                      >
+                        {set.uit.join(' & ')}
+                        {set.bonus && (
+                          <span class="type-numeral ml-1 text-[0.65rem] font-normal text-ink-500">
+                            +{set.bonus.uit}
+                          </span>
+                        )}
+                      </span>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+
+        {aanwezigen.length > 0 && (
+          <section class="mt-14">
+            <Heading size="small">Wie er was</Heading>
+            <p class="mb-6 mt-3 text-sm text-ink-500">
+              De dagscore is wat deze avond opleverde; het gemiddelde ernaast is de stand ná die
+              verrekening.
+            </p>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-sm">
+                <thead>
+                  <tr class="type-label border-b-[3px] border-ink-950/20 text-xs text-cork-600">
+                    <th class="w-full py-2.5 pr-3 font-bold">Naam</th>
+                    <th class="whitespace-nowrap py-2.5 pr-3 text-right font-bold">Dagscore</th>
+                    <th class="whitespace-nowrap py-2.5 pr-3 text-right font-bold">Gemiddelde</th>
+                    <th class="whitespace-nowrap py-2.5 text-right font-bold">Plaats</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {aanwezigen.map((row) => (
+                    <tr class="border-b border-ink-950/10">
+                      <td class="w-full py-2.5 pr-3">{row.player.full_name}</td>
+                      <td class="type-numeral whitespace-nowrap py-2.5 pr-3 text-right">
+                        {row.is_drawn_out && row.day_score === null
+                          ? 'uitgeloot'
+                          : decimal(row.day_score)}
+                      </td>
+                      <td class="type-numeral whitespace-nowrap py-2.5 pr-3 text-right">
+                        {decimal(row.average)}
+                      </td>
+                      <td class="type-numeral whitespace-nowrap py-2.5 text-right">
+                        {row.rank ?? '–'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
+
+        <p class="mt-8 text-sm text-ink-500">
+          Wie er niet was, kreeg {decimal(gemiddeldeAfwezigen)} — het gemiddelde van de verliezers
+          van deze speeldag.
+        </p>
+      </div>
+    </div>
+  </div>
+</Layout>
