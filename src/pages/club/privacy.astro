@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import RailHeading from '../../components/RailHeading.astro';
+import { url } from '../../lib/url';
 ---
 
 <Layout
@@ -131,6 +132,23 @@ import RailHeading from '../../components/RailHeading.astro';
         geautomatiseerde besluitvorming of profilering.
       </p>
 
+      <h2>Het contactformulier</h2>
+      <p>
+        Op de <a href={url('/club/contact/')}>contactpagina</a> staat een formulier waarmee je ons
+        een bericht kan sturen. We vragen daar je naam, je e-mailadres en je bericht, en we
+        gebruiken die enkel om je te antwoorden. Wat je verstuurt, wordt door onze eigen server
+        doorgestuurd als e-mail naar het bestuur; we bewaren het niet in een aparte database. Je
+        bericht blijft dus even lang bestaan als de mailbox waarin het terechtkomt, en je kan altijd
+        vragen om het te laten wissen.
+      </p>
+      <p>
+        Om te vermijden dat het formulier door geautomatiseerde programma's misbruikt wordt,
+        gebruiken we <strong>Cloudflare Turnstile</strong>. Die controle plaatst geen cookies en
+        volgt je niet over websites heen, maar verwerkt wel technische gegevens van je bezoek —
+        onder meer je IP-adres en kenmerken van je browser — om te bepalen of je een mens bent.
+        Cloudflare treedt daarbij op als verwerker.
+      </p>
+
       <h2>Verstrekking van gegevens aan derden-verwerkers</h2>
       <p>
         De gegevens die je aan ons geeft, kunnen wij aan derde partijen verstrekken indien dit
@@ -140,6 +158,10 @@ import RailHeading from '../../components/RailHeading.astro';
       <ul>
         <li>het opslaan en verwerken van gegevens in de cloud (via een cloud service provider)</li>
         <li>het verzorgen van de internetomgeving (webhosting, mailhosting);</li>
+        <li>
+          het beschermen van het contactformulier tegen misbruik door geautomatiseerde programma's
+          (Cloudflare Turnstile);
+        </li>
         <li>het verzorgen van IT-infrastructuur (o.a. IT-netwerk, servers, …);</li>
         <li>het verzorgen van de (financiële) administratie</li>
         <li>het verzekeren van onze leden, deelnemers en vrijwilligers</li>

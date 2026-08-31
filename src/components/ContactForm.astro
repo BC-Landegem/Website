@@ -1,0 +1,237 @@
+---
+// Het contactformulier. Post naar een endpoint op intra.bclandegem.be en laat
+// de server terugsturen naar de bedankpagina op deze site — een gewone
+// form-POST, dus geen CORS-configuratie en geen fetch-laag.
+//
+// Waar de server naartoe mag terugsturen, staat in een allowlist aan zijn kant;
+// de twee return-velden hieronder zijn een voorstel, geen bevel. Ze dragen een
+// build-time waarde die het script hieronder meteen vervangt door de origin
+// waar de bezoeker écht op zit — zo werkt het tegelijk op localhost, op
+// github.io en straks op bclandegem.be, zonder dat de build het domein kent.
+import Heading from './Heading.astro';
+import Link from './Link.astro';
+import { CONTACT_ENDPOINT, TURNSTILE_SITE_KEY, CLUB_MAIL } from '../data/contact';
+import { url } from '../lib/url';
+
+const thanksPath = url('/club/contact/bedankt/');
+const contactPath = url('/club/contact/');
+const origin = Astro.site?.origin ?? 'https://bc-landegem.github.io';
+
+// Volledige klassennamen, want Tailwind leest de broncode statisch.
+// Het clubadres staat nergens voluit in de HTML. Op de oude Joomla-site stond
+// het er ook niet: die had een contactformulier waarvan het adres verborgen was
+// (com_contact, show_email uit). Een adres in platte HTML wordt geoogst, en de
+// bestuursmailbox leesbaar houden is het halve doel van dit formulier. De twee
+// meldingen hieronder die het tóch nodig hebben, worden sowieso al door
+// JavaScript getoond — dus stelt het script het daar samen uit deze twee helften.
+const [mailUser, mailDomain] = CLUB_MAIL.split('@');
+
+const field =
+  'mt-2 w-full border-2 border-ink-950/20 bg-white px-3 py-2.5 text-sm text-ink-950 transition-colors hover:border-club-600 focus:border-club-500';
+const label = 'type-label block text-xs text-ink-500';
+---
+
+<section id="formulier" class="mt-16 max-w-3xl scroll-mt-28 pl-10">
+  <Heading size="small">Stuur ons een bericht</Heading>
+
+  {/* De aftakking staat bewust vóór het formulier en niet in de kleine letters
+      eronder. Het formulier is het makkelijkste kanaal op de site, dus zonder
+      deze zinnen belandt een melding over grensoverschrijdend gedrag vroeg of
+      laat in de bestuursmailbox — precies wat het aanspreekpunt moet voorkomen. */}
+  <p class="mt-4 leading-relaxed text-ink-700">
+    Je bericht komt bij het bestuur terecht. Gaat het over de jeugdwerking, mail dan gerust
+    rechtstreeks naar <Link href="mailto:vantornhoutluc@skynet.be">Luc Van Tornhout</Link>. Gaat het
+    over grensoverschrijdend gedrag of een slecht gevoel, gebruik dit formulier dan niet: daarvoor
+    is er het <Link href={url('/club/aanspreekpunt-integriteit/')}>aanspreekpunt integriteit</Link>,
+    los van het bestuur.
+  </p>
+
+  {/* Verschijnt alleen wanneer de server ons terugstuurde met ?error=… — dan is
+      het bericht níét vertrokken en moet het mailadres er meteen bij staan. */}
+  <p
+    id="contact-error"
+    hidden
+    class="mt-6 border-2 border-club-500 bg-club-50 p-4 font-medium text-club-800"
+  >
+    Er is iets misgelopen en je bericht is niet vertrokken. Probeer het gerust opnieuw, of mail ons
+    rechtstreeks op <a data-mail href="#" class="underline"></a>.
+  </p>
+
+  {/* Offline is de knop zinloos: de POST vertrekt toch niet. Dan liever het
+      mailadres, want een mailapp bewaart je bericht en verstuurt het later. */}
+  <p
+    id="contact-offline"
+    hidden
+    class="mt-6 border-2 border-ink-950/20 bg-feather-100 p-4 text-sm font-medium text-ink-700"
+  >
+    Je bent even zonder internet, dus versturen lukt nu niet. Mail ons gerust op
+    <a data-mail href="#" class="underline"></a> — dat vertrekt vanzelf zodra je weer verbinding
+    hebt.
+  </p>
+
+  <form id="contact-form" action={CONTACT_ENDPOINT} method="post" class="mt-6">
+    <input type="hidden" name="return_ok" value={new URL(thanksPath, origin).href} />
+    <input type="hidden" name="return_error" value={new URL(contactPath, origin).href} />
+    <input type="hidden" name="loaded_at" value="" />
+
+    {/* Honeypot: buiten beeld en buiten de tabvolgorde, dus een mens komt er
+        nooit. Een bot die blind alle velden invult wel — en die gooien we stil
+        weg, met een 200. Een foutmelding leert hem alleen maar bij. */}
+    <div class="absolute left-[-9999px] h-px w-px overflow-hidden" aria-hidden="true">
+      <label for="contact-website">Laat dit veld leeg</label>
+      <input id="contact-website" type="text" name="website" tabindex="-1" autocomplete="off" />
+    </div>
+
+    <div class="grid gap-5 sm:grid-cols-2">
+      <div>
+        <label for="contact-name" class={label}>Je naam</label>
+        <input
+          id="contact-name"
+          name="name"
+          type="text"
+          required
+          maxlength="100"
+          autocomplete="name"
+          class={field}
+        />
+      </div>
+      <div>
+        <label for="contact-email" class={label}>Je e-mailadres</label>
+        <input
+          id="contact-email"
+          name="email"
+          type="email"
+          required
+          maxlength="190"
+          autocomplete="email"
+          class={field}
+        />
+      </div>
+    </div>
+
+    <div class="mt-5">
+      <label for="contact-message" class={label}>Je bericht</label>
+      {/* Het advies dat vroeger onder "Wat je meestuurt" stond. Hier wordt het
+          wél gelezen: het staat waar de cursor naartoe gaat. */}
+      <p id="contact-message-help" class="mt-2 text-sm text-ink-500">
+        Wil je eens komen meespelen, zet er dan bij wie er komt, hoe oud die is en welke avond je zou
+        willen. Dan weten we wie we mogen verwachten en staat er iemand klaar om je wegwijs te maken.
+      </p>
+      <textarea
+        id="contact-message"
+        name="message"
+        required
+        rows="6"
+        maxlength="5000"
+        aria-describedby="contact-message-help"
+        class={field}></textarea>
+    </div>
+
+    {
+      TURNSTILE_SITE_KEY && (
+        <div
+          class="cf-turnstile mt-5"
+          data-sitekey={TURNSTILE_SITE_KEY}
+          data-action="contact"
+          data-theme="light"
+        />
+      )
+    }
+
+    <div class="mt-6">
+      <button
+        id="contact-submit"
+        type="submit"
+        class="type-label rounded-full bg-club-600 px-7 py-3.5 text-sm text-white transition-colors hover:bg-club-700 disabled:cursor-not-allowed disabled:bg-ink-500"
+      >
+        Verstuur je bericht
+      </button>
+    </div>
+
+    <p class="mt-4 text-xs text-ink-500">
+      We gebruiken je naam en e-mailadres alleen om je te antwoorden — meer niet. Hoe we met je
+      gegevens omgaan staat in de <a
+        href={url('/club/privacy/')}
+        class="font-semibold text-club-700 underline hover:text-club-800">privacyverklaring</a
+      >.
+    </p>
+  </form>
+</section>
+
+{
+  TURNSTILE_SITE_KEY && (
+    <script is:inline async defer src="https://challenges.cloudflare.com/turnstile/v0/api.js" />
+  )
+}
+
+<script is:inline define:vars={{ thanksPath, contactPath, mailUser, mailDomain }}>
+  (() => {
+    const form = document.getElementById('contact-form');
+    if (!form) return;
+    const at = (name) => form.querySelector('[name="' + name + '"]');
+    const submit = document.getElementById('contact-submit');
+    const offline = document.getElementById('contact-offline');
+
+    // Het clubadres pas hier samenstellen: in de HTML staat het nergens voluit,
+    // dus vinden de oogstbots die op een adrespatroon zoeken niets.
+    const mail = mailUser + '@' + mailDomain;
+    for (const link of document.querySelectorAll('[data-mail]')) {
+      link.href = 'mailto:' + mail;
+      link.textContent = mail;
+    }
+
+    // Het tijdslot. Niet ondertekend — dat kan niet op een statische site zonder
+    // een extra request — en dus te vervalsen. Het houdt de domme bots tegen die
+    // een formulier binnen de seconde invullen en posten; het echte werk doen
+    // Turnstile en de rate limit van de server.
+    at('loaded_at').value = String(Date.now());
+
+    // De server kent een allowlist van origins; wij vertellen hem op welke we
+    // staan. Zo blijft dit werken op localhost, op github.io en na de
+    // domeinswitch.
+    at('return_ok').value = location.origin + thanksPath;
+    at('return_error').value = location.origin + contactPath;
+
+    // Kwam de bezoeker terug met een fout, dan is zijn tekst weg. Die zetten we
+    // terug uit sessionStorage, en de ?error= verdwijnt weer uit de adresbalk
+    // zodat een herlading niet opnieuw een foutmelding toont.
+    const params = new URLSearchParams(location.search);
+    if (params.has('error')) {
+      document.getElementById('contact-error').hidden = false;
+      try {
+        const kept = JSON.parse(sessionStorage.getItem('bcl-contact') || '{}');
+        for (const name of ['name', 'email', 'message']) {
+          if (kept[name]) at(name).value = kept[name];
+        }
+      } catch {}
+      params.delete('error');
+      const rest = params.toString();
+      history.replaceState(null, '', location.pathname + (rest ? '?' + rest : '') + '#formulier');
+    }
+    sessionStorage.removeItem('bcl-contact');
+
+    form.addEventListener('submit', () => {
+      try {
+        sessionStorage.setItem(
+          'bcl-contact',
+          JSON.stringify({
+            name: at('name').value,
+            email: at('email').value,
+            message: at('message').value,
+          }),
+        );
+      } catch {}
+    });
+
+    // Offline is de knop een leugen: de POST vertrekt niet. Dan liever het
+    // mailadres tonen — die pagina zit in de offline-schil, dus dit gebeurt echt.
+    const sync = () => {
+      const down = navigator.onLine === false;
+      offline.hidden = !down;
+      submit.disabled = down;
+    };
+    sync();
+    addEventListener('online', sync);
+    addEventListener('offline', sync);
+  })();
+</script>

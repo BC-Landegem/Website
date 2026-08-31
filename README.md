@@ -72,12 +72,13 @@ aanraken.
 | Facebook-/Instagram-links | `src/data/social.ts` | De knoppen "Volg de club" in de footer — leeg = het blok verdwijnt |
 | Kalenderbronnen en -kleuren | `src/data/calendar.ts` | `/kalender/` en de events op de homepage |
 | App-naam, offline schil, snelkoppelingen | `src/data/pwa.ts` | Manifest en service worker (iconen genereer je apart) |
+| Contactformulier: endpoint, Turnstile-sleutel, clubadres | `src/data/contact.ts` | Het formulier op `/club/contact/` — zie Databronnen |
 | Kleuren en typografie | `src/styles/global.css` (`@theme`) | De hele site — voor het clubrood eerst het kleurlab, zie hieronder |
 | Losse tekst | De `.astro`-pagina zelf | Alleen die pagina |
 
 ## Databronnen
 
-Vijf bronnen leven buiten deze repo. Ze verschillen in *wanneer* ze opgehaald
+Zes bronnen leven buiten deze repo. Ze verschillen in *wanneer* ze opgehaald
 worden en in *wat er gebeurt als ze falen* — dat verschil is bewust.
 
 **Google Calendar** — geconfigureerd in `src/data/calendar.ts`, opgehaald in de
@@ -157,6 +158,23 @@ die niet meer.
 
 **Twizzit** — het inschrijfformulier is één externe link in
 `src/data/trainings.json`. Geen integratie, geen sleutel.
+
+**Het contactformulier** — `src/data/contact.ts` wijst naar een endpoint in
+diezelfde Laravel-app: `https://intra.bclandegem.be/api/contact`, instelbaar via
+`PUBLIC_CONTACT_ENDPOINT`. Het is de enige bron waar de site iets *heen* stuurt
+in plaats van ophaalt, en de enige die als een gewone `<form method="post">`
+werkt in plaats van als `fetch`. Dat is bewust: een native form-POST is een
+simple request, dus geldt de CORS-waarschuwing hierboven er níét voor. De server
+antwoordt met een redirect naar `/club/contact/bedankt/` bij succes of naar
+`/club/contact/?error=…` bij een fout; welke origins hij mag terugsturen staat in
+een allowlist aan zijn kant, en het formulier stuurt zijn eigen origin mee zodat
+dit op localhost, op github.io en na de domeinswitch werkt zonder aanpassing.
+
+> **Zonder `PUBLIC_TURNSTILE_SITE_KEY` bouwt het formulier zonder Turnstile.**
+> Dan leunt de verdediging op het honeypotveld, het tijdslot en de rate limit van
+> de server. Zet je hem aan, dan moet de bijhorende `TURNSTILE_SECRET` mee aan de
+> Laravel-kant: maar één van de twee betekent ofwel geen bescherming, ofwel dat
+> elke inzending geweigerd wordt.
 
 **De oude Joomla-site** — de enige bron die *eenmalig* is en een vervaldatum heeft.
 De databasedump staat in `scraped/` en blijft **buiten git** (zie `.gitignore`): hij
@@ -257,8 +275,12 @@ Blijft die stil, dan is de conversie schoon.
 ## Bouwen en deployen
 
 Een push naar `master` start `deploy.yml`: Astro bouwt en GitHub Pages
-publiceert. Geen handmatige stap, geen secrets — wel één omgevingsvariabele,
-`PUBLIC_INTRA_API`, die in de workflow staat.
+publiceert. Geen handmatige stap, geen secrets — wel twee omgevingsvariabelen die
+in de workflow staan: `PUBLIC_INTRA_API` (hardgecodeerd) en
+`PUBLIC_TURNSTILE_SITE_KEY`, die uit de repository variable
+`TURNSTILE_SITE_KEY` komt. Die laatste is geen secret — een Turnstile-sitesleutel
+staat sowieso in de HTML — vandaar een variable en geen secret. Is ze niet gezet,
+dan bouwt het contactformulier zonder captcha en faalt er niets.
 
 > **De build praat met de intraclub-API.** De erelijst, de eindstanden en de
 > records worden gebouwd, niet opgehaald in de browser. Ligt
@@ -287,6 +309,12 @@ workflows triggert.
 - **Interne links altijd via `url()`** uit `src/lib/url.ts`. Een hardgecodeerde
   `/kalender/` werkt lokaal en breekt op Pages, waar alles onder `/Website/`
   hangt.
+- **Wat je vanuit de offline schil linkt, hoort zelf in de schil.** De pagina's in
+  `SHELL_PATHS` (`src/data/pwa.ts`) werken zonder bereik; een link daaruit naar een
+  pagina die er niet in staat, loopt dood op `/offline/`. Zo kwam `/club/contact/`
+  erbij: `/club/word-lid/` verwees naar een `mailto:` — dat werkt offline, want de
+  mailapp verstuurt later — en na de omschakeling naar het contactformulier wees
+  diezelfde link naar een pagina die niet gecachet was.
 - **`public/icons/` is gegenereerde uitvoer die tóch in git staat.** Bewerk de
   PNG's niet met de hand — pas het logo of de kleuren aan en draai
   `generate-icons.mjs` opnieuw.

@@ -3,25 +3,28 @@ import Layout from '../../layouts/Layout.astro';
 import Heading from '../../components/Heading.astro';
 import Link from '../../components/Link.astro';
 import RailHeading from '../../components/RailHeading.astro';
+import ContactForm from '../../components/ContactForm.astro';
 import { url } from '../../lib/url';
 import trainings from '../../data/trainings.json';
 
 const { location } = trainings;
 
-// Wie je waarvoor aanspreekt. Bewust kort: één algemeen adres dat altijd werkt,
-// en twee mensen die een eigen rol dragen en die elders op de site al met naam
-// en adres staan (/jeugd/ en /club/aanspreekpunt-integriteit/).
+// Wie je waarvoor aanspreekt. Bewust kort: één weg die altijd werkt (het
+// formulier onderaan, dat bij het bestuur uitkomt) en twee mensen die een eigen
+// rol dragen en die elders op de site al met naam en adres staan (/jeugd/ en
+// /club/aanspreekpunt-integriteit/).
 const contacts = [
   {
     heading: 'Lid worden, speeluren en al de rest',
-    text: 'Mails naar dit adres komen bij het bestuur terecht. Wil je eens komen meespelen, of heb je een praktische vraag over de club, dan is dit de juiste plek.',
-    mail: 'info@bclandegem.be',
+    text: 'Wil je eens komen meespelen, of heb je een praktische vraag over de club, dan is het formulier onderaan deze pagina de juiste plek. Je bericht komt bij het bestuur terecht.',
+    href: '#formulier',
+    linkText: 'Naar het formulier',
   },
   {
     heading: 'De jeugdwerking',
     text: 'Vragen over de trainingen, de groepen, of over een kind dat midden in het seizoen wil beginnen, gaan naar jeugdverantwoordelijke Luc Van Tornhout.',
-    mail: 'vantornhoutluc@skynet.be',
-    name: 'Luc Van Tornhout',
+    href: 'mailto:vantornhoutluc@skynet.be',
+    linkText: 'Luc Van Tornhout — vantornhoutluc@skynet.be',
   },
 ];
 ---
@@ -33,7 +36,7 @@ const contacts = [
   <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
     <RailHeading
       title="Contact"
-      intro="In de zaal heb je het snelst een antwoord: op elk speelmoment staat er iemand van de club. Kan je niet langskomen, mail ons dan gerust."
+      intro="In de zaal heb je het snelst een antwoord: op elk speelmoment staat er iemand van de club. Kan je niet langskomen, laat dan hieronder een bericht achter."
     />
 
     {/* Waar we spelen */}
@@ -71,9 +74,7 @@ const contacts = [
             <h3 class="font-bold text-ink-950">{item.heading}</h3>
             <p class="mt-2 leading-relaxed text-ink-700">{item.text}</p>
             <p class="mt-3">
-              <Link href={`mailto:${item.mail}`} class="type-label text-sm">
-                {item.name ? `${item.name} — ${item.mail}` : item.mail}
-              </Link>
+              <Link href={item.href} class="type-label text-sm">{item.linkText}</Link>
             </p>
           </li>
         ))}
@@ -97,9 +98,7 @@ const contacts = [
             <Link href={url('/media/')}>Foto's</Link>.
           </p>
           <p class="mt-3">
-            <Link href="mailto:info@bclandegem.be" class="type-label text-sm">
-              info@bclandegem.be
-            </Link>
+            <Link href="#formulier" class="type-label text-sm">Naar het formulier</Link>
           </p>
         </li>
         <li class="border-b border-ink-950/10 py-6">
@@ -117,31 +116,26 @@ const contacts = [
       </ul>
     </section>
 
-    {/* Geen formulier, wel duidelijkheid over wat er daarna gebeurt */}
-    <section class="mt-16 max-w-3xl pl-10">
-      <Heading size="small">Wat je meestuurt</Heading>
-      <p class="mt-3 leading-relaxed text-ink-700">
-        Wil je eens komen meespelen, zet er dan bij wie er komt, hoe oud die is en welke avond je
-        zou willen. Dan weten we wie we mogen verwachten en staat er iemand klaar om je wegwijs te
-        maken.
-      </p>
-    </section>
+    {/* Hier stond "Wat je meestuurt": drie zinnen die vertelden wat een goede
+        mail bevat. Dat advies staat nu in de hulptekst boven het berichtveld,
+        waar de cursor toch al naartoe gaat. */}
+    <ContactForm />
   </div>
 
   <section class="border-y-8 border-club-800 bg-club-600 text-white">
     <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-6 px-4 py-12">
       <div class="flex-[1_1_28rem]">
-        <Heading color="inherit">Mail ons gerust</Heading>
+        <Heading color="inherit">Vraag het gerust</Heading>
         <p class="mt-2 max-w-xl text-xl font-bold text-white">
-          Elke vraag mag naar info@bclandegem.be. Ook als je nog nooit een racket vasthad en niet
-          weet of dit iets voor jou is.
+          Elke vraag mag. Ook als je nog nooit een racket vasthad en niet weet of dit iets voor jou
+          is.
         </p>
       </div>
       <a
-        href="mailto:info@bclandegem.be"
+        href="#formulier"
         class="type-label rounded-full bg-white px-7 py-3.5 text-sm text-club-600 transition-colors hover:bg-club-50"
       >
-        info@bclandegem.be
+        Naar het formulier
       </a>
     </div>
   </section>

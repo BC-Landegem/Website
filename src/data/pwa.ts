@@ -23,6 +23,12 @@ export const SHELL_PATHS = [
   '/jeugd/',
   '/club/over-de-club/',
   '/club/word-lid/',
+  // De contactpagina zit erbij sinds het contactformulier de mailto's verving.
+  // Anders wordt offline een werkend kanaal een doodlopende straat: /club/word-lid/
+  // is gecachet en linkt ernaartoe, en een mailto werkte zonder bereik wél (de
+  // mailapp verstuurt later). Het formulier zelf kan offline niets versturen, maar
+  // de pagina toont dan het mailadres — zie src/components/ContactForm.astro.
+  '/club/contact/',
   '/offline/',
 ];
 

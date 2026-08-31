@@ -23,7 +23,8 @@ Dorpsclub met echte breedte: jeugdwerking, recreatieve avonden én competitieplo
 
 ## Operating Context
 
-- **www.bclandegem.be is de échte, huidige website** (bevestigd door de opdrachtgever); deze repo is de vervanger in opbouw. De oude site heeft naast de secties van deze repo ook een Media-sectie (fotogalerijen) en een nieuws-/aankondigingenstroom (bv. "Open speeldag", "5-delige lessenreeks voor nieuwkomers & recreanten — gratis voor leden, €25 voor niet-leden, verrekend met het lidgeld"), plus een contact-e-mailadres (info@…). Zulke aankondigingen zijn het soort inhoud dat de nieuwe site moet kunnen dragen.
+- **www.bclandegem.be is de échte, huidige website** (bevestigd door de opdrachtgever); deze repo is de vervanger in opbouw. De oude site heeft naast de secties van deze repo ook een Media-sectie (fotogalerijen) en een nieuws-/aankondigingenstroom (bv. "Open speeldag", "5-delige lessenreeks voor nieuwkomers & recreanten — gratis voor leden, €25 voor niet-leden, verrekend met het lidgeld"), plus een contactpagina. Zulke aankondigingen zijn het soort inhoud dat de nieuwe site moet kunnen dragen.
+- **De oude site had een contactformulier, geen zichtbaar e-mailadres** (nagekeken in de Joomla-dump: menu-item `/contact` → `com_contact&view=contact&id=1`, met `info@bclandegem.be` als bestemming en `show_email` uit). De nieuwe site verving dat aanvankelijk door `mailto:info@` op zeven plaatsen; het contactformulier op `/club/contact/` herstelt het oude gedrag. Het adres hoort dus **niet** zichtbaar op de site: het stond er nooit, en in platte HTML wordt het geoogst.
 - Vijf vaste speelmomenten per week (ma/wo/za/zo) in Sporthal Oostbroek; brondata in `src/data/trainings.json`.
 - Inschrijven gebeurt via een extern Twizzit-formulier (link in trainings.json).
 - Events komen live uit een publieke Google Calendar (`src/data/calendar.ts`); de events-sectie op de homepage blijft verborgen als er niets gepland is of de API faalt.

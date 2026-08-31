@@ -39,6 +39,11 @@ jobs:
           # is erger dan geen deploy. Met de nachtelijke cron hierboven betekent
           # dat wel dat een hapering om 04:00 een rode workflow oplevert.
           PUBLIC_INTRA_API: https://intra.bclandegem.be/api
+          # Sitesleutel van Cloudflare Turnstile voor het contactformulier. Geen
+          # secret — hij staat sowieso in de HTML — dus een repository variable.
+          # Is hij niet gezet, dan bouwt het formulier zonder widget en leunt de
+          # verdediging op honeypot, tijdslot en de rate limit van de server.
+          PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.TURNSTILE_SITE_KEY }}
 
   deploy:
     needs: build
