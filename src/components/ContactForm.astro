@@ -26,8 +26,13 @@ const origin = Astro.site?.origin ?? 'https://bc-landegem.github.io';
 // JavaScript getoond — dus stelt het script het daar samen uit deze twee helften.
 const [mailUser, mailDomain] = CLUB_MAIL.split('@');
 
+// Volledige klassennamen, want Tailwind leest de broncode statisch. Bewust géén
+// focus:border-club-500 erbij: :focus-visible in global.css legt er al een
+// clubrode ring van 2px op 3px afstand omheen. Kleurt de rand dan mee, dan staan
+// er twee even dikke rode lijnen om het veld en leest dat als een dubbele rand.
+// De ring is het signaal; de rand reageert alleen op hover.
 const field =
-  'mt-2 w-full border-2 border-ink-950/20 bg-white px-3 py-2.5 text-sm text-ink-950 transition-colors hover:border-club-600 focus:border-club-500';
+  'mt-2 w-full border-2 border-ink-950/20 bg-white px-3 py-2.5 text-sm text-ink-950 transition-colors hover:border-club-600';
 const label = 'type-label block text-xs text-ink-500';
 ---
 
