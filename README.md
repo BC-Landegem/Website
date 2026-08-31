@@ -28,10 +28,10 @@ npm run preview   # dist/ lokaal serveren zoals Pages het doet
 > bestaat die index dus niet en zegt het zoekveld op `/archief/` dat gewoon;
 > zoeken testen doe je met `npm run build && npm run preview`.
 
-> **De build haalt data op en duurt daardoor ~2 minuten.** De intraclub-historiek
-> (erelijst, seizoenen, speeldagen, loopbanen, records) wordt bij het bouwen uit
-> de API gehaald in plaats van in de browser. Zonder netwerk faalt de build; zie
-> "Databronnen · Intraclub-API".
+> **De build haalt data op.** De intraclub-historiek (erelijst, zeventien
+> eindstanden, records) wordt bij het bouwen uit de API gehaald in plaats van in
+> de browser. Dat zijn een dertigtal verzoeken en kost een paar seconden. Zonder
+> netwerk faalt de build; zie "Databronnen · Intraclub-API".
 
 > **Let op de base-prefix.** De site staat op GitHub Pages onder `/Website`, en
 > Astro past die prefix ook in dev toe. De dev-server draait dus op
@@ -112,14 +112,41 @@ aangesproken, en dat onderscheid is de kern van de intraclub-pagina's:
   `/intraclub/`, `/intraclub/speler/?id=` en `/intraclub/speeldag/?id=`. Valt de
   API weg, dan tonen die drie een foutmelding en blijft de rest van de site staan.
 - `src/lib/intra-build.ts` draait **tijdens de build** en maakt platte HTML van
-  alles wat bevroren is: de erelijst, 17 seizoenspagina's, 275 speeldagpagina's,
-  256 loopbaanpagina's en de clubrecords. Nul fetches in de browser, meteen
-  indexeerbaar, leesbaar zonder netwerk. Die module cachet per pad binnen één
-  build en haalt met acht tegelijk op; de zware antwoorden gaan bewust langs de
-  cache heen zodat niet het hele archief tegelijk in het geheugen staat.
+  alles wat bevroren is: de erelijst, zeventien eindstanden en de clubrecords.
+  Nul fetches in de browser, meteen indexeerbaar, leesbaar zonder netwerk. Een
+  `Map` ontdubbelt de paden, want de erelijst en de seizoenspagina's vragen
+  dezelfde standen op — vandaar ook dat er nergens `&limit=1` staat: dat zou een
+  ander pad zijn voor een lijst die al in het geheugen zit.
+
+**Van een afgesloten seizoen is publiek enkel de eindstand.** Geen speeldagen,
+geen uitslagen, geen aanwezigheden, geen klassementsverloop. De regel erachter,
+in één zin: *één regel uit een eindstand mag altijd; die regels van één persoon
+bij elkaar zetten mag alleen als die persoon nog lid is.* Twee gevolgen die je
+in de code terugziet:
+
+- De spelerspagina **moet** client-side blijven. Of iemand nog lid is verandert
+  ná de build, en er is bewust geen rebuild-trigger vanuit de API. Een
+  build-time fiche zou maanden blijven staan nadat iemand gestopt is. Vraag je
+  een niet-lid op, dan geeft de API `403 not_a_member` **zonder naam**; de pagina
+  toont dan een neutrale melding en verbergt de kop. `403 season_closed` werkt
+  net zo. Beide lopen via `ApiError`/`refusalCode()` in `intra.ts`.
+- In een eindstand is een naam klikbaar zodra er een `player_id` achter zit. In
+  het archief geldt dat voor twee derde van de rijen; de rest speelde vóór het
+  huidige ledenbestand en heeft er nooit een gekregen. Dat de fiche daarna zelf
+  beslist of ze iets toont, is het punt — de build weet niet wie er in maart nog
+  lid is.
+
+> **Twee id-reeksen die overlappen.** Het archief en het huidige format tellen
+> elk vanaf 1: `season_id: 1` is 2013-2014 in het archief en 2023-2024 daarbuiten.
+> Het veld `is_archive` hoort dus in de sleutel, niet ernaast — zie `seasonKey()`
+> in `intra-build.ts`. Wie op `season_id` alleen indexeert, linkt tien jaar naast
+> de waarheid zonder fout en zonder leeg veld.
 
 `/intraclub/zo-werkt-het/` is de uitzondering op allebei — die draait op een
 bevroren snapshot in `src/data/intraclub-example.json` en doet geen enkel request.
+Verversen kan alleen tijdens een **lopend** seizoen: `node scripts/intra-snapshot.mjs`
+haalt de laatst berekende speeldag op, en van een afgesloten seizoen geeft de API
+die niet meer.
 
 > **CORS is per origin.** De API laat `http://localhost:4321` en
 > `https://bc-landegem.github.io` toe. Draai je de dev-server of preview op een
@@ -233,11 +260,19 @@ Een push naar `master` start `deploy.yml`: Astro bouwt en GitHub Pages
 publiceert. Geen handmatige stap, geen secrets — wel één omgevingsvariabele,
 `PUBLIC_INTRA_API`, die in de workflow staat.
 
-> **De build praat met de intraclub-API.** De historiekpagina's worden gebouwd,
-> niet opgehaald in de browser, dus doet één build ruim vijfhonderd verzoeken en
-> duurt hij ongeveer twee minuten. Ligt `intra.bclandegem.be` plat, dan faalt de
-> deploy — met opzet: een halve historiek is erger dan geen deploy. Er zit een
-> herkansing op elk verzoek voor losse haperingen.
+> **De build praat met de intraclub-API.** De erelijst, de eindstanden en de
+> records worden gebouwd, niet opgehaald in de browser. Ligt
+> `intra.bclandegem.be` plat, dan faalt de deploy — met opzet: een halve
+> historiek is erger dan geen deploy. Er zit een herkansing op elk verzoek voor
+> losse haperingen. Met de nachtelijke cron hieronder betekent dat wel dat een
+> hapering om 04:00 een rode workflow oplevert.
+
+Diezelfde `deploy.yml` draait ook **elke nacht om 04:00 UTC**. Niet omdat er dan
+iets gepusht is, maar omdat een deel van de build aan de klok hangt en niet aan
+een commit: een seizoen wordt pas als eindstandpagina gebouwd zodra het niet meer
+loopt, en dat "niet meer" volgt uit de datum van de laatste berekende speeldag.
+Een statische site heeft geen klok, alleen builds. Zonder deze cron zou de
+eindstand van een net afgesloten seizoen pas verschijnen bij de volgende push.
 
 `media-sync.yml` draait elke nacht om 03:00 UTC — in de winter 4u, in de zomer 5u Belgische tijd (en kan met de hand via Actions). Vindt
 hij nieuwe foto's, dan commit hij `src/data/media.json` en **start hij zelf een
@@ -275,13 +310,24 @@ workflows triggert.
   blijft een afgesloten seizoen maandenlang `current` noemen; `intra-build.ts`
   leidt uit de datum van de laatste berekende speeldag af of het écht nog loopt.
   Zolang dat zo is, leeft die stand op `/intraclub/` en wordt er geen bevroren
-  kopie gebouwd.
-- **Het archief is niet volledig, en dat is zichtbaar.** Van 2009-2013 is per
-  speeldag niets bewaard dan de datum, en van 2013-2023 alleen het gemiddelde —
-  geen plaats, geen dagscore. De pagina's laten die kolommen dan weg in plaats van
-  ze met streepjes te vullen. Ook `ranking` staat er maar één keer per persoon en
-  niet per seizoen: daarom draagt de erelijst wél een dameslijn en géén
-  recreantenlijn.
+  kopie gebouwd. Zie de nachtelijke cron bij "Bouwen en deployen": die grens
+  wordt overschreden door de kalender, niet door een commit.
+- **`?members=0` is niet optioneel op een afgesloten seizoen.** Zonder die
+  parameter filtert de API ook een oude stand op wie er vandaag nog lid is, en
+  dan mist de eindstand van 2023-2024 er 36 van de 96. Geldt evengoed binnen het
+  lopende seizoen: `scripts/intra-snapshot.mjs` heeft hem nodig omdat er anders
+  iemand die deze zomer stopte uit het voorbeeld valt.
+- **`players_count` is de lengte van de eindstand**, niet het aantal
+  inschrijvingen. Je mag het dus als teller boven een tabel zetten. Vroeger niet:
+  voor 2018-2019 stond er 142 boven een stand van 81.
+- **Het archief is niet volledig, en dat is zichtbaar.** Er is geen `gender` per
+  seizoen bewaard maar wel per rij in de eindstand — daarop draait de dameslijn
+  van de erelijst. `ranking` staat er maar één keer per persoon en niet per
+  seizoen: daarom draagt de erelijst wél een dameslijn en géén recreantenlijn.
+- **Vergelijk gemiddelden niet over de twee generaties heen.** Het oude format
+  (2009-2023) speelde met vaste teams in best-of-3, het huidige met duo's die per
+  set roteren. De cijfers zien er hetzelfde uit en betekenen iets anders; daarom
+  staat er een breuklijn in de geschiedenistabel op de spelerspagina.
 
 ## De README bijhouden
 

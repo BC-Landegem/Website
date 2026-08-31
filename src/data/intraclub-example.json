@@ -1,5 +1,5 @@
 {
- "frozenOn": "2026-08-25",
+ "frozenOn": "2026-08-31",
  "seasonId": 7,
  "matchdaysPlayed": 17,
  "playersInRanking": 88,
@@ -495,7 +495,7 @@
    "rankOnEvening": 44
   },
   {
-   "id": "145",
+   "id": "72",
    "firstName": "Lieselot",
    "name": "Van Haute",
    "rank": 72,
@@ -610,7 +610,7 @@
    "players": [
     "65",
     "136",
-    "145",
+    "72",
     "17"
    ],
    "sets": [

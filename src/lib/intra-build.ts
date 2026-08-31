@@ -1,8 +1,14 @@
 /**
- * De bevroren helft van de intraclub: zeventien seizoenen die niet meer
+ * De bevroren helft van de intraclub: zeventien eindstanden die niet meer
  * veranderen. Die hoort niet elke bezoeker opnieuw op te halen, dus haalt de
  * build ze op en zet er platte HTML van neer — nul fetches in de browser,
  * meteen indexeerbaar, en offline gewoon leesbaar.
+ *
+ * Van een afgesloten seizoen is publiek enkel de eindstand: geen speeldagen,
+ * geen wedstrijden, geen aanwezigheden, geen klassementsverloop. Wie één
+ * persoon over meerdere seizoenen wil zien, moet daarvoor bij zijn fiche zijn
+ * — en die beslist live of dat mag, want dat hangt ervan af of hij nog lid is.
+ * Vandaar dat er hier geen loopbaanpagina's meer gebouwd worden.
  *
  * Alles hier draait uitsluitend tijdens `astro build`. De live helft (het
  * lopende klassement, één speeldag, één speler) loopt langs src/lib/intra.ts.
@@ -14,12 +20,12 @@ const API = import.meta.env.PUBLIC_INTRA_API ?? 'https://intra.bclandegem.be/api
 const cache = new Map<string, Promise<unknown>>();
 
 /**
- * Eén ophaling per pad per build. Astro rendert honderden pagina's die
- * dezelfde seizoenslijst nodig hebben; zonder deze cache is dat honderden
- * keer hetzelfde antwoord.
+ * Eén ophaling per pad per build. De erelijst en de zeventien seizoenspagina's
+ * leunen op dezelfde standen; zonder deze cache haalt elke pagina ze opnieuw op.
  *
- * Alles loopt hierlangs, ook de zware antwoorden: prewarm() vult deze cache in
- * één parallelle ronde, en de pagina's lezen er daarna alleen nog uit.
+ * Daarom staat er nergens nog `&limit=1`: dat leverde een ánder pad op voor
+ * dezelfde stand, en dus een cachemisser voor een lijst die al in het geheugen
+ * zat. Wie alleen de winnaar wil, neemt `[0]` van de volledige lijst.
  */
 export function getApi<T, M = unknown>(path: string): Promise<{ data: T; meta?: M }> {
   let promise = cache.get(path) as Promise<{ data: T; meta?: M }> | undefined;
@@ -35,8 +41,9 @@ export async function getData<T>(path: string): Promise<T> {
 }
 
 /**
- * Een build doet ruim vijfhonderd verzoeken. Eén hapering hoort de hele
- * deploy niet te laten mislukken, dus twee herkansingen met oplopende pauze.
+ * Eén hapering hoort de hele deploy niet te laten mislukken, dus twee
+ * herkansingen met oplopende pauze. Lukt het daarna nog niet, dan faalt de
+ * build met opzet: een halve historiek is erger dan geen deploy.
  */
 async function fetchOnce<T, M = unknown>(path: string): Promise<{ data: T; meta?: M }> {
   let last: unknown;
@@ -55,17 +62,18 @@ async function fetchOnce<T, M = unknown>(path: string): Promise<{ data: T; meta?
 
 /**
  * Hoeveel verzoeken er tegelijk mogen lopen. Nagemeten op 40 opeenvolgende
- * archiefrondes: serieel 7,6 s, met vier tegelijk 2,0 s, met acht 1,1 s. Daarbóven
+ * rondes: serieel 7,6 s, met vier tegelijk 2,0 s, met acht 1,1 s. Daarbóven
  * wordt het niet sneller maar wél trager per antwoord — met twaalf tegelijk
  * verdubbelt de mediaan van 196 naar 340 ms, met vierentwintig naar 596 ms, en
  * blijft de wandklok op ~1,2 s hangen. Acht is de knik.
+ *
+ * De build haalt nu een dertigtal antwoorden op in plaats van vijfhonderd, dus
+ * dit plafond kost bijna niets meer. Het staat er omdat `champions()` anders
+ * zeventien standen tegelijk opvraagt, en dat is boven de knik.
  */
 const CONCURRENCY = 8;
 
-/**
- * Parallel ophalen met een plafond. De API staat op één host en wordt merkbaar
- * trager zodra ze te veel tegelijk krijgt; zie CONCURRENCY.
- */
+/** Parallel ophalen met een plafond; zie CONCURRENCY. */
 export async function mapLimit<T, R>(
   items: T[],
   limit: number,
@@ -83,60 +91,6 @@ export async function mapLimit<T, R>(
   return out;
 }
 
-/* --------------------------------------------------------------- voorladen */
-
-let warmed: Promise<void> | undefined;
-
-/**
- * Alles wat de build nodig heeft in één keer ophalen, met acht tegelijk.
- *
- * Zonder deze stap gebeurt hetzelfde werk verspreid over honderden pagina's, en
- * dan bepaalt Astro het tempo: gemeten liep er maar 1,3× parallel, waardoor 175
- * seconden API-tijd bijna volledig in de wandklok terechtkwam. Astro roept alle
- * `getStaticPaths()` aan vóór het renderen, dus is dat de plek om dit te
- * starten; daarna is elke `getData()` in een pagina een cachetreffer.
- *
- * Het blijft één belofte per build: wie hem tien keer aanroept, wacht tien keer
- * op dezelfde ophaalronde.
- */
-export function prewarm(): Promise<void> {
-  warmed ??= loadEverything();
-  return warmed;
-}
-
-async function loadEverything(): Promise<void> {
-  const seasons = (await allSeasons()).filter((season) => !season.isRunning);
-  const archive = seasons.filter((season) => season.format === 'archive');
-  const current = seasons.filter((season) => season.format === 'current');
-
-  // Eerst de lijsten, want daaruit volgt wat er per stuk opgehaald moet worden.
-  const [archiveRounds, currentRounds, archivePlayers, rankings] = await Promise.all([
-    mapLimit(archive, CONCURRENCY, (season) =>
-      getData<ArchiveRound[]>(`/archive/seasons/${season.id}/rounds`),
-    ),
-    mapLimit(current, CONCURRENCY, (season) => getData<{ id: number }[]>(`/rounds?season=${season.id}`)),
-    getData<ArchivePlayerRef[]>('/archive/players'),
-    mapLimit(current, CONCURRENCY, (season) =>
-      getData<{ id: number }[]>(`/rankings/general?season=${season.id}&members=0`),
-    ),
-  ]);
-
-  // Elk pad dat straks door een pagina opgevraagd wordt, letterlijk zoals de
-  // pagina hem opvraagt — anders mist de cache.
-  const paths = [
-    ...archiveRounds.flat().map((round) => `/archive/rounds/${round.id}`),
-    ...currentRounds.flat().map((round) => `/rounds/${round.id}`),
-    ...archivePlayers.map((player) => `/archive/players/${player.id}?include=games`),
-    ...current.flatMap((season, i) =>
-      rankings[i].map(
-        (player) => `/players/${player.id}?season=${season.id}&include=games,ranking_history`,
-      ),
-    ),
-  ];
-
-  await mapLimit(paths, CONCURRENCY, (path) => getData(path));
-}
-
 /* ------------------------------------------------------------------ namen */
 
 /**
@@ -148,26 +102,7 @@ export function seasonSlug(name: string): string {
   return name.replace(/\s+/g, '');
 }
 
-/**
- * De slug van een loopbaanpagina leeft in intra.ts: de spelerspagina bouwt hem
- * in de browser om ernaartoe te linken, deze module bij de build om die
- * pagina's te maken. Eén definitie, twee gebruikers.
- */
-export { careerSlug, careerUrl } from './intra';
-import { careerSlug, displayName, seasonState, type RankingMeta } from './intra';
-
-/**
- * Het archief bewaart nog "Man"/"Vrouw", de rest van de API geeft sinds de
- * omzetting male/female. De site toont geslacht nergens, maar één vertaling
- * hier is goedkoper dan die afwijking later terugvinden.
- */
-export function normalizeGender(value: string | null): 'male' | 'female' | null {
-  if (!value) return null;
-  const v = value.toLowerCase();
-  if (v === 'man' || v === 'male') return 'male';
-  if (v === 'vrouw' || v === 'female') return 'female';
-  return null;
-}
+import { displayName, seasonState, type RankingMeta } from './intra';
 
 /* ------------------------------------------------------------------ types */
 
@@ -177,15 +112,22 @@ export interface ArchiveSeason {
   /** `comp` is 2009-2013, `intra` is 2013-2023. Zelfde vorm, andere herkomst. */
   source: 'comp' | 'intra';
   rounds_count: number;
+  /** De lengte van de eindstand, niet het aantal inschrijvingen. */
   players_count: number;
 }
 
 export interface ArchiveStanding {
   archive_player_id: number;
+  /**
+   * `null` voor wie nooit in het huidige ledenbestand terechtkwam — een derde
+   * van alle archiefrijen. Voor die mensen bestaat er geen fiche, dus blijft
+   * hun naam in de eindstand platte tekst.
+   */
   player_id: number | null;
   first_name: string;
   last_name: string;
   full_name: string;
+  gender: 'male' | 'female' | null;
   ranking: string | null;
   average: number;
   base_points: number;
@@ -195,59 +137,11 @@ export interface ArchiveStanding {
   rounds: { present: number };
 }
 
-export interface ArchiveRound {
-  id: number;
-  number: number;
-  date: string;
-  average_absent: number;
-  season_id: number;
-  games_count: number;
-}
-
-export interface ArchivePlayerRef {
-  id: number;
-  first_name: string;
-  last_name: string;
-  full_name: string;
-  gender: string | null;
-  ranking: string | null;
-  player_id: number | null;
-}
-
-/** Het oude format: vaste teams, best of three — geen duo's die per set wisselen. */
-export interface ArchiveGame {
-  id: number;
-  round_id: number;
-  team1: ArchivePlayerRef[];
-  team2: ArchivePlayerRef[];
-  sets: { team1: number; team2: number }[];
-  sets_won: { team1: number; team2: number };
-}
-
-export interface ArchiveRoundDetail extends ArchiveRound {
-  season_name: string;
-  games: ArchiveGame[];
-}
-
-export interface ArchivePlayerSeason {
-  season_id: number;
-  season_name: string;
-  base_points: number;
-  sets: { won: number; total: number };
-  points: { won: number; total: number };
-  games: { won: number; total: number };
-  rounds: { present: number };
-}
-
-export interface ArchivePlayerDetail extends ArchivePlayerRef {
-  seasons: ArchivePlayerSeason[];
-  games: ArchiveGame[];
-}
-
 export interface Season {
   id: number;
   name: string;
   rounds_count: number;
+  /** De lengte van de eindstand, niet het aantal inschrijvingen. */
   players_count: number;
 }
 
@@ -255,8 +149,8 @@ export interface Season {
 
 /**
  * Eén seizoen op de site, ongeacht waar het vandaan komt. `format` bepaalt
- * welke kolommen de eindstand krijgt en welke speeldagcomponent er past — het
- * oude format speelde met vaste teams, dus die twee zijn niet uitwisselbaar.
+ * welke kolommen de eindstand krijgt — het oude format speelde met vaste teams
+ * in best-of-3 en kent dus gewonnen wedstrijden, het huidige niet.
  */
 export interface SeasonEntry {
   slug: string;
@@ -315,182 +209,52 @@ export async function allSeasons(): Promise<SeasonEntry[]> {
   return entries.sort((a, b) => a.slug.localeCompare(b.slug));
 }
 
-/**
- * Iedereen die ooit intraclub speelde, ongeacht wanneer. Het archief kent er
- * 200; wie ná de formaatwissel lid werd staat daar niet in en zou anders geen
- * loopbaanpagina krijgen — terwijl juist die mensen er al drie seizoenen op
- * hebben zitten.
- */
-export interface CareerPerson {
+/* -------------------------------------------------- seizoenen voor de browser */
+
+export interface SeasonLink {
   slug: string;
-  name: string;
-  archiveId: number | null;
-  playerId: number | null;
-}
-
-export async function allCareers(): Promise<CareerPerson[]> {
-  const archive = await getData<ArchivePlayerRef[]>('/archive/players');
-  const seasons = (await allSeasons()).filter(
-    (season) => season.format === 'current' && !season.isRunning,
-  );
-
-  const people = new Map<string, CareerPerson>();
-  /**
-   * `actueel` betekent: deze naam komt uit het huidige ledenbestand en wint dus
-   * van de naam in het archief. Dat is niet cosmetisch — de spelerspagina bouwt
-   * de link naar deze pagina in de browser uit de naam die zíj kent, en die komt
-   * uit dezelfde bron. Wijken ze af, dan wijst de link naar een 404.
-   */
-  const add = (person: Omit<CareerPerson, 'slug'>, isCurrentName = false) => {
-    const key = person.playerId ? `s${person.playerId}` : `a${person.archiveId}`;
-    const existing = people.get(key);
-    if (existing) {
-      existing.archiveId ??= person.archiveId;
-      if (isCurrentName) {
-        existing.name = person.name;
-        existing.slug = careerSlug(existing);
-      }
-      return;
-    }
-    people.set(key, { ...person, slug: careerSlug(person) });
-  };
-
-  for (const player of archive) {
-    add({
-      name: displayName(player.full_name) || 'Onbekende speler',
-      archiveId: player.id,
-      playerId: player.player_id,
-    });
-  }
-
-  // De klassementen van de afgesloten seizoenen in het huidige format: daar
-  // staat iedereen in die toen meespeelde, ook wie ondertussen gestopt is —
-  // vandaar ?members=0.
-  const perSeason = await mapLimit(seasons, 4, (season) =>
-    getData<{ id: number; full_name: string }[]>(
-      `/rankings/general?season=${season.id}&members=0`,
-    ),
-  );
-  for (const ranking of perSeason) {
-    for (const player of ranking) {
-      add({ name: displayName(player.full_name), archiveId: null, playerId: player.id }, true);
-    }
-  }
-
-  return [...people.values()];
-}
-
-/** Eén seizoen uit de loopbaan van een speler, ongeacht het format. */
-export interface CareerSeason {
-  slug: string;
-  label: string;
-  rank: number | null;
-  /** Hoe groot het veld was waarin die plaats behaald werd. */
-  field: number;
-  average: number | null;
-  sets: { won: number; total: number };
-  /**
-   * Gespeelde wedstrijden. `won` bestaat alleen in het oude format: daar
-   * speelden twee vaste teams best of three, dus was er een winnaar per
-   * wedstrijd. In het huidige format wisselt elke set van samenstelling en is
-   * er dus niets te winnen op wedstrijdniveau — enkel sets.
-   */
-  games: { won: number | null; total: number };
-  present: number;
-  rounds_count: number;
-  /**
-   * Het verloop binnen dat seizoen. Wat erin zit hangt af van de bron:
-   * het huidige format geeft dagscore én plaats per speeldag, het archief
-   * (2013-2023) enkel het gemiddelde, en de vier oudste seizoenen (2009-2013)
-   * niets — daar is per speeldag nooit iets bewaard.
-   */
-  history: CareerRound[];
-}
-
-export interface CareerRound {
-  number: number;
-  date: string;
-  /** `null` waar het archief geen verloop per speeldag bewaarde (2009-2013). */
-  average: number | null;
-  day_score: number | null;
-  rank: number | null;
+  /** Hoe groot het veld was: de lengte van de eindstand. */
+  players: number;
 }
 
 /**
- * Op welke speeldagen iemand effectief speelde. Er is geen aanwezigheidsvlag in
- * het verloop, maar zijn wedstrijden zijn het bewijs: staat er een wedstrijd op
- * die speeldag, dan stond hij op de baan. Dat werkt in beide formats, ook waar
- * er verder niets per speeldag bewaard is.
- */
-function playedRounds(games: { round_id?: number; round?: { id: number } }[]): Set<number> {
-  return new Set(
-    games
-      .map((game) => game.round_id ?? game.round?.id)
-      .filter((id): id is number => typeof id === 'number'),
-  );
-}
-
-/**
- * De seizoenen die een huidig lid in het nieuwe format speelde. De erelijst en
- * de spelerspagina's uit het archief stoppen anders in 2022-2023, terwijl
- * dezelfde mensen daarna gewoon zijn blijven spelen.
+ * De sleutel waaronder een seizoen in de browser teruggevonden wordt.
  *
- * Alle calls hier zijn gecacht en er zijn maar drie seizoenen, dus dit kost
- * niets extra hoeveel spelerspagina's er ook gebouwd worden.
+ * De letter is geen versiering. De twee generaties hebben elk hun eigen
+ * id-reeks en die overlappen: `season_id: 1` is 2013-2014 in het archief en
+ * 2023-2024 in het huidige format. Wie op `season_id` alleen indexeert, koppelt
+ * die twee stil aan elkaar en linkt tien jaar naast de waarheid — zonder fout,
+ * zonder leeg veld. `is_archive` hoort dus in de sleutel, niet ernaast.
  */
-export async function currentFormatCareer(playerId: number): Promise<CareerSeason[]> {
-  const seasons = (await allSeasons()).filter(
-    (season) => season.format === 'current' && !season.isRunning,
-  );
+export function seasonKey(id: number, isArchive: boolean): string {
+  return `${isArchive ? 'a' : 's'}${id}`;
+}
 
-  const rows = await mapLimit(seasons, 4, async (season) => {
-    const [ranking, statistics] = await Promise.all([
-      getData<{ id: number; average: number; rank: number }[]>(
-        `/rankings/general?season=${season.id}&members=0`,
-      ),
-      getData<{ player: { id: number }; statistics: CurrentStatistics }[]>(
-        `/seasons/${season.id}/statistics?members=0`,
-      ),
-    ]);
-
-    const standing = ranking.find((row) => row.id === playerId);
-    const stats = statistics.find((row) => row.player.id === playerId)?.statistics;
-    if (!standing && !stats) return null;
-
-    // Eén call per speler per seizoen, en dus niet gecacht: dit is het enige
-    // antwoord dat over één persoon in één seizoen gaat. `games` zit erbij om
-    // te weten op welke speeldagen hij effectief speelde — het verloop bevat
-    // ook de avonden waarop hij er niet was.
-    const detail = await getData<{
-      ranking_history?: (CareerRound & { round_id: number })[];
-      games?: { round?: { id: number } }[];
-    }>(`/players/${playerId}?season=${season.id}&include=games,ranking_history`);
-
-    const played = playedRounds(detail.games ?? []);
-    const history = (detail.ranking_history ?? []).filter((round) => played.has(round.round_id));
-
-    return {
+/**
+ * Welke seizoenen een eindstandpagina hebben, en hoe groot hun veld was.
+ *
+ * De spelerspagina leeft in de browser en krijgt zijn geschiedenis uit het veld
+ * `seasons` van de API. Die geeft id's, geen URL's — en de browser kan de
+ * seizoenslijst niet zelf ophalen zonder een tweede call. Dus geeft de build
+ * dit tabelletje mee; het is een paar honderd bytes.
+ *
+ * Een lopend seizoen staat er niet in: dat heeft geen pagina, en het staat ook
+ * niet in `seasons` (dat is de fiche zelf).
+ */
+export async function seasonLinks(): Promise<Record<string, SeasonLink>> {
+  const seasons = await allSeasons();
+  const map: Record<string, SeasonLink> = {};
+  for (const season of seasons) {
+    if (season.isRunning) continue;
+    map[seasonKey(season.id, season.format === 'archive')] = {
       slug: season.slug,
-      label: season.label,
-      rank: standing?.rank ?? null,
-      field: ranking.length,
-      average: standing?.average ?? null,
-      sets: stats?.sets ?? { won: 0, total: 0 },
-      games: { won: null, total: stats?.games.total ?? 0 },
-      present: stats?.rounds.present ?? 0,
-      rounds_count: season.rounds_count,
-      history,
-    } satisfies CareerSeason;
-  });
-
-  return rows.filter((row): row is CareerSeason => row !== null);
+      players: season.players_count,
+    };
+  }
+  return map;
 }
 
-interface CurrentStatistics {
-  sets: { won: number; total: number };
-  rounds: { present: number };
-  games: { total: number };
-}
+/* ---------------------------------------------------------------- erelijst */
 
 export interface ChampionEntry {
   name: string;
@@ -504,9 +268,9 @@ export interface Champion {
   /**
    * De hoogste vrouw in de eindstand. Vanaf 2023-2024 is dat het damesklassement
    * dat de club zelf bijhoudt; daarvoor leidt de site het af uit de algemene
-   * stand, want een aparte damesstand bestond toen niet. Dat is verdedigbaar
-   * omdat geslacht niet per seizoen verandert — anders dan de badmintonranking,
-   * die in het archief maar één keer per persoon bewaard is en dus geen
+   * stand, waar `gender` per rij meekomt. Dat is verdedigbaar omdat geslacht
+   * niet per seizoen verandert — anders dan de badmintonranking, die in het
+   * archief maar één keer per persoon bewaard is en dus geen
    * recreantenerelijst kan dragen.
    */
   women: ChampionEntry | null;
@@ -521,33 +285,26 @@ export interface Champion {
  */
 export async function champions(): Promise<Champion[]> {
   const seasons = await allSeasons();
-  // Geslacht staat op de archiefspeler, niet in de eindstand. Eén lijst van 200
-  // volstaat voor alle veertien seizoenen.
-  const archivePlayers = await getData<ArchivePlayerRef[]>('/archive/players');
-  const gender = new Map(
-    archivePlayers.map((player) => [player.id, normalizeGender(player.gender)]),
-  );
 
-  const entries = await mapLimit(seasons, 4, async (season) => {
+  const entries = await mapLimit(seasons, CONCURRENCY, async (season) => {
     if (season.format === 'archive') {
       const rows = await getData<ArchiveStanding[]>(`/archive/seasons/${season.id}/standings`);
       const entry = (row: ArchiveStanding | undefined): ChampionEntry | null =>
-        row ? { name: displayName(row.full_name), average: row.average, playerId: row.player_id } : null;
+        row
+          ? { name: displayName(row.full_name), average: row.average, playerId: row.player_id }
+          : null;
       return {
         winner: entry(rows[0]),
-        women: entry(rows.find((row) => gender.get(row.archive_player_id) === 'female')),
+        women: entry(rows.find((row) => row.gender === 'female')),
       };
     }
 
+    // Dezelfde twee paden die de seizoenspagina opvraagt, dus cachetreffers.
     const [general, womenRanking] = await Promise.all([
-      getData<{ full_name: string; average: number; id: number }[]>(
-        `/rankings/general?season=${season.id}&members=0&limit=1`,
-      ),
-      getData<{ full_name: string; average: number; id: number }[]>(
-        `/rankings/women?season=${season.id}&members=0&limit=1`,
-      ),
+      getData<RankingHead[]>(`/rankings/general?season=${season.id}&members=0`),
+      getData<RankingHead[]>(`/rankings/women?season=${season.id}&members=0`),
     ]);
-    const entry = (row: { full_name: string; average: number; id: number } | undefined) =>
+    const entry = (row: RankingHead | undefined) =>
       row ? { name: displayName(row.full_name), average: row.average, playerId: row.id } : null;
     return { winner: entry(general[0]), women: entry(womenRanking[0]) };
   });
@@ -562,6 +319,12 @@ export async function champions(): Promise<Champion[]> {
   list.reverse();
 
   return withNotes(list);
+}
+
+interface RankingHead {
+  id: number;
+  full_name: string;
+  average: number;
 }
 
 /**

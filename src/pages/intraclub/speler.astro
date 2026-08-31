@@ -4,18 +4,19 @@ import Heading from '../../components/Heading.astro';
 import Dot from '../../components/Dot.astro';
 import Pill from '../../components/Pill.astro';
 import { url } from '../../lib/url';
-import { allCareers } from '../../lib/intra-build';
+import { seasonLinks } from '../../lib/intra-build';
 
 /*
- * Wie een loopbaanpagina heeft, weet alleen de build: die pagina's worden
- * gemaakt uit het archief plus de afgesloten seizoenen. De spelerspagina leeft
- * in de browser en zou er anders blind naartoe linken — en een 404 opleveren
- * voor iedereen die deze zomer lid werd. Een lijst van id's is klein genoeg om
- * gewoon mee te geven.
+ * De geschiedenis komt uit het veld `seasons` van de fiche zelf, maar dat geeft
+ * id's en geen URL's — en de browser kan de seizoenslijst niet ophalen zonder
+ * een tweede call. Dus geeft de build dit tabelletje mee: welke seizoenen een
+ * eindstandpagina hebben, onder welke slug, en hoe groot hun veld was.
+ *
+ * De sleutel draagt een letter vooraan omdat de twee generaties elk hun eigen
+ * id-reeks hebben en die overlappen: `season_id: 1` is 2013-2014 in het archief
+ * en 2023-2024 in het huidige format.
  */
-const careerIds = (await allCareers())
-  .map((person) => person.playerId)
-  .filter((id): id is number => id !== null);
+const seasons = await seasonLinks();
 ---
 
 {/* noindex: geen clublid met naam en aanwezigheidspercentage in de zoekresultaten. */}
@@ -47,6 +48,20 @@ const careerIds = (await allCareers())
       class="ml-10 mt-10 hidden max-w-3xl border-2 border-club-500 bg-club-50 p-4 font-medium text-club-800"
     >
       De statistieken konden niet geladen worden. Probeer het later opnieuw.
+    </div>
+
+    {/*
+      Geen alert en geen clubrood: een 403 op deze fiche is geen storing maar
+      het juiste antwoord. Er valt niets opnieuw te proberen, en een schermlezer
+      hoort dit niet met urgentie te krijgen.
+    */}
+    <div id="player-refusal" class="ml-10 mt-10 hidden max-w-3xl border-l-2 border-cork-400 bg-cork-300/15 px-5 py-4">
+      <p id="player-refusal-text" class="text-ink-700"></p>
+      <p class="mt-3 text-sm text-ink-500">
+        Wie ooit meespeelde staat nog wel in de eindstand van zijn seizoen:
+        <a href={url('/intraclub/erelijst/')} class="font-semibold text-cork-600 hover:underline">de erelijst</a>
+        brengt je naar alle zeventien.
+      </p>
     </div>
 
     <p id="player-loading" class="mt-10 flex items-center gap-3 pl-10 text-sm font-medium text-ink-500" aria-live="polite">
@@ -166,40 +181,50 @@ const careerIds = (await allCareers())
         </p>
       </section>
 
-      {/* Kurk, net als elders op de site: oude inhoud, herkenbaar vóór het klikken. */}
-      <a
-        id="career-link"
-        href="#"
-        class="group mt-14 hidden items-baseline justify-between gap-4 border-l-2 border-cork-400 bg-cork-300/15 px-5 py-4 transition-colors hover:bg-cork-300/30"
-      >
-        <span>
-          <span class="type-label block text-[0.65rem] text-cork-600">Volledige loopbaan</span>
-          {/*
-            Geen aantallen in deze zin. Die stonden er eerst wel, geteld uit het
-            archief — en liepen achter zodra de loopbaanpagina ook de seizoenen
-            uit het huidige format ging tonen.
-          */}
-          <span id="career-line" class="mt-1 block text-sm text-ink-700">
-            Elk seizoen apart, met eindplaats, gemiddelde en aanwezigheid.
-          </span>
-        </span>
-        <span class="type-label shrink-0 text-xs text-ink-950 group-hover:text-cork-600" aria-hidden="true">
-          Bekijk
-        </span>
-      </a>
+      {/*
+        Kurk, net als elders op de site: oude inhoud, herkenbaar vóór het
+        klikken. Eén rij per seizoen, niet openklapbaar — van een afgesloten
+        seizoen is enkel de eindstand publiek, dus er zit niets achter een rij
+        behalve die eindstand zelf.
+      */}
+      <section id="history" class="mt-14 hidden border-l-2 border-cork-400 bg-cork-300/15 px-5 py-5">
+        <h2 class="type-label text-[0.65rem] text-cork-600">Vorige seizoenen</h2>
+        <div class="mt-4 overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead>
+              <tr class="type-label border-b-[3px] border-ink-950/15 text-xs text-cork-600">
+                <th class="py-2 pr-3 font-bold">Seizoen</th>
+                <th class="whitespace-nowrap py-2 pr-3 text-right font-bold">Plaats</th>
+                <th class="whitespace-nowrap py-2 pr-3 text-right font-bold">Gem.</th>
+                <th class="whitespace-nowrap py-2 pr-3 text-right font-bold">Sets</th>
+                <th class="whitespace-nowrap py-2 pr-3 text-right font-bold">Matchen</th>
+                <th class="whitespace-nowrap py-2 text-right font-bold">Aanwezig</th>
+              </tr>
+            </thead>
+            <tbody data-history-body></tbody>
+          </table>
+        </div>
+      </section>
 
       <section class="mt-14">
         <Heading size="small">Wedstrijden</Heading>
-        <p class="mb-6 mt-3 text-sm text-ink-500">
+        <p id="matches-intro" class="mb-6 mt-3 hidden text-sm text-ink-500">
           Vier spelers per wedstrijd, per set een andere samenstelling. Het winnende duo staat in het
           vet; de meest recente speeldag staat bovenaan.
+        </p>
+        {/*
+          Wie dit seizoen nog niet meespeelde krijgt anders een kop met uitleg en
+          niets eronder. De uitleg hoort bij de wedstrijden, niet bij hun afwezigheid.
+        */}
+        <p id="matches-empty" class="mt-3 hidden text-sm text-ink-500">
+          Nog geen wedstrijden dit seizoen. Ze verschijnen hier zodra je een speeldag meespeelt.
         </p>
         <div id="player-matches" class="space-y-6"></div>
       </section>
     </div>
   </div>
 
-  <script id="career-ids" type="application/json" set:html={JSON.stringify(careerIds)} is:inline></script>
+  <script id="season-links" type="application/json" set:html={JSON.stringify(seasons)} is:inline></script>
 </Layout>
 
 <script>
@@ -209,17 +234,31 @@ const careerIds = (await allCareers())
     decimal,
     displayName,
     playerUrl,
-    careerUrl,
+    seasonUrl,
+    refusalCode,
     renderGameCard,
   } from '../../lib/intra';
   import type { Game, Player } from '../../lib/intra';
   import { drawProgression, progressionCounts } from '../../lib/progression';
   import type { ProgressionMode } from '../../lib/progression';
 
-  // Meegegeven door de build: welke spelers een loopbaanpagina hebben.
-  const CAREER_IDS = new Set<number>(
-    JSON.parse(document.getElementById('career-ids')!.textContent!) as number[],
-  );
+  /** Meegegeven door de build: welk seizoen achter welke sleutel zit. Zie de frontmatter. */
+  const SEASON_LINKS = JSON.parse(document.getElementById('season-links')!.textContent!) as Record<
+    string,
+    { slug: string; players: number }
+  >;
+
+  /** Eén seizoen uit de geschiedenis, zoals `seasons` het op de fiche zet. */
+  interface SeasonRow {
+    season_id: number;
+    season_name: string;
+    is_archive: boolean;
+    rank: number | null;
+    average: number | null;
+    sets: { won: number; total: number };
+    games: { total: number };
+    rounds: { present: number };
+  }
 
   interface HistoryRow {
     round_id: number;
@@ -242,6 +281,8 @@ const careerIds = (await allCareers())
     };
     games: Game[];
     ranking_history: HistoryRow[];
+    /** Alle afgesloten seizoenen, chronologisch. Het lopende staat er niet in: dat is de fiche zelf. */
+    seasons: SeasonRow[];
   }
 
   interface Pairing {
@@ -391,19 +432,95 @@ const careerIds = (await allCareers())
     section.classList.remove('hidden');
   }
 
-  /* ------------------------------------------------------------------ loopbaan */
+  /* -------------------------------------------------------------- geschiedenis */
 
   /**
-   * De weg naar alle seizoenen van deze speler. Geen netwerkcall meer: de build
-   * weet welke loopbaanpagina's bestaan en welke slug ze dragen, en de slug
-   * volgt uit id en naam die deze pagina al heeft.
+   * De vorige seizoenen, nieuwste bovenaan. Vijf cijfers per seizoen, dezelfde
+   * vijf als in de eindstand waar die rij vandaan komt — het zijn letterlijk
+   * dezelfde rijen, één keer per seizoen gerangschikt en één keer per speler.
+   *
+   * `rank` is de plaats uit de gepubliceerde eindstand, dus met de intussen
+   * gestopte leden meegeteld. Daarom mag `players` uit de seizoenslijst ernaast:
+   * dat is de lengte van diezelfde stand.
+   *
+   * Een seizoen zonder eindgemiddelde staat niet in `seasons`, net zoals het
+   * niet in de eindstand staat. Voor wie halverwege stopte ontbreekt dat jaar
+   * dus — geen gat, maar dezelfde regel aan beide kanten.
    */
-  function showCareer(player: { id: number; full_name: string }) {
-    if (!CAREER_IDS.has(player.id)) return;
-    const link = document.getElementById('career-link') as HTMLAnchorElement;
-    link.href = careerUrl({ playerId: player.id, name: player.full_name });
-    link.classList.remove('hidden');
-    link.classList.add('flex');
+  function renderHistory(seasons: SeasonRow[]) {
+    if (!seasons.length) return;
+    const section = document.getElementById('history')!;
+    const body = section.querySelector('[data-history-body]')!;
+
+    // Nieuwste eerst; de API levert chronologisch.
+    const rows = seasons.slice().reverse();
+    const cells: HTMLElement[] = [];
+
+    rows.forEach((season, i) => {
+      /*
+       * De breuk tussen de twee generaties. Het oude format speelde met vaste
+       * teams in best-of-3, het huidige met duo's die per set roteren: de
+       * gemiddelden zien er hetzelfde uit en betekenen iets anders. Zonder deze
+       * regel nodigt de tabel juist uit om ze te vergelijken.
+       */
+      if (i > 0 && season.is_archive && !rows[i - 1].is_archive) {
+        const note = document.createElement('tr');
+        const cell = document.createElement('td');
+        cell.colSpan = 6;
+        cell.className = 'border-b border-ink-950/10 pb-2 pt-5 text-xs text-ink-500';
+        cell.textContent =
+          'Hieronder het oude format: vaste teams, best of three. Die gemiddelden zijn niet te vergelijken met die hierboven.';
+        note.append(cell);
+        cells.push(note);
+      }
+
+      const link = SEASON_LINKS[`${season.is_archive ? 'a' : 's'}${season.season_id}`];
+      const tr = document.createElement('tr');
+      tr.className = 'border-b border-ink-950/10';
+
+      const name = document.createElement('td');
+      name.className = 'py-2 pr-3 font-medium';
+      const label = season.season_name.replace(/\s+/g, '');
+      if (link) {
+        const anchor = document.createElement('a');
+        anchor.href = seasonUrl(link.slug);
+        anchor.className = 'hover:text-cork-600 hover:underline';
+        anchor.textContent = label;
+        name.append(anchor);
+      } else {
+        name.textContent = label;
+      }
+
+      const numeric = (text: string, muted?: string) => {
+        const td = document.createElement('td');
+        td.className = 'type-numeral whitespace-nowrap py-2 pr-3 text-right';
+        td.textContent = text;
+        if (muted) {
+          const span = document.createElement('span');
+          span.className = 'text-ink-500';
+          span.textContent = muted;
+          td.append(span);
+        }
+        return td;
+      };
+
+      const last = numeric(String(season.rounds.present));
+      last.classList.remove('pr-3');
+
+      tr.append(
+        name,
+        // "12e van 73": een plaats zegt weinig zonder de grootte van het veld.
+        numeric(season.rank ? String(season.rank) : '–', link ? ` / ${link.players}` : undefined),
+        numeric(decimal(season.average)),
+        numeric(`${season.sets.won}/${season.sets.total}`),
+        numeric(String(season.games.total)),
+        last,
+      );
+      cells.push(tr);
+    });
+
+    body.replaceChildren(...cells);
+    section.classList.remove('hidden');
   }
 
   /* ------------------------------------------------------------------------ laden */
@@ -446,6 +563,9 @@ const careerIds = (await allCareers())
       setupProgression(history);
 
       const games = (player.games ?? []).slice().reverse();
+      document.getElementById(games.length ? 'matches-intro' : 'matches-empty')!.classList.remove(
+        'hidden',
+      );
       document.getElementById('player-matches')!.innerHTML = games
         .map((game) => `
           <div>
@@ -459,10 +579,28 @@ const careerIds = (await allCareers())
       fetchData<Pairing[]>(`/players/${encodeURIComponent(id)}/pairings`)
         .then(renderPairings)
         .catch(() => {});
-      showCareer({ id: player.id!, full_name: player.full_name });
-    } catch {
+      renderHistory(player.seasons ?? []);
+    } catch (failure) {
       loading.classList.add('hidden');
       document.getElementById('player-content')!.classList.add('hidden');
+
+      const refusal = refusalCode(failure);
+      if (refusal) {
+        /*
+         * De API geeft bij `not_a_member` bewust géén naam terug. De kop staat
+         * op dat moment nog op zijn beginwaarde "Speler", en die verbergen we
+         * — een pagina met een titel maar zonder inhoud belooft iets wat er
+         * niet is.
+         */
+        document.getElementById('player-name')!.classList.add('hidden');
+        document.getElementById('player-refusal-text')!.textContent =
+          refusal === 'not_a_member'
+            ? 'Deze speler is geen lid meer van de club, dus staat zijn fiche niet meer online.'
+            : 'Van een afgesloten seizoen is enkel de eindstand publiek.';
+        document.getElementById('player-refusal')!.classList.remove('hidden');
+        return;
+      }
+
       error.classList.remove('hidden');
     }
   }

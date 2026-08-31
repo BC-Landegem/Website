@@ -3,19 +3,16 @@ import Layout from '../../../../layouts/Layout.astro';
 import RailHeading from '../../../../components/RailHeading.astro';
 import Heading from '../../../../components/Heading.astro';
 import { url } from '../../../../lib/url';
-import { careerUrl, formatDate, decimal, displayName } from '../../../../lib/intra';
+import { playerUrl, decimal, displayName } from '../../../../lib/intra';
 import {
   allSeasons,
   getData,
-  prewarm,
   type SeasonEntry,
   type ArchiveStanding,
-  type ArchiveRound,
 } from '../../../../lib/intra-build';
-import type { RankingRow, Round, Player } from '../../../../lib/intra';
+import type { RankingRow, Player } from '../../../../lib/intra';
 
 export async function getStaticPaths() {
-  await prewarm();
   const seasons = await allSeasons();
   // Een seizoen dat nog loopt krijgt geen bevroren kopie: zijn stand leeft op
   // /intraclub/. Zodra het afgelopen is, wordt het hier wel een pagina — ook al
@@ -48,48 +45,29 @@ interface Statistic {
   statistics: { sets: { won: number; total: number }; rounds: { present: number } };
 }
 
-interface MatchdayRow {
-  number: number;
-  href: string;
-  date: string;
-  games: number;
-  averageAbsent: number;
-  /** Alleen het huidige format telt aanwezigen; het archief bewaarde dat niet. */
-  present: number | null;
-}
-
 let rows: StandRow[] = [];
-let matchdays: MatchdayRow[] = [];
 let categories: { label: string; name: string; average: number }[] = [];
 
-const matchdayPath = (number: number) =>
-  url(`/intraclub/seizoen/${season.slug}/speeldag/${number}/`);
+/**
+ * Een naam is klikbaar zodra er een fiche achter kan zitten. In het archief
+ * geldt dat voor twee derde van de rijen: de rest speelde vóór het huidige
+ * ledenbestand en heeft nooit een `player_id` gekregen, dus er is niets om
+ * naartoe te wijzen. Of die fiche vandaag ook iets tóónt, beslist ze zelf —
+ * de build weet niet wie er in maart nog lid is.
+ */
+const nameHref = (playerId: number | null) => (playerId ? playerUrl(playerId) : null);
 
 if (season.format === 'archive') {
-  const [standings, rounds] = await Promise.all([
-    getData<ArchiveStanding[]>(`/archive/seasons/${season.id}/standings`),
-    getData<ArchiveRound[]>(`/archive/seasons/${season.id}/rounds`),
-  ]);
+  const standings = await getData<ArchiveStanding[]>(`/archive/seasons/${season.id}/standings`);
 
   rows = standings.map((row, i) => ({
     rank: i + 1,
     name: displayName(row.full_name),
-    // Het anker opent op de loopbaanpagina meteen dít seizoen: wie hier op een
-    // naam klikt, wil weten hoe die persoon het dát jaar deed.
-    href: `${careerUrl({ playerId: row.player_id, archiveId: row.archive_player_id, name: row.full_name })}#${season.slug}`,
+    href: nameHref(row.player_id),
     average: row.average,
     sets: row.sets,
     games: row.games,
     present: row.rounds.present,
-  }));
-
-  matchdays = rounds.map((round) => ({
-    number: round.number,
-    href: matchdayPath(round.number),
-    date: round.date,
-    games: round.games_count,
-    averageAbsent: round.average_absent,
-    present: null,
   }));
 } else {
   /*
@@ -98,12 +76,13 @@ if (season.format === 'archive') {
    * eindstand van 2023-2024 er 36 van de 96 — inclusief mensen die toen in de
    * top tien stonden.
    */
-  const [ranking, statistics, rounds, ...others] = await Promise.all([
+  const [ranking, statistics, ...others] = await Promise.all([
     getData<RankingRow[]>(`/rankings/general?season=${season.id}&members=0`),
     getData<Statistic[]>(`/seasons/${season.id}/statistics?members=0`),
-    getData<Round[]>(`/rounds?season=${season.id}`),
+    // Geen `&limit=1`: de erelijst vraagt dezelfde standen op en zou met een
+    // ander pad naast de cache grijpen. `[0]` kost hier niets.
     ...(['women', 'recreants', 'veterans'] as const).map((category) =>
-      getData<RankingRow[]>(`/rankings/${category}?season=${season.id}&members=0&limit=1`),
+      getData<RankingRow[]>(`/rankings/${category}?season=${season.id}&members=0`),
     ),
   ]);
 
@@ -113,22 +92,13 @@ if (season.format === 'archive') {
     return {
       rank: row.rank,
       name: displayName(row.full_name),
-      href: `${careerUrl({ playerId: row.id, name: row.full_name })}#${season.slug}`,
+      href: nameHref(row.id),
       average: row.average,
       sets: stat?.sets ?? null,
       games: null,
       present: stat?.rounds.present ?? 0,
     };
   });
-
-  matchdays = rounds.map((round) => ({
-    number: round.number,
-    href: matchdayPath(round.number),
-    date: round.date,
-    games: round.games_count,
-    averageAbsent: round.average_absent,
-    present: round.players_present,
-  }));
 
   const labels = ['Dames', 'Recreanten', 'Veteranen'];
   categories = others
@@ -139,9 +109,6 @@ if (season.format === 'archive') {
     .filter((entry): entry is { label: string; name: string; average: number } => entry !== null);
 }
 
-// Nieuwste speeldag bovenaan, zoals op /intraclub/.
-matchdays.reverse();
-
 const formatNote =
   season.format === 'archive'
     ? 'Gespeeld in het oude format: vaste teams, best of three. Het archief bewaart daarvan ook het aantal gewonnen wedstrijden — een cijfer dat het huidige format niet meer kent.'
@@ -150,7 +117,7 @@ const formatNote =
 
 <Layout
   title={`Intraclub ${season.label}`}
-  description={`De eindstand en de speeldagen van het intraclubseizoen ${season.label} van BC Landegem.`}
+  description={`De eindstand van het intraclubseizoen ${season.label} van BC Landegem.`}
 >
   <div class="bg-feather-100">
     <div class="mx-auto max-w-5xl px-4 py-14 sm:py-16">
@@ -193,106 +160,59 @@ const formatNote =
 
       <section class="mt-12 pl-10">
         <Heading size="small">Eindstand</Heading>
-        {rows.length === 0 ? (
-          /*
-            Dit seizoen werd destijds nooit gearchiveerd: enkel de uitslagen
-            bleven bewaard. Een lege tabel zou hier als een fout lezen.
-          */
-          <p class="mt-4 max-w-2xl text-ink-700">
-            Van dit seizoen is geen eindstand bewaard gebleven — alleen de uitslagen van de
-            speeldagen. Die staan hieronder.
+        {/*
+          Alle zeventien seizoenen hebben een stand. 2010-2011 werd destijds
+          nooit correct gearchiveerd — de bewaarde punten kloppen niet met de
+          bewaarde uitslagen — en wordt daarom herberekend uit de wedstrijden.
+          Er is dus geen leeg geval meer om op te vangen.
+        */}
+        {season.format === 'archive' && (
+          <p class="mt-3 max-w-2xl text-sm text-ink-500">
+            De kolom "aanwezig" staat er niet voor de volledigheid: in dit format kon je het
+            klassement winnen zonder elke speeldag te spelen, en dat maakt de eindstand pas
+            leesbaar.
           </p>
-        ) : (
-          <>
-            {season.format === 'archive' && (
-              <p class="mt-3 max-w-2xl text-sm text-ink-500">
-                De kolom "aanwezig" staat er niet voor de volledigheid: in dit format kon je het
-                klassement winnen zonder elke speeldag te spelen, en dat maakt de eindstand pas
-                leesbaar.
-              </p>
-            )}
-            <div class="mt-6 overflow-x-auto">
-              <table class="w-full text-left text-sm">
-                <thead>
-                  <tr class="type-label border-b-[3px] border-ink-950/20 text-xs text-cork-600">
-                    <th class="py-2.5 pr-3 font-bold">#</th>
-                    <th class="w-full py-2.5 pr-3 font-bold">Naam</th>
-                    <th class="whitespace-nowrap py-2.5 pr-3 text-right font-bold">Gem.</th>
-                    <th class="whitespace-nowrap py-2.5 pr-3 text-right font-bold">Sets</th>
-                    {season.format === 'archive' && (
-                      <th class="whitespace-nowrap py-2.5 pr-3 text-right font-bold">Matchen</th>
-                    )}
-                    <th class="whitespace-nowrap py-2.5 text-right font-bold">Aanwezig</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((row) => (
-                    <tr class="border-b border-ink-950/10">
-                      <td class="type-numeral py-2.5 pr-3 text-cork-600">{row.rank}</td>
-                      <td class="w-full py-2.5 pr-3">
-                        {row.href ? (
-                          <a href={row.href} class="font-medium hover:text-cork-600 hover:underline">
-                            {row.name}
-                          </a>
-                        ) : (
-                          row.name
-                        )}
-                      </td>
-                      <td class="type-numeral whitespace-nowrap py-2.5 pr-3 text-right">
-                        {decimal(row.average)}
-                      </td>
-                      <td class="type-numeral whitespace-nowrap py-2.5 pr-3 text-right">
-                        {row.sets ? `${row.sets.won}/${row.sets.total}` : '–'}
-                      </td>
-                      {season.format === 'archive' && (
-                        <td class="type-numeral whitespace-nowrap py-2.5 pr-3 text-right">
-                          {row.games ? `${row.games.won}/${row.games.total}` : '–'}
-                        </td>
-                      )}
-                      <td class="type-numeral whitespace-nowrap py-2.5 text-right">
-                        {row.present}<span class="text-ink-500">/{season.rounds_count}</span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </>
         )}
-      </section>
-
-      <section class="mt-14 pl-10">
-        <Heading size="small">De speeldagen</Heading>
         <div class="mt-6 overflow-x-auto">
           <table class="w-full text-left text-sm">
             <thead>
               <tr class="type-label border-b-[3px] border-ink-950/20 text-xs text-cork-600">
-                <th class="py-2.5 pr-3 font-bold">Speeldag</th>
-                <th class="py-2.5 pr-3 font-bold">Datum</th>
-                {matchdays.some((day) => day.present !== null) && (
-                  <th class="whitespace-nowrap py-2.5 pr-3 text-right font-bold">Aanwezig</th>
+                <th class="py-2.5 pr-3 font-bold">#</th>
+                <th class="w-full py-2.5 pr-3 font-bold">Naam</th>
+                <th class="whitespace-nowrap py-2.5 pr-3 text-right font-bold">Gem.</th>
+                <th class="whitespace-nowrap py-2.5 pr-3 text-right font-bold">Sets</th>
+                {season.format === 'archive' && (
+                  <th class="whitespace-nowrap py-2.5 pr-3 text-right font-bold">Matchen</th>
                 )}
-                <th class="whitespace-nowrap py-2.5 pr-3 text-right font-bold">Banen</th>
-                <th class="whitespace-nowrap py-2.5 text-right font-bold">Gem. afwezigen</th>
+                <th class="whitespace-nowrap py-2.5 text-right font-bold">Aanwezig</th>
               </tr>
             </thead>
             <tbody>
-              {matchdays.map((day) => (
+              {rows.map((row) => (
                 <tr class="border-b border-ink-950/10">
-                  <td class="py-2.5 pr-3">
-                    <a href={day.href} class="font-semibold text-cork-600 hover:underline">
-                      Speeldag {day.number}
-                    </a>
+                  <td class="type-numeral py-2.5 pr-3 text-cork-600">{row.rank}</td>
+                  <td class="w-full py-2.5 pr-3">
+                    {row.href ? (
+                      <a href={row.href} class="font-medium hover:text-cork-600 hover:underline">
+                        {row.name}
+                      </a>
+                    ) : (
+                      row.name
+                    )}
                   </td>
-                  <td class="py-2.5 pr-3">{formatDate(day.date)}</td>
-                  {matchdays.some((row) => row.present !== null) && (
+                  <td class="type-numeral whitespace-nowrap py-2.5 pr-3 text-right">
+                    {decimal(row.average)}
+                  </td>
+                  <td class="type-numeral whitespace-nowrap py-2.5 pr-3 text-right">
+                    {row.sets ? `${row.sets.won}/${row.sets.total}` : '–'}
+                  </td>
+                  {season.format === 'archive' && (
                     <td class="type-numeral whitespace-nowrap py-2.5 pr-3 text-right">
-                      {day.present ?? '–'}
+                      {row.games ? `${row.games.won}/${row.games.total}` : '–'}
                     </td>
                   )}
-                  <td class="type-numeral whitespace-nowrap py-2.5 pr-3 text-right">{day.games}</td>
                   <td class="type-numeral whitespace-nowrap py-2.5 text-right">
-                    {decimal(day.averageAbsent)}
+                    {row.present}<span class="text-ink-500">/{season.rounds_count}</span>
                   </td>
                 </tr>
               ))}
@@ -300,6 +220,18 @@ const formatNote =
           </table>
         </div>
       </section>
+
+      {/*
+        Van een afgesloten seizoen is publiek enkel de eindstand: geen
+        speeldagen, geen uitslagen, geen aanwezigheden. Deze regel legt uit
+        waarom er hieronder niets meer staat, in plaats van de bezoeker te
+        laten zoeken naar iets wat er ooit wel was.
+      */}
+      <p class="mt-12 max-w-2xl pl-10 text-sm text-ink-500">
+        Van een afgesloten seizoen bewaart de site alleen deze eindstand. De uitslagen per
+        speeldag blijven bij de club, niet op de website. Voor het seizoen dat nu loopt staan ze
+        wel online — op <a href={url('/intraclub/')} class="font-semibold text-cork-600 hover:underline">de intraclubpagina</a>.
+      </p>
     </div>
   </div>
 </Layout>

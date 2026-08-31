@@ -89,12 +89,46 @@ export interface RoundDetail extends Round {
 export type RankingCategory = 'general' | 'women' | 'recreants' | 'veterans';
 
 /**
+ * Een antwoord dat niet OK was, mét de code die de API meestuurt.
+ *
+ * Twee daarvan zijn geen storing maar het juiste antwoord: `not_a_member` (deze
+ * speler is geen lid meer, dus is er geen fiche) en `season_closed` (van een
+ * afgesloten seizoen is enkel de eindstand publiek). Wie die twee wil
+ * onderscheiden heeft de body nodig, en die gooide deze helper vroeger weg.
+ */
+export class ApiError extends Error {
+  constructor(
+    readonly status: number,
+    readonly code?: string,
+  ) {
+    super(code ? `API-fout: ${status} (${code})` : `API-fout: ${status}`);
+    this.name = 'ApiError';
+  }
+}
+
+/** De twee toestanden waarin er niets stuk is, maar er ook niets te tonen valt. */
+export function refusalCode(error: unknown): 'not_a_member' | 'season_closed' | null {
+  if (!(error instanceof ApiError) || error.status !== 403) return null;
+  return error.code === 'not_a_member' || error.code === 'season_closed' ? error.code : null;
+}
+
+/**
  * Elke collectie zit in `data`, met `meta` ernaast. Twee helpers dus: één die
  * beide teruggeeft (nodig voor `meta.round`) en één die enkel de rijen wil.
  */
 export async function fetchApi<T, M = unknown>(path: string): Promise<{ data: T; meta?: M }> {
   const res = await fetch(`${INTRA_API}${path}`);
-  if (!res.ok) throw new Error(`API-fout: ${res.status}`);
+  if (!res.ok) {
+    // Een 500 van de webserver ervóór is geen JSON; dan blijft de code leeg en
+    // valt de aanroeper terug op zijn gewone foutmelding.
+    let code: string | undefined;
+    try {
+      code = (await res.json())?.error?.code;
+    } catch {
+      /* geen bruikbare body */
+    }
+    throw new ApiError(res.status, code);
+  }
   return res.json();
 }
 
@@ -128,34 +162,14 @@ export function matchdayUrl(id: number | string): string {
   return `${base}/intraclub/speeldag/?id=${id}`;
 }
 
-function kebab(name: string): string {
-  return displayName(name)
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '');
-}
-
 /**
- * Slug voor een loopbaanpagina. Het id staat voorop met een letter ervoor, want
- * er zijn twee id-ruimtes die elkaar overlappen: een huidig lid (`s`) en een
- * speler die enkel in het archief bestaat (`a`). Namen komen dubbel voor en het
- * archief bevat zelfs een rij zonder naam, dus het id draagt de identiteit en
- * de naam alleen de leesbaarheid.
- *
- * Staat hier en niet in intra-build.ts omdat de spelerspagina hem in de browser
- * moet kunnen samenstellen om naar de loopbaan door te linken.
+ * De eindstand van één seizoen. De loopbaanpagina's die hier vroeger achter
+ * zaten bestaan niet meer: alles wat één persoon over meerdere seizoenen heen
+ * samenlegt, hoort op zijn fiche, en die beslist live of dat mag.
  */
-export function careerSlug(person: { playerId?: number | null; archiveId?: number | null; name: string }): string {
-  const key = person.playerId ? `s${person.playerId}` : `a${person.archiveId}`;
-  const name = kebab(person.name);
-  return name ? `${key}-${name}` : key;
-}
-
-export function careerUrl(person: { playerId?: number | null; archiveId?: number | null; name: string }): string {
+export function seasonUrl(slug: string): string {
   const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-  return `${base}/intraclub/loopbaan/${careerSlug(person)}/`;
+  return `${base}/intraclub/seizoen/${slug}/`;
 }
 
 export function formatDate(date: string): string {
@@ -242,16 +256,14 @@ export function renderGameSets(game: Game, highlightId?: number): string {
       const scoreHtml = set.is_played
         ? `${set.home.score}–${set.away.score}`
         : '<span class="text-ink-950/20">–</span>';
-      const bonus = (side: SetSide) =>
-        `<span class="type-numeral ml-1 text-[0.65rem] font-normal text-ink-500">+${side.bonus}</span>`;
       // Mobiel: label + score op één lijn, de duo's eronder. Vanaf sm: alles op één rij.
       // minmax(0,1fr) laat de namen krimpen/afbreken i.p.v. de kaart breder te duwen.
       return `
         <div class="grid grid-cols-[2.75rem_minmax(0,1fr)] items-center gap-x-2 gap-y-0.5 border-b border-ink-950/5 py-2 last:border-0 sm:grid-cols-[2.75rem_minmax(0,1fr)_auto_minmax(0,1fr)] sm:border-0 sm:py-1">
           <span class="type-label text-xs text-ink-500">Set ${set.number}</span>
           <span class="type-numeral min-w-14 justify-self-start bg-feather-100 px-2 py-0.5 text-center sm:col-start-3 sm:row-start-1 sm:justify-self-auto">${scoreHtml}</span>
-          <span class="col-start-2 hyphens-auto break-words sm:row-start-1 sm:text-right">${duoHtml(lookup(set.home.player_ids), set.winner === 'home', highlightId)}${bonus(set.home)}</span>
-          <span class="col-start-2 hyphens-auto break-words sm:col-start-4 sm:row-start-1">${duoHtml(lookup(set.away.player_ids), set.winner === 'away', highlightId)}${bonus(set.away)}</span>
+          <span class="col-start-2 hyphens-auto break-words sm:row-start-1 sm:text-right">${duoHtml(lookup(set.home.player_ids), set.winner === 'home', highlightId)}</span>
+          <span class="col-start-2 hyphens-auto break-words sm:col-start-4 sm:row-start-1">${duoHtml(lookup(set.away.player_ids), set.winner === 'away', highlightId)}</span>
         </div>`;
     })
     .join('');

@@ -47,9 +47,7 @@ import { url } from '../../lib/url';
     <div id="matchday-content" class="mt-12 hidden max-w-3xl pl-10">
       <p class="mb-6 text-sm text-ink-500">
         Elke wedstrijd wordt gespeeld door vier spelers die per set in een andere samenstelling
-        dubbelen. Het winnende duo staat in het vet; het kleine cijfer achter een duo is de som van
-        hun bonuspunten — het verschil tussen de twee is de voorsprong waarmee het zwakkere duo
-        begint.
+        dubbelen. Het winnende duo staat in het vet.
       </p>
       <div id="matchday-matches" class="space-y-4"></div>
 
@@ -82,6 +80,7 @@ import { url } from '../../lib/url';
     formatDate,
     decimal,
     playerUrl,
+    refusalCode,
     renderGameCard,
   } from '../../lib/intra';
   import type { RoundDetail, Attendance } from '../../lib/intra';
@@ -153,8 +152,14 @@ import { url } from '../../lib/url';
 
       loading.classList.add('hidden');
       document.getElementById('matchday-content')!.classList.remove('hidden');
-    } catch {
+    } catch (failure) {
       loading.classList.add('hidden');
+      // Een afgesloten seizoen geeft zijn speeldagen niet meer publiek. Dat is
+      // geen storing, dus ook geen "probeer het later opnieuw".
+      if (refusalCode(failure) === 'season_closed') {
+        error.textContent =
+          'Deze speeldag hoort bij een afgesloten seizoen. Daarvan is enkel de eindstand nog online.';
+      }
       error.classList.remove('hidden');
     }
   }

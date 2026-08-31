@@ -329,6 +329,12 @@ const oldest = seasons[0]?.label.slice(0, 4);
       } else if (kind === 'matchdays') {
         const rounds = await fetchOnce<Round[]>(path);
         if (selected !== key) return;
+        // Tussen de seizoenswissel en de eerste speeldag is deze lijst leeg.
+        // Een tabelkop zonder rijen leest als een defect.
+        if (rounds.length === 0) {
+          table.innerHTML = message('Er is nog geen speeldag gespeeld dit seizoen.', 'text-ink-500');
+          return;
+        }
         renderMatchdays(rounds);
       } else {
         // De deler is het aantal berekende speeldagen. Dit was
@@ -340,6 +346,18 @@ const oldest = seasons[0]?.label.slice(0, 4);
           fetchOnce<Round[]>('/rounds?calculated=1'),
         ]);
         if (selected !== key) return;
+        /*
+         * De conditie is het aantal berekende speeldagen, niet de lengte van
+         * `statistics`: die lijst is bij een vers seizoen niet leeg maar staat
+         * vol nullen. Tachtig regels "0 (0%)" lezen als een defect.
+         */
+        if (calculated.length === 0) {
+          table.innerHTML = message(
+            'Aanwezigheden verschijnen hier na de eerste berekende speeldag.',
+            'text-ink-500',
+          );
+          return;
+        }
         renderAttendance(statistics, calculated.length);
       }
     } catch {

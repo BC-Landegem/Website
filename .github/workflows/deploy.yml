@@ -3,6 +3,16 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [master]
+  # Een deel van de build hangt aan de klok, niet aan een commit: seasonState()
+  # verklaart een seizoen afgelopen na acht weken zonder berekende speeldag, en
+  # pas dán krijgt het een eindstandpagina. Zonder deze cron gebeurt dat niet —
+  # een statische site heeft geen klok, alleen builds.
+  #
+  # Om 04:00 en niet om 03:00: media-sync draait dan en trapt bij een wijziging
+  # zelf deze workflow af. Twee crons op hetzelfde uur zouden elkaar afknippen
+  # via `concurrency: pages` hieronder, willekeurig en zonder dat het opvalt.
+  schedule:
+    - cron: '0 4 * * *'
   workflow_dispatch:
 
 permissions:
@@ -23,10 +33,11 @@ jobs:
       - name: Build with Astro
         uses: withastro/action@v6
         env:
-          # De erelijst, de zeventien seizoenspagina's, de speeldagen en de
-          # spelerspagina's uit het archief worden hier gebouwd: de build praat
-          # dus met de intraclub-API. Valt die weg, dan faalt de deploy — en dat
-          # is de bedoeling, want een halve historiek is erger dan geen deploy.
+          # De erelijst, de zeventien eindstanden en de records worden hier
+          # gebouwd: de build praat dus met de intraclub-API. Valt die weg, dan
+          # faalt de deploy — en dat is de bedoeling, want een halve historiek
+          # is erger dan geen deploy. Met de nachtelijke cron hierboven betekent
+          # dat wel dat een hapering om 04:00 een rode workflow oplevert.
           PUBLIC_INTRA_API: https://intra.bclandegem.be/api
 
   deploy:
