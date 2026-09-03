@@ -371,19 +371,19 @@ const photoCuts = [
           Begonnen als een gemeentelijke initiatiecursus. Vandaag heeft de club een jeugdwerking,
           vrij spel op vier dagen en ploegen in competitie.
         </p>
-        <a href={url('/club/over-de-club/')} class="type-label mt-3 inline-block text-xs text-club-700 hover:text-club-800 hover:underline">
+        <a id="history-link" href={url('/club/over-de-club/')} class="type-label mt-3 inline-block text-xs text-club-700 hover:text-club-800 hover:underline">
           Lees hoe het begon
         </a>
       </div>
     </section>
 
     {/* Slot: de leren dop */}
-    <section id="closing-section" class="relative overflow-hidden bg-ink-950 text-feather-50">
+    <section id="closing-section" class="relative isolate overflow-hidden bg-ink-950 text-feather-50">
       {/* Staart van de vluchtdraad: landt op de foto, achter de tekst */}
-      <svg id="thread-tail-svg" class="pointer-events-none absolute inset-0 h-full w-full" aria-hidden="true">
+      <svg id="thread-tail-svg" class="pointer-events-none absolute inset-0 z-8 h-full w-full" aria-hidden="true">
         <path id="thread-tail" fill="none" stroke="var(--color-club-500)" stroke-width="4" stroke-linecap="round" />
       </svg>
-      <div class="mx-auto grid max-w-6xl items-center gap-12 px-4 py-24 md:grid-cols-2">
+      <div class="relative z-18 mx-auto grid max-w-6xl items-center gap-12 px-4 py-24 md:grid-cols-2">
         <div>
           <Heading size="large" color="white">Zin om mee te spelen?</Heading>
           <p class="mt-4 max-w-md text-feather-200">
