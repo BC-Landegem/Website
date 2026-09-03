@@ -44,7 +44,8 @@ const recreationalRates = membership.rates.filter((rate) => rate.detail.startsWi
       <Heading class="pl-10">Je komt en je speelt</Heading>
       <p class="mt-3 max-w-2xl pl-10 leading-relaxed text-ink-700">
         Inschrijven voor een uur hoeft niet, en afspreken met iemand evenmin. Wie er die avond is,
-        speelt met wie er is: de dubbels worden ter plaatse samengesteld.
+        speelt met wie er is: de dubbels worden ter plaatse samengesteld. In
+        <Link href={url('/club/twizzit/')}>Twizzit</Link> kun je aanduiden of je komt. Antwoorden handig voor jezelf om de drukte in te schatten, maar niet verplicht.
       </p>
       <ol class="relative mt-8">
         {freePlay.map((session, i) => (

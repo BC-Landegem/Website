@@ -23,6 +23,16 @@ npm run build     # statische build naar dist/, daarna de zoekindex
 npm run preview   # dist/ lokaal serveren zoals Pages het doet
 ```
 
+Of draai de dev-server in de lichte Node Alpine-container; de broncode wordt
+rechtstreeks gemount en dependencies blijven in een apart Docker-volume:
+
+```bash
+docker compose up
+```
+
+Open daarna <http://localhost:4321/Website/>. Stoppen en het dependency-volume
+mee verwijderen kan met `docker compose down --volumes`.
+
 > **`npm run build` doet twee dingen.** Na `astro build` draait `pagefind --site dist`
 > over de gebouwde HTML en schrijft de zoekindex naar `dist/pagefind/`. In dev
 > bestaat die index dus niet en zegt het zoekveld op `/archief/` dat gewoon;
