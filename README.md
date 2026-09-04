@@ -67,6 +67,8 @@ aanraken.
 | --- | --- | --- |
 | Speeluren, sporthal, inschrijflink | `src/data/trainings.json` | Homepage, `/jeugd/`, `/club/word-lid/` en de footer |
 | Competitieploegen, seizoen | `src/data/teams.json` | `/competitie/` én de ploeglinks in de navigatie (`Header.astro`) |
+| PBO-kampioenstitels | `src/data/kampioenen.csv` | De tijdlijn op `/club/over-de-club/` — seizoenen nieuwste eerst, elke titel linkt naar toernooi.nl |
+| Clubmomenten (jubilea, …) | `src/data/club-events.csv` | Zelfde tijdlijn: `year,title[,url]` — meerdere rijen met hetzelfde jaar komen onder één bol; optionele URL wordt een link; jaar 1987 is de oprichting en staat altijd alleen op de laatste rij |
 | Sponsors | `src/data/sponsors.json` + logo in `src/assets/sponsors/` | De sponsorbalk in de footer |
 | Fotoalbums | `src/data/media.ts` | `/media/` én de fotostrook op de homepage — pas na een sync, zie Databronnen |
 | Facebook-/Instagram-links | `src/data/social.ts` | De knoppen "Volg de club" in de footer — leeg = het blok verdwijnt |
@@ -192,6 +194,13 @@ manifest later om `<img src>` te herschrijven of de tag weg te halen.
 > en serveert `images/…` gewoon; na de domeinswitch is dat voorbij. Van de 163
 > bron-URL's leefden er 98 — de rest (vooral Facebook-CDN) was toen al dood. Opnieuw
 > draaien ná de switch levert minder op, nooit meer.
+
+**PBO-kampioenen** — anders dan de zes bronnen hierboven leeft deze in de repo:
+`src/data/kampioenen.csv`. Geen live-ophaling. Een nieuwe titel is een extra
+rij; de tijdlijn op `/club/over-de-club/` volgt bij de volgende build. De URLs
+in die CSV wijzen naar toernooi.nl; `src/lib/kampioenen.ts` leest het bestand
+tijdens de build. Clubmomenten (jubilea, oprichting) staan in
+`src/data/club-events.csv` (`year,title[,url]`) en komen op dezelfde slinger.
 
 ## Archief
 

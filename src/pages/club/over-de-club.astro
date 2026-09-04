@@ -1,19 +1,196 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import RailHeading from '../../components/RailHeading.astro';
+import Dot from '../../components/Dot.astro';
+import { buildClubTimeline } from '../../lib/kampioenen';
+import kampCsv from '../../data/kampioenen.csv?raw';
+import eventsCsv from '../../data/club-events.csv?raw';
+
+const { points, count, oldest } = buildClubTimeline(kampCsv, eventsCsv);
 ---
 
-<Layout title="Over de club" description="De geschiedenis van Badmintonclub Landegem, van gemeentelijke initiatiecursus in 1987 tot bloeiende club.">
+<Layout
+  title="Over de club"
+  description={`De geschiedenis van Badmintonclub Landegem, van gemeentelijke initiatiecursus in 1987 tot ${count} kampioenstitels.`}
+>
   <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
     <RailHeading
       title="Over de club"
       intro="Een badmintonclub met jeugdwerking, recreatieve avonden én competitieploegen — en dat al sinds 1987."
-    />
-
-    <div class="mt-10 max-w-3xl space-y-4 pl-10 leading-relaxed text-ink-700">
-      <p>
-        BC Landegem is een badmintonclub met jeugdwerking, recreatieve avonden én competitieploegen.
+      continuous
+    >
+      <p class="mt-3 max-w-2xl text-sm text-ink-500">
+        Sinds seizoen {oldest} pakten onze ploegen{' '}
+        <span class="type-numeral text-ink-700">{count}</span>
+        {' '}kampioenstitels.
       </p>
+    </RailHeading>
+
+    {/* Max. vier meetpunten per rij. Ruime zijmarges: de U-bocht van de draad
+        valt daar, naast de winnaars, niet door hun links. 1987 begint altijd
+        op een nieuwe LTR-rij (lege pad-cellen vullen de vorige rij).
+        De rail van de kop loopt via de brug door in het snake-pad. */}
+    <div id="kampioen-snake" class="relative mt-12 px-16 sm:px-20 lg:px-24">
+      {/* Brug over mt-12: zelfde x als RailHeading (left-[6px]), tot de SVG. */}
+      <span
+        class="absolute -top-12 left-[6px] h-12 w-1 -translate-x-1/2 bg-club-500"
+        aria-hidden="true"
+      ></span>
+      <svg class="pointer-events-none absolute inset-0 z-0 overflow-visible" aria-hidden="true">
+        <path
+          id="kampioen-snake-path"
+          fill="none"
+          stroke="var(--color-club-500)"
+          stroke-width="4"
+          stroke-linecap="round"
+          stroke-linejoin="round"></path>
+      </svg>
+
+      <ol
+        class="kampioen-snake relative z-10 grid grid-cols-4 grid-flow-dense gap-x-2 gap-y-14"
+        aria-label="Clubgeschiedenis en kampioenstitels"
+      >
+        {points.map((point) => {
+          if (point.kind === 'pad') {
+            return <li class="kampioen-pad" aria-hidden="true"></li>;
+          }
+
+          if (point.kind === 'founding') {
+            return (
+              <li class="kampioen-founding group flex flex-col items-center text-center">
+                <p class="type-label flex min-h-8 items-end justify-center text-[0.65rem] leading-tight text-club-700 sm:min-h-9 sm:text-xs">
+                  {point.year}
+                </p>
+                <span data-snake-dot class="mt-2 inline-flex">
+                  <Dot grows />
+                </span>
+                <div class="mt-3">
+                  {point.url ? (
+                    <a
+                      href={point.url}
+                      target="_blank"
+                      rel="noopener"
+                      class="group/title inline-flex items-center gap-1 text-sm font-bold text-ink-950 transition-transform duration-300 hover:-translate-y-1 hover:text-club-700"
+                    >
+                      {point.title}
+                      <svg
+                        class="h-3 w-3 shrink-0 text-ink-500 transition-colors group-hover/title:text-club-700"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M13.5 6H18v4.5M18 6l-7.5 7.5M15 13.5V18H6V9h4.5"></path>
+                      </svg>
+                    </a>
+                  ) : (
+                    <p class="text-sm font-bold text-ink-950">{point.title}</p>
+                  )}
+                </div>
+              </li>
+            );
+          }
+
+          if (point.kind === 'event') {
+            return (
+              <li class="group flex flex-col items-center text-center">
+                <p class="type-label flex min-h-8 items-end justify-center text-[0.65rem] leading-tight text-club-700 sm:min-h-9 sm:text-xs">
+                  {point.year}
+                </p>
+                <span data-snake-dot class="mt-2 inline-flex">
+                  <Dot grows />
+                </span>
+                <ul class="mt-3 space-y-2">
+                  {point.titles.map((item) => (
+                    <li>
+                      {item.url ? (
+                        <a
+                          href={item.url}
+                          target="_blank"
+                          rel="noopener"
+                          class="group/title inline-flex items-center gap-1 text-sm font-bold text-ink-950 transition-transform duration-300 hover:-translate-y-1 hover:text-club-700"
+                        >
+                          {item.title}
+                          <svg
+                            class="h-3 w-3 shrink-0 text-ink-500 transition-colors group-hover/title:text-club-700"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2.5"
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M13.5 6H18v4.5M18 6l-7.5 7.5M15 13.5V18H6V9h4.5"></path>
+                          </svg>
+                        </a>
+                      ) : (
+                        <span class="text-sm font-bold text-ink-950">{item.title}</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </li>
+            );
+          }
+
+          const [yearStart, yearEnd] = point.season.split('–');
+          return (
+            <li class="group flex flex-col items-center text-center">
+              <p class="type-label flex min-h-8 items-end justify-center text-[0.65rem] leading-tight text-club-700 sm:min-h-9 sm:text-xs">
+                {yearStart}–<wbr />{yearEnd}
+              </p>
+              <span data-snake-dot class="mt-2 inline-flex">
+                <Dot grows />
+              </span>
+              <ul class="mt-3 space-y-2">
+                {point.titles.map((title) => (
+                  <li>
+                    <a
+                      href={title.teamUrl}
+                      target="_blank"
+                      rel="noopener"
+                      class="group/title inline-flex max-w-full flex-col items-center transition-transform duration-300 hover:-translate-y-1"
+                    >
+                      <span class="inline-flex items-center gap-1">
+                        <span class="font-bold text-ink-950 group-hover/title:text-club-700">
+                          {title.team}
+                        </span>
+                        <svg
+                          class="h-3 w-3 shrink-0 text-ink-500 transition-colors group-hover/title:text-club-700"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2.5"
+                          viewBox="0 0 24 24"
+                          aria-hidden="true"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M13.5 6H18v4.5M18 6l-7.5 7.5M15 13.5V18H6V9h4.5"></path>
+                        </svg>
+                      </span>
+                      <span class="text-xs leading-snug text-ink-500">
+                        {title.category}
+                        {' · '}
+                        {title.division}
+                      </span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </li>
+          );
+        })}
+      </ol>
+    </div>
+
+    <div class="mt-16 max-w-3xl space-y-4 pl-10 leading-relaxed text-ink-700">
       <p>
         Zo'n club ontstaat natuurlijk niet uit het niets. De laatste speler van het eerste uur,
         Herman, zwaaide begin 2014 af. We vroegen hem hoe het allemaal begonnen is…
@@ -72,3 +249,134 @@ import RailHeading from '../../components/RailHeading.astro';
     </blockquote>
   </div>
 </Layout>
+
+<style>
+  /* Even rijen: terug naar links. grid-flow-dense vult de gaten. */
+  .kampioen-snake > li:nth-child(8n + 5) {
+    grid-column: 4;
+  }
+  .kampioen-snake > li:nth-child(8n + 6) {
+    grid-column: 3;
+  }
+  .kampioen-snake > li:nth-child(8n + 7) {
+    grid-column: 2;
+  }
+  .kampioen-snake > li:nth-child(8n + 8) {
+    grid-column: 1;
+  }
+  /* Lege vulcellen: geen inhoud, maar wel een grid-slot zodat 1987 niet
+     in het gat naast de laatste bol belandt (grid-flow-dense). */
+  .kampioen-snake > li.kampioen-pad {
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    pointer-events: none;
+  }
+  /* Oprichting altijd links op haar eigen rij — anders pakt 8n+… een andere kolom. */
+  .kampioen-snake > li.kampioen-founding {
+    grid-column: 1;
+  }
+</style>
+
+<script>
+  type Pt = { x: number; y: number };
+
+  /** Zet bollen op dezelfde rij op één Y, zodat een iets andere labelhoogte
+      geen schuine streep trekt tussen buren. */
+  function alignRows(pts: Pt[], rowGap: number): Pt[] {
+    const out = pts.map((p) => ({ ...p }));
+    let i = 0;
+    while (i < out.length) {
+      let j = i + 1;
+      while (j < out.length && Math.abs(out[j].y - out[j - 1].y) < rowGap) j++;
+      const y = out.slice(i, j).reduce((sum, p) => sum + p.y, 0) / (j - i);
+      for (let k = i; k < j; k++) out[k].y = y;
+      i = j;
+    }
+    return out;
+  }
+
+  /** Pad door de meetpunten. Start op de paginarail (links), daarna de zigzag.
+      Bij een rijwissel eerst ver voorbij de laatste bol, dan pas naar beneden. */
+  function snakePath(raw: Pt[], width: number, railX: number): string {
+    if (!raw.length) return '';
+    const rowGap = 24;
+    const pts = alignRows(raw, rowGap);
+    const edgePad = 8;
+    const first = pts[0];
+    // Van de kop-rail naar de eerste bol — zelfde boogstraal als de U-bochten.
+    const entryR = Math.min(22, Math.max(0, first.x - railX) - 1, Math.max(0, first.y) - 1);
+    let d = `M ${railX.toFixed(1)} 0`;
+    if (entryR >= 4) {
+      d += ` L ${railX.toFixed(1)} ${(first.y - entryR).toFixed(1)}`;
+      // Zelfde sweep als linker U-bochten (0), niet als rechter (1).
+      d += ` A ${entryR} ${entryR} 0 0 0 ${(railX + entryR).toFixed(1)} ${first.y.toFixed(1)}`;
+      d += ` L ${first.x.toFixed(1)} ${first.y.toFixed(1)}`;
+    } else {
+      d += ` L ${railX.toFixed(1)} ${first.y.toFixed(1)}`;
+      d += ` L ${first.x.toFixed(1)} ${first.y.toFixed(1)}`;
+    }
+
+    for (let i = 1; i < pts.length; i++) {
+      const prev = pts[i - 1];
+      const curr = pts[i];
+      if (Math.abs(curr.y - prev.y) < 1) {
+        d += ` L ${curr.x.toFixed(1)} ${curr.y.toFixed(1)}`;
+        continue;
+      }
+
+      const vertical = Math.abs(curr.y - prev.y);
+      // U-bocht volgt de zigzag-reisrichting van de rij van `prev`:
+      // - meerdere bollen op die rij → richting van de laatste horizontale stap
+      // - alleen op die rij (na een eerdere U-bocht) → we staan aan de
+      //   aankomstkant; de rij reist de andere kant op, dus de volgende
+      //   U-bocht zit aan die overkant (niet opnieuw dezelfde marge).
+      const goingRight =
+        i >= 2 && Math.abs(pts[i - 2].y - prev.y) < 1
+          ? prev.x >= pts[i - 2].x
+          : prev.x <= width / 2;
+      const sign = goingRight ? 1 : -1;
+      const outward = goingRight ? width - edgePad : edgePad;
+      const r = Math.min(22, vertical / 2 - 1);
+      const sweep = goingRight ? 1 : 0;
+
+      if (r < 4) {
+        d += ` L ${curr.x.toFixed(1)} ${curr.y.toFixed(1)}`;
+        continue;
+      }
+
+      d += ` L ${(outward - sign * r).toFixed(1)} ${prev.y.toFixed(1)}`;
+      d += ` A ${r} ${r} 0 0 ${sweep} ${outward.toFixed(1)} ${(prev.y + r).toFixed(1)}`;
+      d += ` L ${outward.toFixed(1)} ${(curr.y - r).toFixed(1)}`;
+      d += ` A ${r} ${r} 0 0 ${sweep} ${(outward - sign * r).toFixed(1)} ${curr.y.toFixed(1)}`;
+      d += ` L ${curr.x.toFixed(1)} ${curr.y.toFixed(1)}`;
+    }
+    return d;
+  }
+
+  function initSnake() {
+    const root = document.getElementById('kampioen-snake');
+    const path = document.getElementById('kampioen-snake-path');
+    if (!root || !(path instanceof SVGPathElement)) return;
+
+    const draw = () => {
+      const rect = root.getBoundingClientRect();
+      // Zelfde anker als RailHeading / de brugspan: left-[6px] gecentreerd.
+      const railX = 6;
+      const pts = [...root.querySelectorAll<HTMLElement>('[data-snake-dot]')].map((el) => {
+        const r = el.getBoundingClientRect();
+        return {
+          x: r.left - rect.left + r.width / 2,
+          y: r.top - rect.top + r.height / 2,
+        };
+      });
+      path.setAttribute('d', snakePath(pts, rect.width, railX));
+    };
+
+    draw();
+    void document.fonts?.ready.then(draw);
+    new ResizeObserver(draw).observe(root);
+  }
+
+  initSnake();
+</script>
