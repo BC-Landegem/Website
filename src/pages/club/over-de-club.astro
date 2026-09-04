@@ -1,19 +1,178 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import RailHeading from '../../components/RailHeading.astro';
+import Dot from '../../components/Dot.astro';
+import ExternalIcon from '../../components/ExternalIcon.astro';
+import Arrow from '../../components/Arrow.astro';
+import { url } from '../../lib/url';
+import { visibleAlbums } from '../../lib/media';
+import { buildClubTimeline } from '../../lib/champions';
+import championsCsv from '../../data/champions.csv?raw';
+import eventsCsv from '../../data/club-events.csv?raw';
+
+const { points, count, oldest } = buildClubTimeline(championsCsv, eventsCsv);
+
+// Een clubmoment met een fotoalbum linkt naar /media/. De slug staat in de CSV
+// en moet in media.ts bestaan én gesynct zijn; anders geen link, wel een
+// waarschuwing bij de build — een dode fotolink is erger dan geen.
+const albumSlugs = new Set(visibleAlbums.map((album) => album.slug));
+const albumHref = (slug?: string): string | undefined => {
+  if (!slug) return undefined;
+  if (albumSlugs.has(slug)) return url(`/media/${slug}/`);
+  console.warn(`[over-de-club] onbekend album '${slug}' in club-events.csv — geen fotolink`);
+  return undefined;
+};
+
+// Hetzelfde icoon bij elke externe link op de tijdlijn. Het kleeft met een harde
+// spatie aan het laatste woord in een nowrap-span, zodat het nooit alleen op een
+// regel belandt — Chrome ziet de rand van een inline-block anders als breekpunt.
+const iconClass =
+  'inline-block h-3 w-3 align-[-0.05em] text-ink-500 transition-colors group-hover/title:text-club-700';
 ---
 
-<Layout title="Over de club" description="De geschiedenis van Badmintonclub Landegem, van gemeentelijke initiatiecursus in 1987 tot bloeiende club.">
+<Layout
+  title="Over de club"
+  description={`De geschiedenis van Badmintonclub Landegem sinds 1987: het verhaal van de oprichting en de ${count} kampioenstitels van onze ploegen.`}
+>
   <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
     <RailHeading
       title="Over de club"
       intro="Een badmintonclub met jeugdwerking, recreatieve avonden én competitieploegen — en dat al sinds 1987."
-    />
-
-    <div class="mt-10 max-w-3xl space-y-4 pl-10 leading-relaxed text-ink-700">
-      <p>
-        BC Landegem is een badmintonclub met jeugdwerking, recreatieve avonden én competitieploegen.
+      continuous
+    >
+      <p class="mt-3 max-w-2xl text-sm text-ink-500">
+        Sinds seizoen {oldest} pakten onze ploegen{' '}
+        <span class="type-numeral text-ink-700">{count}</span>
+        {' '}kampioenstitels.
       </p>
+    </RailHeading>
+
+    {/* Twee gedaantes van dezelfde draad. Onder md: één kolom op de paginarail,
+        met per meetpunt een statisch draadsegment in CSS — geen script nodig,
+        zoals op /media/. Vanaf md: vier meetpunten per rij (COLUMNS in
+        lib/champions.ts) en een slinger met U-bochten in de zijmarge, als
+        SVG-pad getekend door het script onderaan. */}
+    <div id="club-timeline" class="relative mt-12 md:px-16 lg:px-24">
+      {/* Brug over mt-12: zelfde x als de draad van RailHeading (left-[6px]). */}
+      <span
+        class="absolute -top-12 left-[6px] h-12 w-1 -translate-x-1/2 bg-club-500"
+        aria-hidden="true"
+      ></span>
+      <svg class="pointer-events-none absolute inset-0 z-0 overflow-visible" aria-hidden="true">
+        <path
+          id="club-timeline-path"
+          fill="none"
+          stroke="var(--color-club-500)"
+          stroke-width="4"
+          stroke-linecap="round"
+          stroke-linejoin="round"></path>
+      </svg>
+
+      <ol
+        class="timeline relative z-10 grid grid-cols-1 gap-y-10 md:grid-cols-4 md:grid-flow-dense md:gap-x-2 md:gap-y-14"
+        aria-label="Clubgeschiedenis en kampioenstitels"
+      >
+        {points.map((point) => {
+          if (point.kind === 'pad') {
+            // Lege vulcel: houdt een grid-slot bezet zodat 1987 op een verse rij begint.
+            return <li class="max-md:hidden" aria-hidden="true"></li>;
+          }
+
+          const founding = point.kind === 'founding';
+          const [yearStart, yearEnd] =
+            point.kind === 'season' ? point.season.split('–') : [String(point.year)];
+          // Oprichting en clubmoment delen dezelfde vorm: een titel met optionele link.
+          const items: { title: string; url?: string; album?: string }[] =
+            point.kind === 'event' ? point.titles : point.kind === 'founding' ? [point] : [];
+
+          return (
+            <li
+              class:list={[
+                'group relative pl-10 md:flex md:flex-col md:items-center md:pl-0 md:text-center',
+                founding && 'timeline-founding',
+              ]}
+            >
+              {/* Statisch draadsegment, alleen onder md: overbrugt het gat erboven
+                  (gap-y-10). Het laatste eindigt op het midden van zijn bol:
+                  2.5rem gat + 13px (top-1.5 plus een halve bol van h-3.5). */}
+              <span
+                class:list={[
+                  'absolute -top-10 left-[6px] w-1 -translate-x-1/2 bg-club-500 md:hidden',
+                  founding ? 'h-[3.3125rem]' : 'bottom-0',
+                ]}
+                aria-hidden="true"
+              ></span>
+              <p class="type-label text-[0.65rem] leading-tight text-club-700 sm:text-xs md:flex md:min-h-9 md:items-end md:justify-center">
+                {yearStart}{yearEnd && <>–<wbr />{yearEnd}</>}
+              </p>
+              <span
+                data-timeline-dot
+                class="absolute left-[6px] top-1.5 z-10 inline-flex -translate-x-1/2 md:static md:mt-2 md:translate-x-0"
+              >
+                <Dot grows />
+              </span>
+
+              {point.kind === 'season' ? (
+                <ul class="mt-2 space-y-2 md:mt-3">
+                  {point.titles.map((title) => (
+                    <li>
+                      <a
+                        href={title.teamUrl}
+                        target="_blank"
+                        rel="noopener"
+                        class="group/title inline-block transition-transform duration-300 hover:-translate-y-1"
+                      >
+                        <span class="font-bold text-ink-950 transition-colors group-hover/title:text-club-700">{title.team}{' '}<span class="font-normal">kampioen</span></span><span class="whitespace-nowrap">&nbsp;<ExternalIcon class={iconClass} /></span>
+                        {/* De reeks breekt niet: liever "Gemengd ·" op een eigen regel
+                            dan een losse pouleletter onderaan. */}
+                        <span class="block text-xs leading-snug text-ink-500">
+                          {title.category}{' · '}<span class="whitespace-nowrap">{title.division}</span>
+                        </span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <ul class="mt-2 space-y-2 md:mt-3">
+                  {items.map((item) => {
+                    const photos = albumHref(item.album);
+                    return (
+                      <li>
+                        {item.url ? (
+                          <a
+                            href={item.url}
+                            target="_blank"
+                            rel="noopener"
+                            class="group/title inline-block font-bold text-ink-950 transition-transform duration-300 hover:-translate-y-1 hover:text-club-700"
+                          >
+                            {item.title}<span class="whitespace-nowrap">&nbsp;<ExternalIcon class={iconClass} /></span>
+                          </a>
+                        ) : (
+                          <span class="font-bold text-ink-950">{item.title}</span>
+                        )}
+                        {photos && (
+                          <p class="mt-1">
+                            <a
+                              href={photos}
+                              aria-label={`Foto's van ${item.title}`}
+                              class="group/photos type-label inline-flex items-center gap-1 text-[0.65rem] text-club-700 hover:text-club-800"
+                            >
+                              Foto's<Arrow class="h-3 w-3 transition-transform duration-300 group-hover/photos:translate-x-1" />
+                            </a>
+                          </p>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </li>
+          );
+        })}
+      </ol>
+    </div>
+
+    <div class="mt-16 max-w-3xl space-y-4 pl-10 leading-relaxed text-ink-700">
       <p>
         Zo'n club ontstaat natuurlijk niet uit het niets. De laatste speler van het eerste uur,
         Herman, zwaaide begin 2014 af. We vroegen hem hoe het allemaal begonnen is…
@@ -72,3 +231,138 @@ import RailHeading from '../../components/RailHeading.astro';
     </blockquote>
   </div>
 </Layout>
+
+<style>
+  /* Zigzag alleen vanaf md — daaronder één kolom op de rail. Rijen 2, 4, 6, …
+     lopen van rechts naar links; grid-flow-dense zet ze op de juiste rij. */
+  @media (min-width: 768px) {
+    .timeline > li:nth-child(8n + 5) {
+      grid-column: 4;
+    }
+    .timeline > li:nth-child(8n + 6) {
+      grid-column: 3;
+    }
+    .timeline > li:nth-child(8n + 7) {
+      grid-column: 2;
+    }
+    .timeline > li:nth-child(8n + 8) {
+      grid-column: 1;
+    }
+    .timeline > li.timeline-founding {
+      grid-column: 1;
+    }
+  }
+</style>
+
+<script>
+  type Pt = { x: number; y: number };
+
+  const SNAKE_MQ = '(min-width: 768px)';
+
+  /** Zet bollen op dezelfde rij op één Y, zodat een iets andere labelhoogte
+      geen schuine streep trekt tussen buren. */
+  function alignRows(pts: Pt[], rowGap: number): Pt[] {
+    const out = pts.map((p) => ({ ...p }));
+    let i = 0;
+    while (i < out.length) {
+      let j = i + 1;
+      while (j < out.length && Math.abs(out[j].y - out[j - 1].y) < rowGap) j++;
+      const y = out.slice(i, j).reduce((sum, p) => sum + p.y, 0) / (j - i);
+      for (let k = i; k < j; k++) out[k].y = y;
+      i = j;
+    }
+    return out;
+  }
+
+  /** Pad door de meetpunten. Start op de paginarail (links), daarna de zigzag.
+      Bij een rijwissel eerst ver voorbij de laatste bol, dan pas naar beneden. */
+  function snakePath(raw: Pt[], width: number, railX: number): string {
+    if (!raw.length) return '';
+    const rowGap = 24;
+    const pts = alignRows(raw, rowGap);
+    const edgePad = 8;
+    const first = pts[0];
+    // Van de kop-rail naar de eerste bol — zelfde boogstraal als de U-bochten.
+    const entryR = Math.min(22, Math.max(0, first.x - railX) - 1, Math.max(0, first.y) - 1);
+    let d = `M ${railX.toFixed(1)} 0`;
+    if (entryR >= 4) {
+      d += ` L ${railX.toFixed(1)} ${(first.y - entryR).toFixed(1)}`;
+      // Zelfde sweep als linker U-bochten (0), niet als rechter (1).
+      d += ` A ${entryR} ${entryR} 0 0 0 ${(railX + entryR).toFixed(1)} ${first.y.toFixed(1)}`;
+      d += ` L ${first.x.toFixed(1)} ${first.y.toFixed(1)}`;
+    } else {
+      d += ` L ${railX.toFixed(1)} ${first.y.toFixed(1)}`;
+      d += ` L ${first.x.toFixed(1)} ${first.y.toFixed(1)}`;
+    }
+
+    for (let i = 1; i < pts.length; i++) {
+      const prev = pts[i - 1];
+      const curr = pts[i];
+      if (Math.abs(curr.y - prev.y) < 1) {
+        d += ` L ${curr.x.toFixed(1)} ${curr.y.toFixed(1)}`;
+        continue;
+      }
+
+      const vertical = Math.abs(curr.y - prev.y);
+      // U-bocht volgt de zigzag-reisrichting van de rij van `prev`:
+      // - meerdere bollen op die rij → richting van de laatste horizontale stap
+      // - alleen op die rij (na een eerdere U-bocht) → we staan aan de
+      //   aankomstkant; de rij reist de andere kant op, dus de volgende
+      //   U-bocht zit aan die overkant (niet opnieuw dezelfde marge).
+      const goingRight =
+        i >= 2 && Math.abs(pts[i - 2].y - prev.y) < 1
+          ? prev.x >= pts[i - 2].x
+          : prev.x <= width / 2;
+      const sign = goingRight ? 1 : -1;
+      const outward = goingRight ? width - edgePad : edgePad;
+      const r = Math.min(22, vertical / 2 - 1);
+      const sweep = goingRight ? 1 : 0;
+
+      if (r < 4) {
+        d += ` L ${curr.x.toFixed(1)} ${curr.y.toFixed(1)}`;
+        continue;
+      }
+
+      d += ` L ${(outward - sign * r).toFixed(1)} ${prev.y.toFixed(1)}`;
+      d += ` A ${r} ${r} 0 0 ${sweep} ${outward.toFixed(1)} ${(prev.y + r).toFixed(1)}`;
+      d += ` L ${outward.toFixed(1)} ${(curr.y - r).toFixed(1)}`;
+      d += ` A ${r} ${r} 0 0 ${sweep} ${(outward - sign * r).toFixed(1)} ${curr.y.toFixed(1)}`;
+      d += ` L ${curr.x.toFixed(1)} ${curr.y.toFixed(1)}`;
+    }
+    return d;
+  }
+
+  function initTimeline() {
+    const root = document.getElementById('club-timeline');
+    const path = document.getElementById('club-timeline-path');
+    if (!root || !(path instanceof SVGPathElement)) return;
+
+    const mq = window.matchMedia(SNAKE_MQ);
+
+    const draw = () => {
+      // Onder md draagt CSS de draad: statische segmenten per meetpunt.
+      if (!mq.matches) {
+        path.removeAttribute('d');
+        return;
+      }
+      const rect = root.getBoundingClientRect();
+      // Zelfde anker als RailHeading / de brugspan: left-[6px] gecentreerd.
+      const railX = 6;
+      const pts = [...root.querySelectorAll<HTMLElement>('[data-timeline-dot]')].map((el) => {
+        const r = el.getBoundingClientRect();
+        return {
+          x: r.left - rect.left + r.width / 2,
+          y: r.top - rect.top + r.height / 2,
+        };
+      });
+      path.setAttribute('d', snakePath(pts, rect.width, railX));
+    };
+
+    draw();
+    void document.fonts?.ready.then(draw);
+    new ResizeObserver(draw).observe(root);
+    mq.addEventListener('change', draw);
+  }
+
+  initTimeline();
+</script>
