@@ -1,8 +1,16 @@
 #!/usr/bin/env python3
-"""Find BC Landegem poule winners across PBO and Vlaamse Competitie seasons.
+"""Zoekt de poulewinnaars van BC Landegem op toernooi.nl (PBO- en Vlaamse competitie).
 
-For each season in the league searches, look up LANDEGEM BC on the clubs page,
-then read club standings. Teams ranked 1 in their poule (with points) are winners.
+Waarom dit script bestaat: de tijdlijn op /club/over-de-club/ toont de
+kampioenstitels van de ploegen uit src/data/champions.csv. Die CSV wordt niet
+live opgehaald — dit script vult ze. Per seizoen: clubpagina → club-id van
+Landegem → clubstand. Een ploeg die eerste staat in haar poule mét punten telt
+als winnaar.
+
+Wanneer opnieuw draaien: na het einde van een seizoen (mei), zodra toernooi.nl
+de eindstanden toont. Controleer de uitvoer voor je ze naar de site kopieert:
+een afgebroken seizoen (2020-2021, corona) staat ook met rang 1 en een handvol
+punten in de stand, en dat is geen titel.
 """
 
 from __future__ import annotations
@@ -13,6 +21,7 @@ import re
 import sys
 import time
 from dataclasses import asdict, dataclass
+from datetime import date
 from pathlib import Path
 from urllib.parse import urljoin
 
@@ -20,6 +29,9 @@ from playwright.sync_api import TimeoutError as PwTimeout
 from playwright.sync_api import sync_playwright
 
 BASE = "https://www.toernooi.nl"
+# De zoekopdracht loopt tot eind volgend jaar, zodat een pas aangemaakt seizoen
+# ook gevonden wordt zonder dat iemand hier een datum moet bijwerken.
+END_DATE = f"{date.today().year + 1}-12-31"
 SEARCHES = [
     {
         "name": "pbo",
@@ -27,7 +39,7 @@ SEARCHES = [
             f"{BASE}/find/league"
             "?Q=pbo+competitie+20"
             "&StartDate=2001-01-01"
-            "&EndDate=2026-12-04"
+            f"&EndDate={END_DATE}"
             "&StatusFilterID=false"
             "&SportID=2"
         ),
@@ -39,16 +51,17 @@ SEARCHES = [
             f"{BASE}/find/league"
             "?Q=vlaamse+competitie"
             "&StartDate=2013-01-01"
-            "&EndDate=2026-12-04"
+            f"&EndDate={END_DATE}"
             "&StatusFilterID=false"
             "&SportID=2"
         ),
         "title_re": r"vlaamse.*competitie|competitie.*vlaams",
     },
 ]
+# Pauze tussen paginabezoeken, uit beleefdheid voor toernooi.nl.
 PAUSE = 0.4
-PLAATSEN_CSV = "landegem_plaatsen.csv"
-KAMPIOENEN_CSV = "landegem_kampioenen.csv"
+PLACEMENTS_CSV = "placements.csv"
+CHAMPIONS_CSV = "champions.csv"
 CSV_FIELDS = [
     "season",
     "league_id",
@@ -97,12 +110,12 @@ def goto(page, url: str) -> bool:
         page.wait_for_load_state("networkidle", timeout=15000)
         return True
     except PwTimeout:
-        print(f"  timeout: {url}", file=sys.stderr)
+        print(f"  time-out: {url}", file=sys.stderr)
         return False
 
 
 def collect_leagues(page, search_url: str, title_re: str, label: str) -> list[tuple[str, str]]:
-    """Return (league_id, title) in search-result order."""
+    """Geeft (league_id, titel) in de volgorde van de zoekresultaten."""
     found: dict[str, str] = {}
     order: list[str] = []
     page_no = 1
@@ -144,7 +157,7 @@ def collect_leagues(page, search_url: str, title_re: str, label: str) -> list[tu
             found[lid] = hit["title"]
             order.append(lid)
             new += 1
-        print(f"{label} page {page_no}: +{new} seasons (total {len(found)})")
+        print(f"{label} pagina {page_no}: +{new} seizoenen (totaal {len(found)})")
         if new == 0:
             empty += 1
             if empty >= 2:
@@ -158,6 +171,7 @@ def collect_leagues(page, search_url: str, title_re: str, label: str) -> list[tu
 
 
 def find_club_id(page, league_id: str) -> str | None:
+    # 30050 is het clubnummer van LANDEGEM BC bij Badminton Vlaanderen.
     if not goto(page, f"{BASE}/sport/clubs.aspx?id={league_id}"):
         return None
     return page.evaluate(
@@ -234,19 +248,19 @@ def parse_standings(page, season: str, league_id: str, standings_url: str) -> li
 def scrape_league(page, league_id: str, season: str) -> list[Placement]:
     club_id = find_club_id(page, league_id)
     if not club_id:
-        print("  no Landegem club")
+        print("  geen Landegem-club in dit seizoen")
         return []
     standings_url = f"{BASE}/sport/clubstandings.aspx?id={league_id}&cid={club_id}"
     if not goto(page, standings_url):
         return []
     placements = parse_standings(page, season, league_id, standings_url)
     print(
-        f"  {len(placements)} Landegem team(s), "
-        f"{sum(1 for p in placements if p.won)} poule winner(s)"
+        f"  {len(placements)} Landegem-ploeg(en), "
+        f"{sum(1 for p in placements if p.won)} poulewinnaar(s)"
     )
     for p in placements:
-        mark = "WON" if p.won else f"#{p.rank}"
-        print(f"    {mark:4} {p.team}  ({p.poule})")
+        mark = "TITEL" if p.won else f"#{p.rank}"
+        print(f"    {mark:5} {p.team}  ({p.poule})")
     time.sleep(PAUSE)
     return placements
 
@@ -296,18 +310,18 @@ def merge_rows(existing: list[Placement], new: list[Placement]) -> list[Placemen
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--limit", type=int, default=0, help="Scan only the first N seasons")
-    parser.add_argument("--headed", action="store_true")
+    parser.add_argument("--limit", type=int, default=0, help="Alleen de eerste N seizoenen scannen")
+    parser.add_argument("--headed", action="store_true", help="Browser zichtbaar (om te debuggen)")
     parser.add_argument(
         "--only",
         choices=["pbo", "vlaams", "all"],
         default="all",
-        help="Which league search to scrape",
+        help="Welke competitie doorzoeken",
     )
     parser.add_argument(
         "--replace",
         action="store_true",
-        help="Overwrite CSVs instead of merging with existing rows",
+        help="CSV's overschrijven in plaats van samenvoegen met de bestaande rijen",
     )
     args = parser.parse_args()
 
@@ -321,7 +335,7 @@ def main() -> None:
         leagues: list[tuple[str, str]] = []
         seen_ids: set[str] = set()
         for search in searches:
-            print(f"=== search: {search['name']} ===")
+            print(f"=== zoeken: {search['name']} ===")
             for lid, title in collect_leagues(page, search["url"], search["title_re"], search["name"]):
                 if lid in seen_ids:
                     continue
@@ -331,7 +345,7 @@ def main() -> None:
 
         if args.limit:
             leagues = leagues[: args.limit]
-        print(f"{len(leagues)} seasons to scan\n")
+        print(f"{len(leagues)} seizoenen te scannen\n")
 
         new_rows: list[Placement] = []
         for i, (lid, title) in enumerate(leagues, 1):
@@ -340,22 +354,22 @@ def main() -> None:
 
         browser.close()
 
-    existing = [] if args.replace else load_csv(PLAATSEN_CSV)
+    existing = [] if args.replace else load_csv(PLACEMENTS_CSV)
     all_rows = merge_rows(existing, new_rows)
     winners = [r for r in all_rows if r.won]
 
-    write_csv(PLAATSEN_CSV, all_rows)
-    write_csv(KAMPIOENEN_CSV, winners)
+    write_csv(PLACEMENTS_CSV, all_rows)
+    write_csv(CHAMPIONS_CSV, winners)
 
-    print("\n=== new poule winners this run ===")
+    print("\n=== nieuwe poulewinnaars in deze run ===")
     new_winners = [r for r in new_rows if r.won]
     if not new_winners:
-        print("None found.")
+        print("Geen gevonden.")
     for w in new_winners:
-        print(f"- {w.season}: {w.team}  (1st in {w.poule})")
+        print(f"- {w.season}: {w.team}  (eerste in {w.poule})")
 
-    print(f"\nWrote {len(all_rows)} placements to {PLAATSEN_CSV}")
-    print(f"Wrote {len(winners)} winners to {KAMPIOENEN_CSV}")
+    print(f"\n{len(all_rows)} plaatsen weggeschreven naar {PLACEMENTS_CSV}")
+    print(f"{len(winners)} winnaars weggeschreven naar {CHAMPIONS_CSV}")
 
 
 if __name__ == "__main__":

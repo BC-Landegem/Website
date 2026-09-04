@@ -14,7 +14,9 @@ in [DESIGN.md](DESIGN.md).
 
 Je hebt **Node 22.18 of nieuwer** nodig. Niet zomaar een ondergrens:
 `scripts/scrape-media.mjs` importeert een `.ts`-bestand rechtstreeks en leunt dus
-op type stripping. De workflows draaien op Node 24.
+op type stripping. De workflows draaien op Node 24. Eén script valt buiten Node:
+`scripts/scrape-champions/` is Python 3.10 met Playwright, en dat heb je alleen
+nodig om de kampioenstitels bij te werken — zie Scripts.
 
 ```bash
 npm install
@@ -67,7 +69,7 @@ aanraken.
 | --- | --- | --- |
 | Speeluren, sporthal, inschrijflink | `src/data/trainings.json` | Homepage, `/jeugd/`, `/club/word-lid/` en de footer |
 | Competitieploegen, seizoen | `src/data/teams.json` | `/competitie/` én de ploeglinks in de navigatie (`Header.astro`) |
-| PBO-kampioenstitels | `src/data/kampioenen.csv` | De tijdlijn op `/club/over-de-club/` — seizoenen nieuwste eerst, elke titel linkt naar toernooi.nl |
+| Kampioenstitels van de ploegen | `src/data/champions.csv` | De tijdlijn op `/club/over-de-club/` — seizoenen nieuwste eerst, elke titel linkt naar toernooi.nl |
 | Clubmomenten (jubilea, …) | `src/data/club-events.csv` | Zelfde tijdlijn: `year,title[,url]` — meerdere rijen met hetzelfde jaar komen onder één bol; optionele URL wordt een link; jaar 1987 is de oprichting en staat altijd alleen op de laatste rij |
 | Sponsors | `src/data/sponsors.json` + logo in `src/assets/sponsors/` | De sponsorbalk in de footer |
 | Fotoalbums | `src/data/media.ts` | `/media/` én de fotostrook op de homepage — pas na een sync, zie Databronnen |
@@ -195,14 +197,15 @@ manifest later om `<img src>` te herschrijven of de tag weg te halen.
 > bron-URL's leefden er 98 — de rest (vooral Facebook-CDN) was toen al dood. Opnieuw
 > draaien ná de switch levert minder op, nooit meer.
 
-**PBO-kampioenen** — anders dan de zes bronnen hierboven leeft deze in de repo:
-`src/data/kampioenen.csv`. Geen live-ophaling. Een nieuwe titel is een extra
-rij; de tijdlijn op `/club/over-de-club/` volgt bij de volgende build. De URLs
-in die CSV wijzen naar toernooi.nl; `src/lib/kampioenen.ts` leest het bestand
-tijdens de build. Bijwerken vanaf toernooi.nl: zie
-[`scripts/scraping_wins/README.md`](scripts/scraping_wins/README.md). Clubmomenten
-(jubilea, oprichting) staan in `src/data/club-events.csv` (`year,title[,url]`)
-en komen op dezelfde slinger.
+**Kampioenstitels** — anders dan de zes bronnen hierboven leeft deze in de repo:
+`src/data/champions.csv`. Geen live-ophaling. Een nieuwe titel is een extra
+rij; de tijdlijn op `/club/over-de-club/` volgt bij de volgende build. De URL's
+in die CSV wijzen naar toernooi.nl; `src/lib/champions.ts` leest het bestand
+tijdens de build en houdt enkel rijen met `won=True` en rang 1 over. Bijwerken
+vanaf toernooi.nl: zie [`scripts/scrape-champions/README.md`](scripts/scrape-champions/README.md)
+— en kijk de winnaars na, want een afgebroken seizoen (2020-2021, corona) staat
+ook met rang 1 en een paar punten in de stand. Clubmomenten (jubilea, oprichting)
+staan in `src/data/club-events.csv` (`year,title[,url]`) en komen op dezelfde slinger.
 
 ## Archief
 
@@ -269,6 +272,7 @@ node scripts/scrape-media.mjs      # media.json lokaal bijwerken (doet de workfl
 node scripts/intra-snapshot.mjs    # nieuw voorbeeld voor /intraclub/zo-werkt-het/
 node scripts/archive-images.mjs    # beelden uit de oude Joomla-artikels redden — zie Databronnen
 node scripts/archive-conversion.mjs # die artikels omzetten naar src/content/archief/ (--dry om te proefdraaien)
+python scripts/scrape-champions/scrape_champions.py  # kampioenstitels ophalen bij toernooi.nl — Python, zie de README in die map
 ```
 
 `archive-images.mjs` is idempotent: wat al in `public/archief/beelden/` staat wordt
@@ -282,6 +286,12 @@ van `archive-images.mjs`, dus draai dat eerst. Onderaan zijn uitvoer staat een
 eindcontrole die klaagt over alles wat nog naar Joomla ruikt: overgebleven
 plugintags, smileycodes, `<span>`-restanten, beelden buiten `/archief/beelden/`.
 Blijft die stil, dan is de conversie schoon.
+
+`scrape-champions/` is het enige script dat niet in Node draait: Python 3.10 met
+Playwright, omdat toernooi.nl zijn standen pas na JavaScript toont. Het schrijft
+`placements.csv` en `champions.csv` naast zichzelf, beide buiten git; wat op de
+site hoort, kopieer je naar `src/data/champions.csv`. Draai het na het einde van
+het seizoen en kijk de winnaars na voor je kopieert — zie Databronnen.
 
 ## Bouwen en deployen
 

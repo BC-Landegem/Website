@@ -1,5 +1,5 @@
 /**
- * Ploegtitels (kampioenen.csv) en clubmomenten (club-events.csv) voor de
+ * Ploegtitels (champions.csv) en clubmomenten (club-events.csv) voor de
  * slingerende tijdlijn op /club/over-de-club/.
  */
 
@@ -33,7 +33,7 @@ export type ClubEventItem = {
   url?: string;
 };
 
-export type Kampioenen = {
+export type Champions = {
   seasons: SeasonTitles[];
   count: number;
   oldest: string;
@@ -61,7 +61,13 @@ const TYPE_ORDER: Record<Title['category'], number> = {
   Jeugd: 3,
 };
 
-export function parseKampioenen(csv: string): Kampioenen {
+/** Oprichtingsjaar: sluit de tijdlijn af en staat altijd alleen op de laatste rij. */
+const FOUNDING_YEAR = 1987;
+
+/** Meetpunten per rij op desktop — moet gelijk blijven aan `md:grid-cols-4` in over-de-club.astro. */
+const COLUMNS = 4;
+
+export function parseChampions(csv: string): Champions {
   const rows = csv
     .replace(/^\uFEFF/, '')
     .trim()
@@ -141,14 +147,14 @@ export function parseClubEvents(csv: string): ClubEvent[] {
  * onderaan op een nieuwe rij — lege `pad`-cellen vullen gaten in de vorige rij
  * zodat dense-grid 1987 niet naast de laatste bol plaatst.
  */
-export function buildClubTimeline(kampioenenCsv: string, eventsCsv: string): ClubTimeline {
-  const { seasons, count, oldest, newest } = parseKampioenen(kampioenenCsv);
+export function buildClubTimeline(championsCsv: string, eventsCsv: string): ClubTimeline {
+  const { seasons, count, oldest, newest } = parseChampions(championsCsv);
   const events = parseClubEvents(eventsCsv);
 
-  const foundingEvent = events.find((e) => e.year === 1987);
+  const foundingEvent = events.find((e) => e.year === FOUNDING_YEAR);
   const founding: TimelinePoint = {
     kind: 'founding',
-    year: 1987,
+    year: FOUNDING_YEAR,
     title: foundingEvent?.title || 'Oprichting van de club',
     ...(foundingEvent?.url ? { url: foundingEvent.url } : {}),
   };
@@ -156,7 +162,7 @@ export function buildClubTimeline(kampioenenCsv: string, eventsCsv: string): Clu
   type Sortable = { year: number; order: number; point: TimelinePoint };
   // Meerdere clubmomenten in hetzelfde jaar → één bol, titels onder elkaar.
   const eventsByYear = new Map<number, ClubEventItem[]>();
-  for (const e of events.filter((ev) => ev.year !== 1987)) {
+  for (const e of events.filter((ev) => ev.year !== FOUNDING_YEAR)) {
     const list = eventsByYear.get(e.year) ?? [];
     list.push(e.url ? { title: e.title, url: e.url } : { title: e.title });
     eventsByYear.set(e.year, list);
@@ -185,9 +191,9 @@ export function buildClubTimeline(kampioenenCsv: string, eventsCsv: string): Clu
   });
 
   const body = merged.map((m) => m.point);
-  // Vul de huidige rij af (max. 4), zodat 1987 op een verse rij begint.
+  // Vul de huidige rij af (max. COLUMNS), zodat 1987 op een verse rij begint.
   // De U-bocht volgt daarna de positie van de laatste echte bol (geen vaste kant).
-  const padCount = (4 - (body.length % 4)) % 4;
+  const padCount = (COLUMNS - (body.length % COLUMNS)) % COLUMNS;
   const pads: TimelinePoint[] = Array.from({ length: padCount }, () => ({ kind: 'pad' }));
 
   return {
