@@ -26,11 +26,9 @@ const { points, count, oldest } = buildClubTimeline(kampCsv, eventsCsv);
       </p>
     </RailHeading>
 
-    {/* Max. vier meetpunten per rij. Ruime zijmarges: de U-bocht van de draad
-        valt daar, naast de winnaars, niet door hun links. 1987 begint altijd
-        op een nieuwe LTR-rij (lege pad-cellen vullen de vorige rij).
-        De rail van de kop loopt via de brug door in het snake-pad. */}
-    <div id="kampioen-snake" class="relative mt-12 px-16 sm:px-20 lg:px-24">
+    {/* Desktop: max. vier meetpunten per rij met U-bochten in de zijmarge.
+        Mobiel: één kolom op de paginarail, rechte verticale draad. */}
+    <div id="kampioen-snake" class="relative mt-12 md:px-16 lg:px-24">
       {/* Brug over mt-12: zelfde x als RailHeading (left-[6px]), tot de SVG. */}
       <span
         class="absolute -top-12 left-[6px] h-12 w-1 -translate-x-1/2 bg-club-500"
@@ -47,24 +45,27 @@ const { points, count, oldest } = buildClubTimeline(kampCsv, eventsCsv);
       </svg>
 
       <ol
-        class="kampioen-snake relative z-10 grid grid-cols-4 grid-flow-dense gap-x-2 gap-y-14"
+        class="kampioen-snake relative z-10 grid grid-cols-1 gap-y-10 md:grid-cols-4 md:grid-flow-dense md:gap-x-2 md:gap-y-14"
         aria-label="Clubgeschiedenis en kampioenstitels"
       >
         {points.map((point) => {
           if (point.kind === 'pad') {
-            return <li class="kampioen-pad" aria-hidden="true"></li>;
+            return <li class="kampioen-pad max-md:hidden" aria-hidden="true"></li>;
           }
 
           if (point.kind === 'founding') {
             return (
-              <li class="kampioen-founding group flex flex-col items-center text-center">
-                <p class="type-label flex min-h-8 items-end justify-center text-[0.65rem] leading-tight text-club-700 sm:min-h-9 sm:text-xs">
+              <li class="kampioen-founding group relative pl-14 md:flex md:flex-col md:items-center md:pl-0 md:text-center">
+                <p class="type-label text-[0.65rem] leading-tight text-club-700 sm:text-xs md:flex md:min-h-9 md:items-end md:justify-center">
                   {point.year}
                 </p>
-                <span data-snake-dot class="mt-2 inline-flex">
+                <span
+                  data-snake-dot
+                  class="absolute left-[6px] top-1.5 z-10 inline-flex -translate-x-1/2 md:static md:mt-2 md:translate-x-0"
+                >
                   <Dot grows />
                 </span>
-                <div class="mt-3">
+                <div class="mt-2 md:mt-3">
                   {point.url ? (
                     <a
                       href={point.url}
@@ -97,14 +98,17 @@ const { points, count, oldest } = buildClubTimeline(kampCsv, eventsCsv);
 
           if (point.kind === 'event') {
             return (
-              <li class="group flex flex-col items-center text-center">
-                <p class="type-label flex min-h-8 items-end justify-center text-[0.65rem] leading-tight text-club-700 sm:min-h-9 sm:text-xs">
+              <li class="group relative pl-14 md:flex md:flex-col md:items-center md:pl-0 md:text-center">
+                <p class="type-label text-[0.65rem] leading-tight text-club-700 sm:text-xs md:flex md:min-h-9 md:items-end md:justify-center">
                   {point.year}
                 </p>
-                <span data-snake-dot class="mt-2 inline-flex">
+                <span
+                  data-snake-dot
+                  class="absolute left-[6px] top-1.5 z-10 inline-flex -translate-x-1/2 md:static md:mt-2 md:translate-x-0"
+                >
                   <Dot grows />
                 </span>
-                <ul class="mt-3 space-y-2">
+                <ul class="mt-2 space-y-2 md:mt-3">
                   {point.titles.map((item) => (
                     <li>
                       {item.url ? (
@@ -141,25 +145,30 @@ const { points, count, oldest } = buildClubTimeline(kampCsv, eventsCsv);
 
           const [yearStart, yearEnd] = point.season.split('–');
           return (
-            <li class="group flex flex-col items-center text-center">
-              <p class="type-label flex min-h-8 items-end justify-center text-[0.65rem] leading-tight text-club-700 sm:min-h-9 sm:text-xs">
+            <li class="group relative pl-14 md:flex md:flex-col md:items-center md:pl-0 md:text-center">
+              <p class="type-label text-[0.65rem] leading-tight text-club-700 sm:text-xs md:flex md:min-h-9 md:items-end md:justify-center">
                 {yearStart}–<wbr />{yearEnd}
               </p>
-              <span data-snake-dot class="mt-2 inline-flex">
+              <span
+                data-snake-dot
+                class="absolute left-[6px] top-1.5 z-10 inline-flex -translate-x-1/2 md:static md:mt-2 md:translate-x-0"
+              >
                 <Dot grows />
               </span>
-              <ul class="mt-3 space-y-2">
+              <ul class="mt-2 space-y-2 md:mt-3">
                 {point.titles.map((title) => (
                   <li>
                     <a
                       href={title.teamUrl}
                       target="_blank"
                       rel="noopener"
-                      class="group/title inline-flex max-w-full flex-col items-center transition-transform duration-300 hover:-translate-y-1"
+                      class="group/title inline-flex max-w-full flex-col transition-transform duration-300 hover:-translate-y-1 md:items-center"
                     >
                       <span class="inline-flex items-center gap-1">
                         <span class="font-bold text-ink-950 group-hover/title:text-club-700">
                           {title.team}
+                          {' '}
+                          <span class="font-normal">kampioen</span>
                         </span>
                         <svg
                           class="h-3 w-3 shrink-0 text-ink-500 transition-colors group-hover/title:text-club-700"
@@ -251,18 +260,23 @@ const { points, count, oldest } = buildClubTimeline(kampCsv, eventsCsv);
 </Layout>
 
 <style>
-  /* Even rijen: terug naar links. grid-flow-dense vult de gaten. */
-  .kampioen-snake > li:nth-child(8n + 5) {
-    grid-column: 4;
-  }
-  .kampioen-snake > li:nth-child(8n + 6) {
-    grid-column: 3;
-  }
-  .kampioen-snake > li:nth-child(8n + 7) {
-    grid-column: 2;
-  }
-  .kampioen-snake > li:nth-child(8n + 8) {
-    grid-column: 1;
+  /* Zigzag alleen vanaf md — daaronder één kolom op de rail. */
+  @media (min-width: 768px) {
+    .kampioen-snake > li:nth-child(8n + 5) {
+      grid-column: 4;
+    }
+    .kampioen-snake > li:nth-child(8n + 6) {
+      grid-column: 3;
+    }
+    .kampioen-snake > li:nth-child(8n + 7) {
+      grid-column: 2;
+    }
+    .kampioen-snake > li:nth-child(8n + 8) {
+      grid-column: 1;
+    }
+    .kampioen-snake > li.kampioen-founding {
+      grid-column: 1;
+    }
   }
   /* Lege vulcellen: geen inhoud, maar wel een grid-slot zodat 1987 niet
      in het gat naast de laatste bol belandt (grid-flow-dense). */
@@ -272,14 +286,12 @@ const { points, count, oldest } = buildClubTimeline(kampCsv, eventsCsv);
     padding: 0;
     pointer-events: none;
   }
-  /* Oprichting altijd links op haar eigen rij — anders pakt 8n+… een andere kolom. */
-  .kampioen-snake > li.kampioen-founding {
-    grid-column: 1;
-  }
 </style>
 
 <script>
   type Pt = { x: number; y: number };
+
+  const SNAKE_MQ = '(min-width: 768px)';
 
   /** Zet bollen op dezelfde rij op één Y, zodat een iets andere labelhoogte
       geen schuine streep trekt tussen buren. */
@@ -294,6 +306,16 @@ const { points, count, oldest } = buildClubTimeline(kampCsv, eventsCsv);
       i = j;
     }
     return out;
+  }
+
+  /** Smalle schermen: rechte draad op de paginarail. */
+  function verticalPath(pts: Pt[], railX: number): string {
+    if (!pts.length) return '';
+    let d = `M ${railX.toFixed(1)} 0`;
+    for (const p of pts) {
+      d += ` L ${railX.toFixed(1)} ${p.y.toFixed(1)}`;
+    }
+    return d;
   }
 
   /** Pad door de meetpunten. Start op de paginarail (links), daarna de zigzag.
@@ -359,6 +381,8 @@ const { points, count, oldest } = buildClubTimeline(kampCsv, eventsCsv);
     const path = document.getElementById('kampioen-snake-path');
     if (!root || !(path instanceof SVGPathElement)) return;
 
+    const mq = window.matchMedia(SNAKE_MQ);
+
     const draw = () => {
       const rect = root.getBoundingClientRect();
       // Zelfde anker als RailHeading / de brugspan: left-[6px] gecentreerd.
@@ -370,12 +394,16 @@ const { points, count, oldest } = buildClubTimeline(kampCsv, eventsCsv);
           y: r.top - rect.top + r.height / 2,
         };
       });
-      path.setAttribute('d', snakePath(pts, rect.width, railX));
+      path.setAttribute(
+        'd',
+        mq.matches ? snakePath(pts, rect.width, railX) : verticalPath(pts, railX),
+      );
     };
 
     draw();
     void document.fonts?.ready.then(draw);
     new ResizeObserver(draw).observe(root);
+    mq.addEventListener('change', draw);
   }
 
   initSnake();

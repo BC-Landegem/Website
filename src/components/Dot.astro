@@ -22,7 +22,7 @@ const { top, pulses = false, grows = false, id } = Astro.props;
 <span
   id={id}
   class:list={[
-    'h-3.5 w-3.5 rounded-full bg-club-500 ring-4 ring-feather-50',
+    'inline-block h-3.5 w-3.5 rounded-full bg-club-500 ring-4 ring-feather-50',
     top && ['absolute left-[6px] -translate-x-1/2', top],
     pulses && 'motion-safe:animate-pulse',
     grows && 'transition-transform duration-300 group-hover:scale-125',
