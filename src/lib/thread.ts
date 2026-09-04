@@ -11,6 +11,7 @@ const IDS = {
   glyph: 'shuttle-glyph',
   hours: 'play-hours-list',
   year: 'dot-1987',
+  historyLink: 'history-link',
   closing: 'closing-section',
   photo: 'closing-photo',
   intraSection: 'intra-section',
@@ -90,9 +91,10 @@ export function initThread(): { rebuild: () => void } {
     const glyph = document.getElementById(IDS.glyph);
     const hours = document.getElementById(IDS.hours);
     const year = document.getElementById(IDS.year);
+    const historyLink = document.getElementById(IDS.historyLink);
     const closing = document.getElementById(IDS.closing);
     const photo = document.getElementById(IDS.photo);
-    if (!wrapper || !core || !tail || !cork || !glyph || !hours || !year || !closing || !photo) return;
+    if (!wrapper || !core || !tail || !cork || !glyph || !hours || !year || !historyLink || !closing || !photo) return;
 
     const wrect = wrapper.getBoundingClientRect();
     const K = centerOf(cork, wrect);
@@ -108,6 +110,7 @@ export function initThread(): { rebuild: () => void } {
         ? centerOf(intraDot, wrect).y
         : hoursTop;
     const J = centerOf(year, wrect);
+    const historyClearY = historyLink.getBoundingClientRect().bottom - wrect.top + 10;
     const srect = closing.getBoundingClientRect();
     const closingTop = srect.top - wrect.top;
     const narrow = wrect.width < NARROW_BELOW;
@@ -136,15 +139,17 @@ export function initThread(): { rebuild: () => void } {
             // binnen de band (rood op rood) steekt hij onzichtbaar over naar de rail
             `C ${dropX} ${bandBottom - 20}, ${railX} ${bandTop + 20}, ${railX} ${bandBottom + 24}`,
             `L ${railX} ${J.y}`,
-            // de rail verlaten richting slot: op mobiel blijft hij in de marge
-            `C ${railX} ${J.y + 200}, ${endX} ${closingTop - 200}, ${endX} ${closingTop}`,
+            // Eerst langs de geschiedenislink, daarna de rail verlaten richting slot.
+            `L ${railX} ${historyClearY}`,
+            `C ${railX} ${historyClearY + 200}, ${endX} ${closingTop - 200}, ${endX} ${closingTop}`,
           ].join(' ')
         : [
             `M ${K.x} ${K.y}`,
             `C ${K.x + dx * 0.185} ${K.y - dy * 0.466}, ${K.x + dx * 0.43} ${K.y - dy * 0.862}, ${G.x} ${G.y}`,
             `C ${G.x + 90} ${G.y + 150}, ${railX} ${railStart - 320}, ${railX} ${railStart}`,
             `L ${railX} ${J.y}`,
-            `C ${railX} ${J.y + 260}, ${endX} ${closingTop - 220}, ${endX} ${closingTop}`,
+            `L ${railX} ${historyClearY}`,
+            `C ${railX} ${historyClearY + 200}, ${endX} ${closingTop - 220}, ${endX} ${closingTop}`,
           ].join(' '),
     );
 

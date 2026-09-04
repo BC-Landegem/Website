@@ -1,0 +1,14 @@
+services:
+  website:
+    image: node:24-alpine
+    working_dir: /app
+    command: sh -c "npm install && rm -f .astro/dev.json && exec npm run dev -- --host 0.0.0.0"
+    init: true
+    ports:
+      - "4321:4321"
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+
+volumes:
+  node_modules:
