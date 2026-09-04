@@ -199,8 +199,10 @@ manifest later om `<img src>` te herschrijven of de tag weg te halen.
 `src/data/kampioenen.csv`. Geen live-ophaling. Een nieuwe titel is een extra
 rij; de tijdlijn op `/club/over-de-club/` volgt bij de volgende build. De URLs
 in die CSV wijzen naar toernooi.nl; `src/lib/kampioenen.ts` leest het bestand
-tijdens de build. Clubmomenten (jubilea, oprichting) staan in
-`src/data/club-events.csv` (`year,title[,url]`) en komen op dezelfde slinger.
+tijdens de build. Bijwerken vanaf toernooi.nl: zie
+[`scripts/scraping_wins/README.md`](scripts/scraping_wins/README.md). Clubmomenten
+(jubilea, oprichting) staan in `src/data/club-events.csv` (`year,title[,url]`)
+en komen op dezelfde slinger.
 
 ## Archief
 
