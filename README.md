@@ -70,7 +70,7 @@ aanraken.
 | Speeluren, sporthal, inschrijflink | `src/data/trainings.json` | Homepage, `/jeugd/`, `/club/word-lid/` en de footer |
 | Competitieploegen, seizoen | `src/data/teams.json` | `/competitie/` én de ploeglinks in de navigatie (`Header.astro`) |
 | Kampioenstitels van de ploegen | `src/data/champions.csv` | De tijdlijn op `/club/over-de-club/` — seizoenen nieuwste eerst, elke titel linkt naar toernooi.nl |
-| Clubmomenten (jubilea, …) | `src/data/club-events.csv` | Zelfde tijdlijn: `year,title[,url]` — meerdere rijen met hetzelfde jaar komen onder één bol; optionele URL wordt een link; jaar 1987 is de oprichting en staat altijd alleen op de laatste rij |
+| Clubmomenten (jubilea, …) | `src/data/club-events.csv` | Zelfde tijdlijn: `year,title[,url[,album]]` — meerdere rijen met hetzelfde jaar komen onder één bol; optionele URL wordt een link; `album` is een slug uit `media.ts` en geeft een link naar de foto's; jaar 1987 is de oprichting en staat altijd alleen op de laatste rij |
 | Sponsors | `src/data/sponsors.json` + logo in `src/assets/sponsors/` | De sponsorbalk in de footer |
 | Fotoalbums | `src/data/media.ts` | `/media/` én de fotostrook op de homepage — pas na een sync, zie Databronnen |
 | Facebook-/Instagram-links | `src/data/social.ts` | De knoppen "Volg de club" in de footer — leeg = het blok verdwijnt |
@@ -205,7 +205,7 @@ tijdens de build en houdt enkel rijen met `won=True` en rang 1 over. Bijwerken
 vanaf toernooi.nl: zie [`scripts/scrape-champions/README.md`](scripts/scrape-champions/README.md)
 — en kijk de winnaars na, want een afgebroken seizoen (2020-2021, corona) staat
 ook met rang 1 en een paar punten in de stand. Clubmomenten (jubilea, oprichting)
-staan in `src/data/club-events.csv` (`year,title[,url]`) en komen op dezelfde slinger.
+staan in `src/data/club-events.csv` (`year,title[,url[,album]]`, met `album` een slug uit `src/data/media.ts` voor een fotolink) en komen op dezelfde slinger.
 
 ## Archief
 

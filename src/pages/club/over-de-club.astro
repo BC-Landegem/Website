@@ -3,11 +3,25 @@ import Layout from '../../layouts/Layout.astro';
 import RailHeading from '../../components/RailHeading.astro';
 import Dot from '../../components/Dot.astro';
 import ExternalIcon from '../../components/ExternalIcon.astro';
+import Arrow from '../../components/Arrow.astro';
+import { url } from '../../lib/url';
+import { visibleAlbums } from '../../lib/media';
 import { buildClubTimeline } from '../../lib/champions';
 import championsCsv from '../../data/champions.csv?raw';
 import eventsCsv from '../../data/club-events.csv?raw';
 
 const { points, count, oldest } = buildClubTimeline(championsCsv, eventsCsv);
+
+// Een clubmoment met een fotoalbum linkt naar /media/. De slug staat in de CSV
+// en moet in media.ts bestaan én gesynct zijn; anders geen link, wel een
+// waarschuwing bij de build — een dode fotolink is erger dan geen.
+const albumSlugs = new Set(visibleAlbums.map((album) => album.slug));
+const albumHref = (slug?: string): string | undefined => {
+  if (!slug) return undefined;
+  if (albumSlugs.has(slug)) return url(`/media/${slug}/`);
+  console.warn(`[over-de-club] onbekend album '${slug}' in club-events.csv — geen fotolink`);
+  return undefined;
+};
 
 // Hetzelfde icoon bij elke externe link op de tijdlijn. Het kleeft met een harde
 // spatie aan het laatste woord in een nowrap-span, zodat het nooit alleen op een
@@ -68,7 +82,7 @@ const iconClass =
           const [yearStart, yearEnd] =
             point.kind === 'season' ? point.season.split('–') : [String(point.year)];
           // Oprichting en clubmoment delen dezelfde vorm: een titel met optionele link.
-          const items: { title: string; url?: string }[] =
+          const items: { title: string; url?: string; album?: string }[] =
             point.kind === 'event' ? point.titles : point.kind === 'founding' ? [point] : [];
 
           return (
@@ -120,22 +134,36 @@ const iconClass =
                 </ul>
               ) : (
                 <ul class="mt-2 space-y-2 md:mt-3">
-                  {items.map((item) => (
-                    <li>
-                      {item.url ? (
-                        <a
-                          href={item.url}
-                          target="_blank"
-                          rel="noopener"
-                          class="group/title inline-block font-bold text-ink-950 transition-transform duration-300 hover:-translate-y-1 hover:text-club-700"
-                        >
-                          {item.title}<span class="whitespace-nowrap">&nbsp;<ExternalIcon class={iconClass} /></span>
-                        </a>
-                      ) : (
-                        <span class="font-bold text-ink-950">{item.title}</span>
-                      )}
-                    </li>
-                  ))}
+                  {items.map((item) => {
+                    const photos = albumHref(item.album);
+                    return (
+                      <li>
+                        {item.url ? (
+                          <a
+                            href={item.url}
+                            target="_blank"
+                            rel="noopener"
+                            class="group/title inline-block font-bold text-ink-950 transition-transform duration-300 hover:-translate-y-1 hover:text-club-700"
+                          >
+                            {item.title}<span class="whitespace-nowrap">&nbsp;<ExternalIcon class={iconClass} /></span>
+                          </a>
+                        ) : (
+                          <span class="font-bold text-ink-950">{item.title}</span>
+                        )}
+                        {photos && (
+                          <p class="mt-1">
+                            <a
+                              href={photos}
+                              aria-label={`Foto's van ${item.title}`}
+                              class="group/photos type-label inline-flex items-center gap-1 text-[0.65rem] text-club-700 hover:text-club-800"
+                            >
+                              Foto's<Arrow class="h-3 w-3 transition-transform duration-300 group-hover/photos:translate-x-1" />
+                            </a>
+                          </p>
+                        )}
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
             </li>

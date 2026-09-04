@@ -25,12 +25,15 @@ export type ClubEvent = {
   title: string;
   /** Optionele externe link (3e CSV-kolom). */
   url?: string;
+  /** Optionele slug van een fotoalbum uit media.ts (4e CSV-kolom). */
+  album?: string;
 };
 
 /** Clubmoment op de tijdlijn (één of meer per jaar). */
 export type ClubEventItem = {
   title: string;
   url?: string;
+  album?: string;
 };
 
 export type Champions = {
@@ -44,7 +47,7 @@ export type Champions = {
 export type TimelinePoint =
   | { kind: 'season'; season: string; seasonStart: number; titles: Title[] }
   | { kind: 'event'; year: number; titles: ClubEventItem[] }
-  | { kind: 'founding'; year: number; title: string; url?: string }
+  | { kind: 'founding'; year: number; title: string; url?: string; album?: string }
   | { kind: 'pad' };
 
 export type ClubTimeline = {
@@ -122,7 +125,7 @@ export function parseChampions(csv: string): Champions {
   };
 }
 
-/** Clubmomenten: `year,title[,url]`. Jaar 1987 is de oprichting en komt altijd als laatste op een nieuwe rij. */
+/** Clubmomenten: `year,title[,url[,album]]`. Jaar 1987 is de oprichting en komt altijd als laatste op een nieuwe rij. */
 export function parseClubEvents(csv: string): ClubEvent[] {
   return csv
     .replace(/^\uFEFF/, '')
@@ -131,12 +134,14 @@ export function parseClubEvents(csv: string): ClubEvent[] {
     .slice(1)
     .map(splitCsvLine)
     .filter((cols) => cols.length >= 2)
-    .map(([yearRaw, titleRaw, urlRaw]) => {
+    .map(([yearRaw, titleRaw, urlRaw, albumRaw]) => {
       const url = urlRaw?.trim();
+      const album = albumRaw?.trim();
       return {
         year: Number(yearRaw.trim()),
         title: titleRaw.trim(),
         ...(url ? { url } : {}),
+        ...(album ? { album } : {}),
       };
     })
     .filter((e) => Number.isFinite(e.year) && e.title.length > 0);
@@ -157,6 +162,7 @@ export function buildClubTimeline(championsCsv: string, eventsCsv: string): Club
     year: FOUNDING_YEAR,
     title: foundingEvent?.title || 'Oprichting van de club',
     ...(foundingEvent?.url ? { url: foundingEvent.url } : {}),
+    ...(foundingEvent?.album ? { album: foundingEvent.album } : {}),
   };
 
   type Sortable = { year: number; order: number; point: TimelinePoint };
@@ -164,7 +170,11 @@ export function buildClubTimeline(championsCsv: string, eventsCsv: string): Club
   const eventsByYear = new Map<number, ClubEventItem[]>();
   for (const e of events.filter((ev) => ev.year !== FOUNDING_YEAR)) {
     const list = eventsByYear.get(e.year) ?? [];
-    list.push(e.url ? { title: e.title, url: e.url } : { title: e.title });
+    list.push({
+      title: e.title,
+      ...(e.url ? { url: e.url } : {}),
+      ...(e.album ? { album: e.album } : {}),
+    });
     eventsByYear.set(e.year, list);
   }
 
