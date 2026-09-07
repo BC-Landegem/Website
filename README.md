@@ -366,6 +366,13 @@ workflows triggert.
   dan mist de eindstand van 2023-2024 er 36 van de 96. Geldt evengoed binnen het
   lopende seizoen: `scripts/intra-snapshot.mjs` heeft hem nodig omdat er anders
   iemand die deze zomer stopte uit het voorbeeld valt.
+- **`average` is `null` voor wie in het lopende seizoen niet meer meespeelt.**
+  Een gemiddelde van weken oud zegt niets over vandaag, dus de API laat het weg.
+  Die rijen staan achteraan in het klassement, mét hun echte `rank` — sorteer
+  dus niet zelf opnieuw. Reken nergens op een getal: `row.average.toFixed(2)`
+  brak de top-10 op de homepage. Gebruik `decimal()` uit `src/lib/intra.ts`
+  (streepje) of toon "Niet actief". In een eindstand van een afgesloten seizoen
+  is het veld altijd gevuld.
 - **`players_count` is de lengte van de eindstand**, niet het aantal
   inschrijvingen. Je mag het dus als teller boven een tabel zetten. Vroeger niet:
   voor 2018-2019 stond er 142 boven een stand van 81.
