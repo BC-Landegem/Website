@@ -1,0 +1,128 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Heading from '../../components/Heading.astro';
+import Link from '../../components/Link.astro';
+import RailHeading from '../../components/RailHeading.astro';
+import { url } from '../../lib/url';
+
+const steps = [
+  {
+    number: '01',
+    title: 'Installeer de app en meld je aan',
+    body: 'Twizzit werkt in de app en in je browser. Je mag beide naast elkaar gebruiken met dezelfde account.',
+    tips: [
+      'Gebruik de login die gekoppeld is aan je lidmaatschap bij BC Landegem.',
+      'Bewaar app.twizzit.com als favoriet wanneer je liever op een computer werkt.',
+      'Geen wachtwoord meer? Kies eerst voor “wachtwoord vergeten” in plaats van een nieuwe account te maken.',
+    ],
+  },
+  {
+    number: '02',
+    title: 'Hou je planning bij',
+    body: 'Open Planning en kies Mijn planning. Daar staan de activiteiten die aan jou of je groep gekoppeld zijn.',
+    tips: [
+      'Open een activiteit voor het juiste uur, de locatie en eventuele extra informatie.',
+      'Duid je aanwezigheid aan wanneer die wordt opgevraagd. De verantwoordelijke ziet je wijziging meteen.',
+      'Voor de recreatieve speelavonden is antwoorden handig om de drukte in te schatten, maar niet verplicht.',
+      'Exporteer activiteiten naar je gewone agenda als je alles liever op één plek bekijkt.',
+    ],
+  },
+  {
+    number: '03',
+    title: 'Kies je meldingen bewust',
+    body: 'In Instellingen & voorkeuren bepaal je welke berichten je als pushmelding en welke je per e-mail ontvangt.',
+    tips: [
+      'Laat minstens belangrijke clubberichten en wijzigingen aan activiteiten aanstaan.',
+      'Te veel meldingen? Pas één categorie aan in plaats van alle meldingen uit te schakelen.',
+      'Controleer ook de meldingsinstellingen van je telefoon wanneer Twizzit stil blijft.',
+    ],
+  },
+  {
+    number: '04',
+    title: 'Wissel vlot tussen gezinsleden',
+    body: 'Ouders met gekoppelde kinderen hoeven niet telkens uit te loggen. Wissel van gebruiker om de juiste planning of aanwezigheid te bekijken.',
+    tips: [
+      'Controleer bovenaan voor welk gezinslid je een activiteit of bericht bekijkt.',
+      'Ontbreekt een kind of zie je de verkeerde groep? Maak geen dubbele account aan, maar laat de koppeling nakijken.',
+      'Hou je e-mailadres en telefoonnummer actueel zodat clubcommunicatie je blijft bereiken.',
+    ],
+  },
+];
+---
+
+<Layout
+  title="Tips voor Twizzit"
+  description="Praktische tips voor leden en ouders van BC Landegem: aanmelden bij Twizzit, je planning en aanwezigheid beheren, meldingen instellen en gezinsleden wisselen."
+>
+  <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
+    <RailHeading
+      title="Tips voor Twizzit"
+      intro="Planning bekijken, je aanwezigheid doorgeven of meldingen goed zetten: met deze vier gewoontes haal je meer uit Twizzit."
+    >
+      <div class="mt-6 flex flex-wrap gap-3">
+        <a
+          href="https://get.twizzit.com"
+          target="_blank"
+          rel="noopener"
+          class="type-label inline-flex items-center gap-2 rounded-full bg-club-600 px-5 py-3 text-xs text-white transition-colors hover:bg-club-700"
+        >
+          Download de app
+          <span aria-hidden="true">↗</span>
+        </a>
+        <a
+          href="https://app.twizzit.com"
+          target="_blank"
+          rel="noopener"
+          class="type-label inline-flex items-center gap-2 rounded-full border border-ink-950/30 px-5 py-3 text-xs text-ink-950 transition-colors hover:border-club-600 hover:text-club-700"
+        >
+          Open Twizzit in je browser
+          <span aria-hidden="true">↗</span>
+        </a>
+      </div>
+    </RailHeading>
+
+    <ol class="relative mt-14">
+      <span class="absolute bottom-12 left-[6px] top-12 w-1 -translate-x-1/2 rounded-full bg-club-500" aria-hidden="true"></span>
+      {steps.map((step) => (
+        <li class="relative border-b border-ink-950/10 py-10 pl-10 first:border-t md:grid md:grid-cols-[18rem_1fr] md:gap-10">
+          <span class="type-numeral absolute left-[6px] top-12 flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full bg-club-600 text-xs text-white ring-4 ring-feather-50" aria-hidden="true">
+            {step.number}
+          </span>
+          <div>
+            <p class="type-label text-xs text-club-700">Tip {step.number}</p>
+            <Heading as="h2" size="small" class="mt-1 !break-normal">{step.title}</Heading>
+          </div>
+          <div class="mt-5 md:mt-0">
+            <p class="leading-relaxed text-ink-700">{step.body}</p>
+            <ul class="mt-5 space-y-3 leading-relaxed text-ink-700">
+              {step.tips.map((tip) => (
+                <li class="grid grid-cols-[1.25rem_1fr] items-baseline">
+                  <span class="text-club-500" aria-hidden="true">—</span>
+                  <span>{tip}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </li>
+      ))}
+    </ol>
+
+    <section class="ml-10 mt-14 max-w-4xl border-l-4 border-club-700 bg-feather-100 px-6 py-8 sm:px-8">
+      <Heading size="small">Lukt het niet?</Heading>
+      <div class="mt-4 space-y-4 leading-relaxed text-ink-700">
+        <p>
+          Controleer eerst of je de juiste gebruiker en organisatie hebt gekozen. Kijk daarna of
+          Twizzit meldingen mag sturen in de instellingen van je telefoon.
+        </p>
+        <p>
+          Voor uitleg over een functie kun je terecht in de
+          <Link href="https://www.twizzit.com/nl-be/knowledgebase/category/twizzit-eerste-gebruik-eindgebruiker.html">
+            officiële handleiding voor gebruikers
+          </Link>.
+          Ontbreekt je planning, groep of gezinskoppeling? Laat het weten via
+          <Link href={url('/club/contact/#formulier')}>het contactformulier</Link>, dan kijken we het na.
+        </p>
+      </div>
+    </section>
+  </div>
+</Layout>
