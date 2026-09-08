@@ -1,0 +1,13 @@
+---
+// Icoon "opent op een andere site": bij links naar toernooi.nl en Badminton
+// Vlaanderen. Zelfde idioom als Arrow.astro — getekend, stroke 2.5, ronde kappen.
+interface Props {
+  class?: string;
+}
+
+const { class: className = 'h-3.5 w-3.5' } = Astro.props;
+---
+
+<svg class={className} fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H18v4.5M18 6l-7.5 7.5M15 13.5V18H6V9h4.5" />
+</svg>

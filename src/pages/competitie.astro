@@ -2,6 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import Heading from '../components/Heading.astro';
 import Dot from '../components/Dot.astro';
+import ExternalIcon from '../components/ExternalIcon.astro';
 import ArchiveLink from '../components/ArchiveLink.astro';
 import RailHeading from '../components/RailHeading.astro';
 import teams from '../data/teams.json';
@@ -55,9 +56,7 @@ const types = ['Heren', 'Gemengd', 'Dames'];
                   class="type-label inline-flex items-center gap-2 rounded-full border-2 border-ink-950 px-5 py-2.5 text-xs text-ink-950 transition-colors hover:border-club-600 hover:text-club-600"
                 >
                   {team.name}
-                  <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H18v4.5M18 6l-7.5 7.5M15 13.5V18H6V9h4.5" />
-                  </svg>
+                  <ExternalIcon />
                 </a>
               </li>
             ))}

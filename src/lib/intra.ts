@@ -15,7 +15,13 @@ export interface Player {
 }
 
 export interface RankingRow extends Player {
-  average: number;
+  /**
+   * `null` voor wie in het lopende seizoen een tijd niet meer meespeelde: dat
+   * cijfer is weken oud en zegt niets over vandaag. Die rijen staan achteraan
+   * in `data`, mét hun echte `rank`. In de eindstand van een afgesloten
+   * seizoen is dit altijd gevuld.
+   */
+  average: number | null;
   rank: number;
   difference: number;
 }

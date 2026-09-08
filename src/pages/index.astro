@@ -449,7 +449,7 @@ const photoCuts = [
     fetchCalendar,
     type CalendarItem,
   } from '../lib/calendar-client';
-  import { fetchApi, playerUrl, formatDate, seasonState, seasonLabel } from '../lib/intra';
+  import { fetchApi, playerUrl, formatDate, seasonState, seasonLabel, decimal } from '../lib/intra';
   import type { RankingRow, RankingMeta } from '../lib/intra';
 
   // De vluchtdraad en de landing-animatie leven in lib/thread.ts; `rebuild`
@@ -698,7 +698,7 @@ const photoCuts = [
         li.innerHTML = `
           <span class="type-numeral text-lg text-club-700">${row.rank}</span>
           <a href="${playerUrl(row.id)}" class="truncate font-bold text-ink-950 hover:text-club-600 hover:underline">${esc(row.full_name)}</a>
-          <span class="type-numeral text-lg text-ink-950">${row.average.toFixed(2)}</span>`;
+          <span class="type-numeral text-lg text-ink-950">${decimal(row.average)}</span>`;
         list.append(li);
       }
 

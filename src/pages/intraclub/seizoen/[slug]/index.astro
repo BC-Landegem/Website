@@ -33,7 +33,8 @@ interface StandRow {
   rank: number;
   name: string;
   href: string | null;
-  average: number;
+  /** In een eindstand altijd gevuld; het type draagt de `null` van het lopende seizoen gewoon mee. */
+  average: number | null;
   sets: { won: number; total: number } | null;
   /** Gewonnen wedstrijden — alleen het oude format telde die. */
   games: { won: number; total: number } | null;
@@ -46,7 +47,7 @@ interface Statistic {
 }
 
 let rows: StandRow[] = [];
-let categories: { label: string; name: string; average: number }[] = [];
+let categories: { label: string; name: string; average: number | null }[] = [];
 
 /**
  * Een naam is klikbaar zodra er een fiche achter kan zitten. In het archief
@@ -106,7 +107,7 @@ if (season.format === 'archive') {
       const winner = list[0];
       return winner ? { label: labels[i], name: displayName(winner.full_name), average: winner.average } : null;
     })
-    .filter((entry): entry is { label: string; name: string; average: number } => entry !== null);
+    .filter((entry): entry is { label: string; name: string; average: number | null } => entry !== null);
 }
 
 const formatNote =

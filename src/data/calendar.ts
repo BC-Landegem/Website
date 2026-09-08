@@ -54,8 +54,6 @@ export const sources: CalendarSource[] = [
   { label: 'Training jeugd', category: 'training', googleCalendarId: '1s8ga8r6ua28mb0ld3eol386amag2j54@import.calendar.google.com', playSlot: { description: 'Jeugdtraining', audience: 'jeugd' } },
   { label: 'Vrij spelen jeugd', category: 'spelen', googleCalendarId: 'v5i8e94tare1r1ah3r4ssqf944sm064o@import.calendar.google.com', playSlot: { description: 'Vrij spel jeugd', audience: 'jeugd' } },
   { label: 'Intraclub', category: 'spelen', googleCalendarId: 'sdjvdn71tmsqcadobrjc541f9oh1hcns@import.calendar.google.com', playSlot: { description: 'Intraclub + vrij spel', audience: 'iedereen' } },
-  { label: 'Training competitie', category: 'training', googleCalendarId: 'jrqfpmov52k09tld4a7g8t2dts@group.calendar.google.com', playSlot: { description: 'Competitietraining', audience: 'competitiespelers' } },
-  { label: 'Training recreanten', category: 'training', googleCalendarId: '22m1pqspb1tlr688orr685hl6o@group.calendar.google.com', playSlot: { description: 'Recreantentraining', audience: 'recreanten' } },
   { label: 'Landegem 1H', category: 'match', googleCalendarId: 'a5a6i555m4u1v56ppjl7af372kra8rtn@import.calendar.google.com' },
   { label: 'Landegem 2H', category: 'match', googleCalendarId: 'h455u0c25j6cfdteg82cr0vk2ol65eue@import.calendar.google.com' },
   { label: 'Landegem 3H', category: 'match', googleCalendarId: '3k48lvi3a4s9970rk87cbfahedcn69u9@import.calendar.google.com' },

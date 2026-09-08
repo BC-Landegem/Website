@@ -31,3 +31,5 @@ Desktop.ini
 
 
 scraped/
+# Uitvoer van scripts/scrape-champions/ — wat op de site hoort staat in src/data/champions.csv
+scripts/scrape-champions/*.csv
