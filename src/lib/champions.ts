@@ -1,6 +1,7 @@
 /**
  * Ploegtitels (champions.csv) en clubmomenten (club-events.csv) voor de
- * slingerende tijdlijn op /club/over-de-club/.
+ * slingerende tijdlijn op /club/over-de-club/, plus de intraclubwinnaars van
+ * vóór het archief (intraclub-pre-archive.csv) voor de erelijst.
  */
 
 export type Title = {
@@ -34,6 +35,21 @@ export type ClubEventItem = {
   title: string;
   url?: string;
   album?: string;
+};
+
+/**
+ * Een intraclubseizoen van vóór het archief. Geen gemiddelde en geen
+ * spelersaantal: die zijn voor deze jaargangen nooit bewaard, en een nul zou
+ * hier als een gemeten waarde lezen.
+ */
+export type PreArchiveChampion = {
+  /** `2006-2007`, dezelfde vorm als de seizoensslugs van de erelijst. */
+  season: string;
+  winner: string;
+  /** De dameswinnares, als die teruggevonden is. */
+  women?: string;
+  /** Voorbehoud bij deze regel, bv. een onzekere winnaar. */
+  note?: string;
 };
 
 export type Champions = {
@@ -145,6 +161,41 @@ export function parseClubEvents(csv: string): ClubEvent[] {
       };
     })
     .filter((e) => Number.isFinite(e.year) && e.title.length > 0);
+}
+
+/**
+ * Intraclubwinnaars van vóór het archief: `season,winner[,women[,note]]`.
+ *
+ * De erelijst zelf is volledig afgeleid uit de API, en die begint bij
+ * 2009-2010. Wat ouder is bestaat alleen nog in de clubadministratie — losse
+ * namen zonder gemiddelde, zonder aantal spelers, zonder aantal speeldagen.
+ * Daarom een eigen bestand en een eigen blok onder de rail: met de hand
+ * getypte namen tussen berekende regels zetten zou de rail laten liegen over
+ * waar zijn cijfers vandaan komen.
+ *
+ * `note` is de plaats voor een voorbehoud per regel ("winnaar onzeker") — het
+ * is teruggevonden data, niet gemeten data.
+ */
+export function parsePreArchiveChampions(csv: string): PreArchiveChampion[] {
+  return csv
+    .replace(/^\uFEFF/, '')
+    .trim()
+    .split(/\r?\n/)
+    .slice(1)
+    .map(splitCsvLine)
+    .filter((cols) => cols.length >= 2)
+    .map(([seasonRaw, winnerRaw, womenRaw, noteRaw]) => {
+      const women = womenRaw?.trim();
+      const note = noteRaw?.trim();
+      return {
+        season: seasonRaw.trim(),
+        winner: winnerRaw.trim(),
+        ...(women ? { women } : {}),
+        ...(note ? { note } : {}),
+      };
+    })
+    .filter((row) => /^\d{4}-\d{4}$/.test(row.season) && row.winner.length > 0)
+    .sort((a, b) => b.season.localeCompare(a.season));
 }
 
 /**

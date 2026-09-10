@@ -103,6 +103,8 @@ export function seasonSlug(name: string): string {
 }
 
 import { displayName, seasonState, type RankingMeta } from './intra';
+// Alleen het type: de erelijst leest de CSV zelf, dit bestand rekent er enkel mee.
+import type { PreArchiveChampion } from './champions';
 
 /* ------------------------------------------------------------------ types */
 
@@ -282,8 +284,17 @@ export interface Champion {
  * de bewaarde eindstand, voor het huidige format de kop van het algemene
  * klassement — met ?members=0, anders filtert ook een afgesloten seizoen op wie
  * er vandaag nog lid is en mist 2023-2024 er 36 van de 96.
+ *
+ * `preArchive` levert de seizoenen van vóór 2009-2010, die de API niet kent.
+ * Ze komen niet in de teruggegeven lijst — de erelijst zet ze in een eigen blok
+ * onder de rail — maar ze tellen wel mee voor de grijze regels: wie in
+ * 2005-2006 won, heeft in 2011-2012 geen eerste titel meer.
+ *
+ * De parameter is met opzet verplicht en heeft geen lege standaardwaarde: wie
+ * ze vergeet, krijgt geen fout maar stil verkeerde regels terug — een "de
+ * eerste" op een seizoen dat het niet is.
  */
-export async function champions(): Promise<Champion[]> {
+export async function champions(preArchive: PreArchiveChampion[]): Promise<Champion[]> {
   const seasons = await allSeasons();
 
   const entries = await mapLimit(seasons, CONCURRENCY, async (season) => {
@@ -318,7 +329,7 @@ export async function champions(): Promise<Champion[]> {
   }));
   list.reverse();
 
-  return withNotes(list);
+  return withNotes(list, preArchive);
 }
 
 interface RankingHead {
@@ -327,21 +338,56 @@ interface RankingHead {
   average: number;
 }
 
+/** Beginjaar van een seizoenslabel: `2011-2012` → `2011`. */
+const startYear = (label: string) => Number(label.slice(0, 4));
+
 /**
- * De grijze regel achter een naam ("derde op rij", "twaalf seizoenen na zijn
- * eerste"). Berekend uit de lijst zelf, nooit met de hand getypt: klopt de
- * voorwaarde niet, dan staat er niets in plaats van een halve waarheid.
+ * De grijze regel achter een naam ("derde op rij", "twaalf seizoenen na de
+ * eerste titel"). Berekend uit de lijst zelf, nooit met de hand getypt: klopt
+ * de voorwaarde niet, dan staat er niets in plaats van een halve waarheid.
+ *
+ * Gerekend wordt over álles wat de pagina over winnaars weet, dus ook over de
+ * pre-archiefrijen die niet in de rail staan. Anders zwijgt de rail over een
+ * herhaling die de pagina zelf een blok lager toont.
  */
-function withNotes(list: Champion[]): Champion[] {
-  // De lijst staat nieuwste eerst; voor "op rij" tellen we naar ouder toe.
-  return list.map((entry, i) => {
+function withNotes(list: Champion[], preArchive: PreArchiveChampion[]): Champion[] {
+  // De rail eerst: staat een jaargang daar, dan is dat de bron. Een
+  // handgetypte CSV-regel voor een seizoen dat de API óók kent, is een typfout
+  // en mag de berekening niet overnemen.
+  const railYears = new Set(list.map((entry) => startYear(entry.season.slug)));
+  const timeline = [
+    ...list.map((entry) => ({
+      year: startYear(entry.season.slug),
+      name: entry.winner?.name ?? null,
+    })),
+    ...preArchive
+      .filter((row) => !railYears.has(startYear(row.season)))
+      .map((row) => ({ year: startYear(row.season), name: row.winner })),
+  ].sort((a, b) => b.year - a.year);
+  const indexByYear = new Map(timeline.map((row, i) => [row.year, i]));
+
+  /*
+    "De eerste" is een uitspraak over de hele clubgeschiedenis, niet over de
+    lijst. Bestaat er pre-archiefdata, dan is dat het bewijs dat de reeks
+    onvolledig is — dat bestand bestaat juist voor wat buiten de API valt, en
+    het gat tussen 2006-2007 en 2009-2010 staat er open bij. Dan mag geen enkel
+    seizoen nog "de eerste" heten.
+  */
+  const complete = preArchive.length === 0;
+
+  return list.map((entry) => {
     if (!entry.winner) return entry;
     const name = entry.winner.name;
+    const i = indexByYear.get(startYear(entry.season.slug))!;
 
+    // "Op rij" vraagt aansluitende jaargangen, geen aansluitende lijstplaatsen:
+    // met gaten in het pre-archief liggen twee rijen naast elkaar in de lijst
+    // zonder naast elkaar te liggen in de tijd.
     let inARow = 1;
-    for (let j = i + 1; j < list.length; j++) {
-      if (list[j].winner?.name === name) inARow++;
-      else break;
+    for (let j = i + 1; j < timeline.length; j++) {
+      if (timeline[j].year !== timeline[j - 1].year - 1) break;
+      if (timeline[j].name !== name) break;
+      inARow++;
     }
     if (inARow > 1) {
       const word = ['', '', 'tweede', 'derde', 'vierde', 'vijfde'][inARow] ?? `${inARow}e`;
@@ -349,13 +395,12 @@ function withNotes(list: Champion[]): Champion[] {
     }
 
     // Geen reeks: stond deze naam er ooit eerder? Dan is de afstand het verhaal.
-    const first = list.findLast((e) => e.winner?.name === name)!;
-    if (first !== entry) {
-      const years = Number(entry.season.slug.slice(0, 4)) - Number(first.season.slug.slice(0, 4));
-      return { ...entry, note: `${years} seizoenen na de eerste titel` };
+    const first = timeline.findLast((row) => row.name === name)!;
+    if (first.year < timeline[i].year) {
+      return { ...entry, note: `${timeline[i].year - first.year} seizoenen na de eerste titel` };
     }
 
-    if (i === list.length - 1) return { ...entry, note: 'de eerste' };
+    if (complete && i === timeline.length - 1) return { ...entry, note: 'de eerste' };
     return entry;
   });
 }

@@ -3,11 +3,25 @@ import Layout from '../../layouts/Layout.astro';
 import RailHeading from '../../components/RailHeading.astro';
 import { url } from '../../lib/url';
 import { champions } from '../../lib/intra-build';
+import { parsePreArchiveChampions } from '../../lib/champions';
+import preArchiveCsv from '../../data/intraclub-pre-archive.csv?raw';
+
+// Wat vóór 2009-2010 ligt, komt niet uit de API maar uit de clubadministratie.
+// Aparte bron, apart blok — zie parsePreArchiveChampions().
+const preArchive = parsePreArchiveChampions(preArchiveCsv);
 
 // Bevroren data: één keer ophalen bij de build, daarna platte HTML. Nul fetches
-// in de browser, meteen indexeerbaar, en leesbaar zonder netwerk.
-const list = await champions();
-const oldest = list[list.length - 1]?.season.label.slice(0, 4);
+// in de browser, meteen indexeerbaar, en leesbaar zonder netwerk. De
+// pre-archiefrijen gaan mee omdat de grijze regels over de hele geschiedenis
+// rekenen, niet alleen over wat de API kent.
+const list = await champions(preArchive);
+
+// De oudste jaargang die de pagina tóónt, niet de oudste die de API kent:
+// anders belooft de intro 2009 terwijl er 2006 onderaan staat.
+const oldest = [list[list.length - 1]?.season.label, preArchive.at(-1)?.season]
+  .filter((label): label is string => Boolean(label))
+  .map((label) => label.slice(0, 4))
+  .sort()[0];
 const newest = list[0]?.season.label.slice(-4);
 
 const seasonUrl = (entry: (typeof list)[number]) =>
@@ -30,26 +44,6 @@ const decimal = (value: number) => value.toFixed(2).replace('.', ',');
         continuous
         intro={`Wie het seizoen op kop afsloot, van ${oldest} tot vandaag.`}
       >
-        <p class="mt-3 max-w-2xl text-sm text-ink-500">
-          Het gemiddelde is dat van de laatste berekende speeldag. Het aantal spelers staat erbij
-          omdat het meetelt: eerste worden tussen 55 mensen is iets anders dan eerste worden tussen
-          147.
-        </p>
-        {/*
-          Waarom er wél een dameslijn staat en geen recreantenlijn: geslacht ligt
-          per persoon vast, de badmintonranking in het archief niet per seizoen.
-          Die uitleg hoort hier en niet in een commit.
-        */}
-        <p class="mt-3 max-w-2xl text-sm text-ink-500">
-          Vanaf 2023-2024 houdt de club een apart damesklassement bij. Voor de seizoenen daarvóór is
-          de dameswinnares de hoogste vrouw in de algemene eindstand: dezelfde berekening, alleen
-          niet als aparte titel uitgereikt. Recreanten en veteranen staan niet in deze lijst: het
-          archief bewaart geen categorie per seizoen, dus zou de site een titel tonen die nooit
-          bestaan heeft. Voor de recente seizoenen staan ze op de <a
-            href={url(`/intraclub/seizoen/${list.find((entry) => entry.season.format === 'current' && !entry.season.isRunning)?.season.slug ?? ''}/`)}
-            class="font-semibold text-cork-600 underline">seizoenspagina's</a
-          >.
-        </p>
       </RailHeading>
 
       <ol class="relative mt-12 pl-10">
@@ -134,6 +128,45 @@ const decimal = (value: number) => value.toFixed(2).replace('.', ',');
         ))}
       </ol>
 
+      {/*
+        Onder de rail, niet erin. De rail draagt berekende cijfers uit de API;
+        deze namen zijn met de hand uit de clubadministratie gehaald en hebben
+        geen gemiddelde, geen spelersaantal en geen speeldagen. Ze tussen de
+        railpunten zetten zou die twee soorten data door elkaar halen — en het
+        gat tussen 2006-2007 en 2009-2010 zou lezen als een fout in plaats van
+        als het einde van wat bewaard is.
+      */}
+      {preArchive.length > 0 && (
+        <section class="mt-14 border-t border-ink-950/10 pl-10 pt-8">
+          <h2 class="type-label text-xs text-cork-600">Vóór het archief</h2>
+          <p class="mt-2 max-w-2xl text-sm text-ink-500">
+            Wat er van de oudere seizoenen teruggevonden is in de clubadministratie. 
+            Toen werden de standen per Excel doorgestuurd via e-mail.<br/> Vanaf 2007-2008 werd er overgeschakeld naar een online systeem, maar de eindstanden van 2007-2008 en 2008-2009 zijn niet bewaard gebleven. De eerste seizoenen van het online systeem, vanaf 2009-2010, zijn wél volledig terug te vinden in het archief.
+          </p>
+
+          <dl class="mt-6">
+            {preArchive.map((row) => (
+              <div class="border-b border-ink-950/10 py-4 last:border-0">
+                <dt class="type-label text-xs text-cork-600">{row.season}</dt>
+                <dd class="mt-1">
+                  <span class="block font-bold text-ink-950">{row.winner}</span>
+                  {row.women && (
+                    <span class="mt-1.5 block text-sm text-ink-500">
+                      <span class="type-label text-[0.65rem] text-cork-600">Dames</span>{' '}
+                      {row.women === row.winner ? (
+                        <span>dezelfde, zij won ook de algemene stand</span>
+                      ) : (
+                        <span class="text-ink-700">{row.women}</span>
+                      )}
+                    </span>
+                  )}
+                  {row.note && <span class="mt-1 block text-sm text-ink-500">{row.note}</span>}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      )}
     </div>
   </div>
 </Layout>

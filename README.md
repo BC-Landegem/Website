@@ -81,6 +81,7 @@ aanraken.
 | Competitieploegen, seizoen | `src/data/teams.json` | `/competitie/` én de ploeglinks in de navigatie (`Header.astro`) |
 | Kampioenstitels van de ploegen | `src/data/champions.csv` | De tijdlijn op `/club/over-de-club/` — seizoenen nieuwste eerst, elke titel linkt naar toernooi.nl |
 | Clubmomenten (jubilea, …) | `src/data/club-events.csv` | Zelfde tijdlijn: `year,title[,url[,album]]` — meerdere rijen met hetzelfde jaar komen onder één bol; optionele URL wordt een link; `album` is een slug uit `media.ts` en geeft een link naar de foto's; jaar 1987 is de oprichting en staat altijd alleen op de laatste rij |
+| Intraclubwinnaars van vóór 2009-2010 | `src/data/intraclub-pre-archive.csv` | Het blok "Vóór het archief" onderaan `/intraclub/erelijst/`: `season,winner[,women[,note]]` — namen zonder cijfers, want van die jaargangen bewaarde de club geen gemiddelden. Zie Databronnen |
 | Sponsors | `src/data/sponsors.json` + logo in `src/assets/sponsors/` | De sponsorbalk in de footer |
 | Fotoalbums | `src/data/media.ts` | `/media/` én de fotostrook op de homepage — pas na een sync, zie Databronnen |
 | Facebook-/Instagram-links | `src/data/social.ts` | De knoppen "Volg de club" in de footer — leeg = het blok verdwijnt |
@@ -132,6 +133,26 @@ aangesproken, en dat onderscheid is de kern van de intraclub-pagina's:
   `Map` ontdubbelt de paden, want de erelijst en de seizoenspagina's vragen
   dezelfde standen op — vandaar ook dat er nergens `&limit=1` staat: dat zou een
   ander pad zijn voor een lijst die al in het geheugen zit.
+
+De API begint bij 2009-2010. Wat ouder is bestaat alleen nog in oude
+club-Excels: losse winnaarsnamen, zonder gemiddelde, zonder spelersaantal,
+zonder speeldagen. Die staan in `src/data/intraclub-pre-archive.csv` en krijgen
+een eigen blok **onder** de rail op de erelijst, geparseerd door
+`parsePreArchiveChampions()` in `src/lib/champions.ts`. Bewust niet in de rail:
+die draagt berekende cijfers uit de API, en een met de hand getypte naam
+ertussen zou liegen over waar de rest vandaan komt. De `oldest` van de pagina
+neemt wél het oudste jaar van beide bronnen — anders belooft de intro 2009
+terwijl er 2005 onderaan staat. Ontbrekende seizoenen ontbreken gewoon; het gat
+tussen 2006-2007 en 2009-2010 is wat er niet teruggevonden is.
+
+Die rijen staan wél in de berekening van de grijze regels achter een naam.
+`champions()` in `intra-build.ts` krijgt ze daarom mee als verplichte parameter:
+zonder die lijst zou de rail Luc Van Tornhout in 2011-2012 een eerste titel
+toeschrijven en 2009-2010 "de eerste" noemen, terwijl er twee oudere seizoenen
+onder staan. En zodra er pre-archiefdata is, verdwijnt "de eerste" helemaal —
+dat bestand bestaat juist omdat de reeks onvolledig is, dus mag geen enkel
+seizoen die titel nog dragen. "Op rij" rekent op aansluitende jaartallen, niet
+op aansluitende lijstplaatsen, want het pre-archief heeft gaten.
 
 **Van een afgesloten seizoen is publiek enkel de eindstand.** Geen speeldagen,
 geen uitslagen, geen aanwezigheden, geen klassementsverloop. De regel erachter,
