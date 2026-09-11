@@ -148,7 +148,7 @@ import { url } from '../../lib/url';
       document.getElementById('matchday-attendance-intro')!.textContent =
         'De dagscore is wat deze avond opleverde; het gemiddelde ernaast is de stand ná die verrekening.';
       document.getElementById('matchday-absent')!.textContent =
-        `Wie er niet was, kreeg ${decimal(round.average_absent)} — het gemiddelde van de verliezers van deze speeldag.`;
+        `Wie er niet was, kreeg ${decimal(round.average_absent)}, het gemiddelde van de verliezers van deze speeldag.`;
 
       loading.classList.add('hidden');
       document.getElementById('matchday-content')!.classList.remove('hidden');

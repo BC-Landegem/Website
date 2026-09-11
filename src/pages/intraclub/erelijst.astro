@@ -42,7 +42,7 @@ const decimal = (value: number) => value.toFixed(2).replace('.', ',');
         */}
         <p class="mt-3 max-w-2xl text-sm text-ink-500">
           Vanaf 2023-2024 houdt de club een apart damesklassement bij. Voor de seizoenen daarvóór is
-          de dameswinnares de hoogste vrouw in de algemene eindstand — dezelfde berekening, alleen
+          de dameswinnares de hoogste vrouw in de algemene eindstand: dezelfde berekening, alleen
           niet als aparte titel uitgereikt. Recreanten en veteranen staan niet in deze lijst: het
           archief bewaart geen categorie per seizoen, dus zou de site een titel tonen die nooit
           bestaan heeft. Voor de recente seizoenen staan ze op de <a
@@ -92,7 +92,7 @@ const decimal = (value: number) => value.toFixed(2).replace('.', ',');
                     {' spelers · '}
                     <span class="type-numeral text-ink-700">{entry.season.rounds_count}</span>
                     {' speeldagen'}
-                    {entry.note && <span class="text-ink-500"> — {entry.note}</span>}
+                    {entry.note && <span class="text-ink-500">{' · '}{entry.note}</span>}
                   </span>
 
                   {/*
@@ -104,7 +104,7 @@ const decimal = (value: number) => value.toFixed(2).replace('.', ',');
                     <span class="mt-1.5 block text-sm text-ink-500">
                       <span class="type-label text-[0.65rem] text-cork-600">Dames</span>{' '}
                       {entry.women.name === entry.winner?.name ? (
-                        <span>dezelfde — zij won ook de algemene stand</span>
+                        <span>dezelfde, zij won ook de algemene stand</span>
                       ) : (
                         <>
                           <span class="text-ink-700">{entry.women.name}</span>

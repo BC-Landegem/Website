@@ -215,7 +215,7 @@ export function seasonState(round: RankingRound | null, now = new Date()): Seaso
 export function standingLine(meta: RankingMeta, now = new Date()): string {
   const state = seasonState(meta.round, now);
   if (state === 'new') {
-    return `Seizoen ${esc(seasonLabel(meta.season.name))} — de stand vertrekt van de basispunten.`;
+    return `Seizoen ${esc(seasonLabel(meta.season.name))}: de stand vertrekt van de basispunten.`;
   }
   const round = meta.round!;
   const link = `<a href="${matchdayUrl(round.id)}" class="font-semibold text-club-700 hover:text-club-800 hover:underline">speeldag ${round.number} (${formatDate(round.date)})</a>`;

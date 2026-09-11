@@ -23,11 +23,11 @@ interface Props {
 
 const {
   title,
-  description = 'Badmintonclub Landegem — recreatief en competitief badminton voor jong en oud.',
+  description = 'Badmintonclub Landegem: recreatief en competitief badminton voor jong en oud.',
   noReferrer = false,
   noindex = false,
 } = Astro.props;
-const pageTitle = title ? `${title} | BC Landegem` : 'BC Landegem — Badmintonclub Landegem';
+const pageTitle = title ? `${title} | BC Landegem` : 'BC Landegem | Badmintonclub Landegem';
 // Alle paden lopen via url(): import.meta.env.BASE_URL is '/Website' zónder
 // slash op het einde, dus `${BASE_URL}favicon.ico` gaf /Websitefavicon.ico.
 

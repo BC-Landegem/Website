@@ -123,7 +123,7 @@ const pagefindPath = url('/pagefind/pagefind.js');
         if (!pagefind) {
           busy.hidden = true;
           status.textContent =
-            'Zoeken werkt pas in een echte build — de index wordt na het bouwen aangemaakt.';
+            'Zoeken werkt pas in een echte build: de index wordt na het bouwen aangemaakt.';
           return;
         }
         const search = await pagefind.search(query);

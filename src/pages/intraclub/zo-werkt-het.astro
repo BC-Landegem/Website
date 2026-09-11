@@ -290,9 +290,9 @@ const arrowPath = 'M4 12h16m0 0l-6-6m6 6l-6 6';
         <p class="mt-5 max-w-2xl text-sm text-ink-500">
           De twee groepen lopen zelden gelijk leeg. De spelers uit de middelste 20% worden nu eens naar
           boven, dan weer naar onder geloot, en daardoor blijft er op de meeste speeldagen een handvol
-          namen over — ook wanneer het aantal aanwezigen netjes door vier deelt. Die komen samen op de
-          <strong class="font-bold text-ink-700">restbaan</strong>, de enige baan waar de sterkste en
-          de zwakste van de zaal naast elkaar kunnen staan.
+          namen over, ook wanneer het aantal aanwezigen netjes door vier deelt. Die komen samen op
+          de restbaan, de enige baan waar de sterkste en de zwakste van de zaal naast elkaar kunnen
+          staan.
           {hasRestCourt ? (
             <> Op {dateText} was dat baan {restCourtNumber}.</>
           ) : (
@@ -300,8 +300,8 @@ const arrowPath = 'M4 12h16m0 0l-6-6m6 6l-6 6';
           )}
         </p>
         <p class="mt-3 max-w-2xl text-sm text-ink-500">
-          Blijven er minder dan vier namen over, dan wordt de baan aangevuld door iemand die al gespeeld
-          heeft. Die tweede match telt niet mee voor de rangschikking: wie de baan mee helpt vol maken,
+          Blijven er minder dan vier namen over, dan wordt de baan aangevuld door iemand die al
+          gespeeld heeft. Die tweede match telt niet mee voor de rangschikking: wie de baan mee helpt vol maken,
           speelt voor het plezier.
         </p>
       </section>
@@ -429,8 +429,8 @@ const arrowPath = 'M4 12h16m0 0l-6-6m6 6l-6 6';
         <Heading eyebrow="Stap 4 · na de laatste shuttle">Van uitslag naar stand</Heading>
         <p class="mt-4 max-w-2xl text-ink-700">
           De uitslagen gaan in de tablet en daarna wordt de hele stand opnieuw berekend. Niet op
-          gewonnen matchen, wel op <strong class="font-bold">punten per set</strong>: je cijfer voor
-          een speeldag is het gemiddelde van wat je in je drie sets bij elkaar speelde.
+          gewonnen matchen, wel op punten per set: je cijfer voor een speeldag is het gemiddelde
+          van wat je in je drie sets bij elkaar speelde.
         </p>
         <p class="mt-3 max-w-2xl text-ink-700">
           Een set die in verlenging gaat, telt niet zwaarder mee: alles boven 21 wordt teruggerekend.
@@ -502,7 +502,7 @@ const arrowPath = 'M4 12h16m0 0l-6-6m6 6l-6 6';
               <p id="day-score" class="type-numeral text-3xl text-ink-950">{formatComma(startScore)}</p>
             </div>
             <p id="day-score-sum" class="mt-1 text-sm text-ink-500">
-              ({startSets.map((s) => formatComma(s.counted)).join(' + ')}) ÷ 3 — je gemiddeld aantal punten per set.
+              ({startSets.map((s) => formatComma(s.counted)).join(' + ')}) ÷ 3, je gemiddeld aantal punten per set.
             </p>
 
             <div class="mt-5 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
@@ -514,8 +514,8 @@ const arrowPath = 'M4 12h16m0 0l-6-6m6 6l-6 6';
               </p>
             </div>
             <p id="average-sum" class="mt-1 text-sm text-ink-500">
-              ({formatComma(start.previousAverage)} × {matchdaysPlayed} + {formatComma(startScore)}) ÷ {matchdaysPlayed + 1}
-               — het gemiddelde van je basispunt en al je {matchdaysPlayed} speeldagcijfers.
+              ({formatComma(start.previousAverage)} × {matchdaysPlayed} + {formatComma(startScore)}) ÷ {matchdaysPlayed + 1},
+              het gemiddelde van je basispunt en al je {matchdaysPlayed} speeldagcijfers.
             </p>
           </div>
         </div>
@@ -524,9 +524,8 @@ const arrowPath = 'M4 12h16m0 0l-6-6m6 6l-6 6';
           <p class="type-label text-[0.65rem] text-club-700">En als je er niet bij was?</p>
           <p class="mt-2 text-sm text-ink-700">
             Dan krijg je geen nul, maar het gemiddelde van alle verliezende duo's van die avond.
-            Op {dateText} was dat
-             <strong class="type-numeral font-bold text-ink-950">{formatComma(absent)}</strong>, terwijl de
-            top van de stand rond {formatComma(players[0].average, 1)} zit. Sta je hoger dan dat cijfer,
+            Op {dateText} was dat <span class="type-numeral text-ink-950">{formatComma(absent)}</span>,
+            terwijl de top van de stand rond {formatComma(players[0].average, 1)} zit. Sta je hoger dan dat cijfer,
             dan kost elke gemiste speeldag je een beetje.
           </p>
         </div>
@@ -925,13 +924,13 @@ const arrowPath = 'M4 12h16m0 0l-6-6m6 6l-6 6';
     const score = dayScore(counted);
     el('day-score').textContent = formatComma(score);
     el('day-score-sum').textContent =
-      `(${counted.map((p) => formatComma(p)).join(' + ')}) ÷ 3 — je gemiddeld aantal punten per set.`;
+      `(${counted.map((p) => formatComma(p)).join(' + ')}) ÷ 3, je gemiddeld aantal punten per set.`;
 
     const next = newAverage(current.previousAverage, score, matchdaysPlayed);
     el('average-previous').textContent = formatComma(current.previousAverage);
     el('average-new').textContent = formatComma(next);
     el('average-sum').textContent =
-      `(${formatComma(current.previousAverage)} × ${matchdaysPlayed} + ${formatComma(score)}) ÷ ${matchdaysPlayed + 1} — ` +
+      `(${formatComma(current.previousAverage)} × ${matchdaysPlayed} + ${formatComma(score)}) ÷ ${matchdaysPlayed + 1}, ` +
       `het gemiddelde van je basispunt en al je ${matchdaysPlayed} speeldagcijfers.`;
   }
 

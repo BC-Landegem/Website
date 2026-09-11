@@ -1,9 +1,9 @@
 // Configuratie van de progressive web app: gedeeld door de manifest-endpoint
 // (src/pages/manifest.webmanifest.ts) en de service worker (src/pages/sw.js.ts).
-export const APP_NAME = 'BC Landegem — Badmintonclub Landegem';
+export const APP_NAME = 'BC Landegem | Badmintonclub Landegem';
 export const APP_SHORT_NAME = 'BC Landegem';
 export const APP_DESCRIPTION =
-  'Badmintonclub Landegem — speeluren, kalender, intraclub en clubinfo bij de hand.';
+  'Badmintonclub Landegem: speeluren, kalender, intraclub en clubinfo bij de hand.';
 
 // Veerwit, gelijk aan de header (bg-feather-50) en de body-achtergrond: zo loopt
 // de statusbalk van de geïnstalleerde app naadloos door in de pagina.

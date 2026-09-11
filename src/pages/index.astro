@@ -328,7 +328,7 @@ const photoCuts = [
         <div class="pl-10">
           <Heading size="large">Uit de club</Heading>
           <p class="mt-3 max-w-xl text-ink-700">
-            De laatste foto's uit onze albums — {photoAlbum.title}, {monthName(photoAlbum.date)}.
+            De laatste foto's uit onze albums: {photoAlbum.title}, {monthName(photoAlbum.date)}.
           </p>
         </div>
         <a
@@ -530,7 +530,7 @@ const photoCuts = [
         : item.end
           ? `${timeText(item.start)} – ${timeText(item.end)}`
           : timeText(item.start);
-      const tail = item.start <= NOW && item.end !== null && NOW < item.end ? ' — nu bezig' : '';
+      const tail = item.start <= NOW && item.end !== null && NOW < item.end ? ' (nu bezig)' : '';
       if (item.source.playSlot) {
         // De groep (jeugd zaterdag: groep 1 en 2) moet overal zichtbaar zijn.
         const group = groupFromTitle(item.event.summary);
@@ -566,7 +566,7 @@ const photoCuts = [
       time.className = 'type-numeral text-ink-950';
       time.textContent = row.time;
       const text = row.teams
-        ? `${row.teams.length > 1 ? 'Thuismatchen' : 'Thuismatch'} — ${teamListing(row.teams)}`
+        ? `${row.teams.length > 1 ? 'Thuismatchen' : 'Thuismatch'}: ${teamListing(row.teams)}`
         : row.text;
       li.append(time, ` · ${text}${row.tail} `);
       const audienceEl = document.createElement('span');
@@ -622,7 +622,7 @@ const photoCuts = [
       rows.push({
         start: matches[0].start,
         when: `${dateText(matches[0].start)} · vanaf ${timeText(matches[0].start)}`,
-        title: `${matches.length > 1 ? 'Thuismatchen' : 'Thuismatch'} — ${listing}`,
+        title: `${matches.length > 1 ? 'Thuismatchen' : 'Thuismatch'}: ${listing}`,
         place: `${trainings.location.name}, ${trainings.location.municipality}`,
       });
     }

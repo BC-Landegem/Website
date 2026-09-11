@@ -3,12 +3,12 @@ import Layout from '../../layouts/Layout.astro';
 import RailHeading from '../../components/RailHeading.astro';
 import ArchiveSearch from '../../components/ArchiveSearch.astro';
 import { url } from '../../lib/url';
-import { allArticles, byYear, GROUPS, byGroup } from '../../lib/archive';
+import { allArticles, byYear, GROUPS, byGroup, yearOf } from '../../lib/archive';
 
 const articles = await allArticles();
 const years = await byYear();
-const oldest = articles[articles.length - 1];
-const newest = articles[0];
+const oldest = yearOf(articles[articles.length - 1]);
+const newest = yearOf(articles[0]);
 
 const groups = await Promise.all(
   GROUPS.map(async (g) => ({ ...g, count: (await byGroup(g.key)).length })),
@@ -24,18 +24,18 @@ const yearList = [...years.entries()];
 
 <Layout
   title="Archief"
-  description="Het archief van de oude clubsite van BC Landegem: 837 artikels uit 2009 tot 2025 — wedstrijdverslagen, intraclub, jeugdweekends en clubnieuws."
+  description={`Het archief van de oude clubsite van BC Landegem: ${articles.length} artikels uit ${oldest} tot ${newest}, met wedstrijdverslagen, intraclub, jeugdweekends en clubnieuws.`}
 >
   <div class="bg-feather-100">
     <div class="mx-auto max-w-5xl px-4 py-14 sm:py-16">
       <RailHeading
         title="Archief"
         accent="cork"
-        intro="Alles wat er tussen 2009 en 2025 op de oude clubsite verscheen, bewaard zoals het geschreven werd."
+        intro={`Alles wat er tussen ${oldest} en ${newest} op de oude clubsite verscheen, bewaard zoals het geschreven werd.`}
       >
         <p class="mt-3 max-w-2xl text-sm text-ink-500">
           {articles.length} artikels van {writerCount} schrijvers, met de reacties die er destijds onder
-          stonden. De club bestaat sinds 1987 — voor de jaren daarvóór is er geen archief, wel <a
+          stonden. De club bestaat sinds 1987, maar voor de jaren daarvóór is er geen archief. Wel <a
             href={url('/club/over-de-club/')}
             class="font-semibold underline hover:text-cork-600">het verhaal van Herman</a
           >.

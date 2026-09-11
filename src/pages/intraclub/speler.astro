@@ -151,7 +151,7 @@ const seasons = await seasonLinks();
         </details>
 
         <p id="progression-empty" class="mt-4 hidden text-sm text-ink-500">
-          Nog te weinig speeldagen voor een verloop — na je tweede speeldag verschijnt de lijn hier.
+          Nog te weinig speeldagen voor een verloop. Na je tweede speeldag verschijnt de lijn hier.
         </p>
       </section>
 
@@ -341,7 +341,7 @@ const seasons = await seasonLinks();
       'hoe hoger in beeld, hoe hoger in de stand.',
     average:
       'De lijn is je gemiddelde na elke speeldag. De losse punten zijn wat die avond zelf ' +
-      'opbracht — je gemiddelde is niets anders dan het gemiddelde van je basispunten en al ' +
+      'opbracht. Je gemiddelde is niets anders dan het gemiddelde van je basispunten en al ' +
       'die dagscores samen.',
   };
 
@@ -536,7 +536,7 @@ const seasons = await seasonLinks();
 
       const name = displayName(player.full_name);
       document.getElementById('player-name')!.textContent = name;
-      document.title = `${name} — intraclub | BC Landegem`;
+      document.title = `${name} · intraclub | BC Landegem`;
 
       const history = player.ranking_history ?? [];
       const stats = player.statistics;
