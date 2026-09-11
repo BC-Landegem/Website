@@ -1,0 +1,144 @@
+---
+/*
+ * Pagina niet gevonden. Astro bouwt zelf geen 404 voor een statische site — de
+ * dev-server heeft er een, maar in een build bestaat er alleen wat hier staat:
+ * src/pages/404.astro wordt dist/404.html, en dát bestand pakt GitHub Pages op
+ * voor elke onbekende URL onder de site. Zonder deze pagina krijg je de grijze
+ * standaard-404 van GitHub, zonder navigatie terug.
+ *
+ * Alle links lopen via url() en zijn dus absoluut (/Website/...). Nodig: deze
+ * pagina wordt geserveerd op de URL die de bezoeker intypte, hoe diep ook, en
+ * relatieve links zouden vanaf /club/oud/iets/ de verkeerde kant op wijzen.
+ *
+ * Na de domeinswitch is dit ook het vangnet voor de oude Joomla-links die niet
+ * in het archief terechtkwamen — vandaar de verwijzing naar de zoekfunctie
+ * daar, en niet alleen een knop naar de startpagina.
+ */
+import Layout from '../layouts/Layout.astro';
+import RailHeading from '../components/RailHeading.astro';
+import Dot from '../components/Dot.astro';
+import Arrow from '../components/Arrow.astro';
+import { url } from '../lib/url';
+
+const destinations = [
+  { label: 'Kalender', href: '/kalender/', detail: 'Trainingen, tornooien en clubactiviteiten' },
+  { label: 'Intraclub', href: '/intraclub/', detail: 'Het klassement en de laatste speeldag' },
+  { label: 'Competitie', href: '/competitie/', detail: 'Onze ploegen, uitslagen en standen' },
+  { label: 'Jeugd', href: '/jeugd/', detail: 'Training op zaterdag — groep 1 om 9u30, groep 2 om 11u' },
+  { label: 'Recreatief', href: '/recreatief/', detail: 'Vrij spel op maandag, woensdag en zondag' },
+  { label: "Foto's", href: '/media/', detail: 'De albums per seizoen' },
+  { label: 'Archief', href: '/archief/', detail: 'De artikels van de oude clubsite, doorzoekbaar' },
+];
+---
+
+<Layout
+  title="Pagina niet gevonden"
+  description="Deze pagina van BC Landegem bestaat niet (meer). Ga verder via de kalender, de intraclub, de competitie of het archief."
+  noindex
+>
+  <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
+    <div class="grid items-start gap-y-10 md:grid-cols-12 md:gap-x-10">
+      <div class="md:col-span-7">
+        <RailHeading
+          title="Buiten de lijnen"
+          intro="Deze pagina ligt niet in het veld. Ze is verhuisd, hernoemd — of ze heeft nooit bestaan."
+        >
+          <p class="mt-8">
+            <a
+              href={url('/')}
+              class="type-label inline-flex items-center gap-2 rounded-full bg-club-600 px-7 py-3.5 text-sm text-white transition-colors hover:bg-club-700"
+            >
+              Naar de startpagina
+              <Arrow class="h-4 w-4" />
+            </a>
+          </p>
+          <p class="mt-6 text-sm text-ink-500">
+            Of ga rechtstreeks naar wat je zocht.
+          </p>
+        </RailHeading>
+      </div>
+
+      {/* De vlucht die naast het veld landt: hetzelfde draadidioom als de rest
+           van de site, hier als beeld. Decoratief, dus buiten de voorleesorde.
+
+           Het veld staat op de echte maten, van bovenaf gezien: 13,40 m lang bij
+           6,10 m breed, hier op 19,7 px per meter (264 × 120,2). Alles daarvan
+           afgeleid — net in het midden (6,70 m), korte servicelijn op 1,98 m van
+           het net, lange servicelijn dubbel op 0,76 m van de achterlijn,
+           enkelzijlijn 0,46 m binnen de zijlijn, middenlijn van korte servicelijn
+           tot achterlijn (dus níet in het vak tussen net en servicelijn). */}
+      <div class="md:col-span-5 md:col-start-8">
+        <svg
+          viewBox="0 0 360 300"
+          class="ml-auto w-full max-w-xs sm:max-w-sm"
+          fill="none"
+          aria-hidden="true"
+        >
+          <g class="stroke-ink-950/15" stroke-width="1.5">
+            {/* Buitenlijnen (dubbelspel) */}
+            <rect x="20" y="18" width="120.2" height="264" />
+            {/* Enkelzijlijnen */}
+            <path d="M29.1 18v264M131.1 18v264" />
+            {/* Korte servicelijnen en de lange servicelijn voor dubbelspel */}
+            <path d="M20 111h120.2M20 189h120.2M20 33h120.2M20 267h120.2" />
+            {/* Middenlijn: van de korte servicelijn tot de achterlijn, in beide helften */}
+            <path d="M80.1 18v93M80.1 189v93" />
+          </g>
+          {/* Het net op 6,70 m, met een paal op elke zijlijn */}
+          <g class="stroke-ink-950/25" stroke-width="1.5">
+            <path d="M20 150h120.2" stroke-dasharray="2 4" />
+            <path d="M20 143v14M140.2 143v14" />
+          </g>
+          {/* De vluchtbaan: lancering uit het achterveld, over het net (binnen de palen,
+               anders was het geen slag maar een fout), hangmoment, en beslist
+               neervallen voorbij de zijlijn. */}
+          <path
+            d="M96 256C100 205 112 160 134 132C156 104 196 74 230 76c22 1 32 21 34 40"
+            class="stroke-club-500"
+            stroke-width="4"
+            stroke-linecap="round"
+          />
+          {/* Het meetpunt waar de shuttle landt: voorbij de zijlijn */}
+          <circle cx="264" cy="116" r="7" class="fill-club-500 stroke-feather-50" stroke-width="5" />
+          <text x="264" y="146" class="type-label fill-club-700" font-size="13" text-anchor="middle">Buiten</text>
+          {/* Het cijfer als watermerk in de lege hoek, niet als kop op de pagina */}
+          <text x="258" y="256" class="type-numeral fill-club-100" font-size="88" text-anchor="middle">404</text>
+        </svg>
+      </div>
+    </div>
+
+    <ul class="relative max-w-3xl">
+      {/* Draadsegment: overbrugt de ruimte onder de kop en eindigt op de laatste bol */}
+      <span class="absolute -top-10 bottom-9 left-[6px] w-1 -translate-x-1/2 rounded-full bg-club-500" aria-hidden="true"></span>
+      {destinations.map((destination) => (
+        <li class="group relative border-b border-ink-950/10 py-5 pl-10 first:border-t">
+          {/* De bol blijft op de draad (schaalt enkel); alleen de inhoud schuift op hover */}
+          <Dot top="top-7" grows />
+          <a
+            href={url(destination.href)}
+            class="flex items-baseline justify-between gap-4 transition-transform duration-300 [transition-timing-function:var(--ease-launch)] group-hover:translate-x-2"
+          >
+            <span>
+              <span class="type-label block text-sm text-club-700">{destination.label}</span>
+              <span class="mt-1 block text-ink-700">{destination.detail}</span>
+            </span>
+            <Arrow class="h-4 w-4 shrink-0 self-center text-ink-500 transition-transform duration-300 group-hover:translate-x-1 group-hover:text-club-600" />
+          </a>
+        </li>
+      ))}
+    </ul>
+
+    <div class="mt-12 max-w-2xl space-y-4 pl-10 leading-relaxed text-ink-700">
+      <p>
+        Kwam je hier via een oude link of een bladwijzer? De artikels van de vorige clubsite staan
+        in het <a href={url('/archief/')} class="font-semibold text-club-700 underline hover:text-club-800">archief</a> —
+        met een zoekveld op titel en jaar.
+      </p>
+      <p>
+        Vind je het nog altijd niet, laat het ons weten via
+        <a href={url('/club/contact/#formulier')} class="font-semibold text-club-700 underline hover:text-club-800">het contactformulier</a>.
+        Dan zetten we de link recht.
+      </p>
+    </div>
+  </div>
+</Layout>

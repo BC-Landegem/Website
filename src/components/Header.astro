@@ -3,8 +3,7 @@ import { url } from '../lib/url';
 import teams from '../data/teams.json';
 
 // De hoofdnavigatie volgt de doelgroepen: jeugd, recreanten, intraclub,
-// competitie. Intraclub staat naast Recreatief omdat het grotendeels dezelfde
-// mensen zijn — /recreatief/ linkt er twee keer heen.
+// competitie.
 const clubItems = [
   { label: 'Over de club', href: '/club/over-de-club/' },
   { label: 'Contact', href: '/club/contact/' },
@@ -14,13 +13,10 @@ const clubItems = [
   { label: 'Archief', href: '/archief/' },
 ];
 
-// De intraclub is meer dan het klassement geworden: er hangen zeventien
-// seizoenen historiek en een recordpagina aan. Dat wordt een submenu en geen
-// tiende item in de balk — die telt er al negen en past pas vanaf ~893px.
+
 const intraclubItems = [
   { label: 'Klassement', href: '/intraclub/', exact: true },
   { label: 'Erelijst', href: '/intraclub/erelijst/' },
-  { label: 'Clubrecords', href: '/intraclub/records/' },
   { label: 'Zo werkt het', href: '/intraclub/zo-werkt-het/' },
 ];
 
