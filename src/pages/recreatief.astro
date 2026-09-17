@@ -16,7 +16,7 @@ const freePlay = trainings.sessions.filter((session) =>
   session.audience.toLowerCase().includes('recreanten'),
 );
 
-// De twee tarieven zonder competitie: wie recreatief speelt, kiest hiertussen.
+// Het tarief zonder competitie voor volwassen recreanten.
 const recreationalRates = membership.rates.filter((rate) => rate.detail.startsWith('Volwassenen'));
 ---
 
@@ -143,12 +143,12 @@ const recreationalRates = membership.rates.filter((rate) => rate.detail.startsWi
       </div>
     </section>
 
-    {/* Wat het kost: enkel de twee tarieven die voor een recreant gelden */}
+    {/* Wat het kost: enkel het tarief dat voor een recreant geldt */}
     <section class="mt-16 pl-10">
       <Heading>Wat het kost</Heading>
       <p class="mt-4 max-w-3xl leading-relaxed text-ink-700">
-        Als recreant kies je tussen twee tarieven. Welk van de twee hangt af van de avonden waarop
-        je wil spelen. De clubshuttles zitten er in beide gevallen bij.
+        Als recreant betaal je 120 € voor alle vrije speelmomenten op maandag, woensdag en zondag.
+        De clubshuttles zitten erbij.
       </p>
       <ul class="mt-6 max-w-3xl">
         {recreationalRates.map((rate) => (

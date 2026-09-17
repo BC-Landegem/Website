@@ -45,11 +45,6 @@
     "year": 2026,
     "rates": [
       {
-        "price": "80 €",
-        "title": "Vrij spelen op maandag en zondag",
-        "detail": "Volwassenen"
-      },
-      {
         "price": "120 €",
         "title": "Alle vrije speelmomenten",
         "detail": "Volwassenen: maandag, woensdag én zondag"
