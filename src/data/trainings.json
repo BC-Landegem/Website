@@ -42,25 +42,25 @@
     }
   ],
   "membership": {
-    "year": 2026,
+    "year": 2027,
     "rates": [
       {
-        "price": "120 €",
+        "price": "€ 120",
         "title": "Alle vrije speelmomenten",
         "detail": "Volwassenen: maandag, woensdag én zondag"
       },
       {
-        "price": "120 €",
+        "price": "€ 120",
         "title": "Jeugd tot 18 jaar",
         "detail": "Vrij spelen en training, ongeacht hoe vaak je komt"
       },
       {
-        "price": "160 €",
+        "price": "€ 170",
         "title": "Competitiespeler in één ploeg",
         "detail": "Inclusief alle vrije speelmomenten"
       },
       {
-        "price": "200 €",
+        "price": "€ 220",
         "title": "Competitiespeler in twee ploegen",
         "detail": "Inclusief alle vrije speelmomenten"
       }
