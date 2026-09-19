@@ -8,9 +8,12 @@
 // Twee smaken van het app-icoon, want een launcher behandelt ze anders:
 //   any       — het icoon wordt getoond zoals het is: logo in inkt op veerwit.
 //   maskable  — de launcher knipt er zelf een vorm uit (cirkel, squircle).
-//               Vandaar clubrood tot in de rand en het logo klein genoeg om
-//               binnen de veilige zone (cirkel van 80% van de zijde) te
-//               blijven: een vierkant dat daarin past is ~57% breed.
+//               Ook hier inkt op veerwit, net als het beeldmerk op de site en
+//               op de oude bclandegem.be: bij een installatie is dat wat je op
+//               je scherm verwacht, geen rood vlak. Het veerwit loopt wel tot
+//               in de rand door (de launcher knipt weg wat hij niet wil) en het
+//               logo blijft klein genoeg voor de veilige zone (cirkel van 80%
+//               van de zijde): een vierkant dat daarin past is ~57% breed.
 //
 // Plus drie iconen voor de snelkoppelingen uit de manifest. Die komen niet uit
 // het logo maar zijn getekend in het icoonidioom van de site (24-grid, stroke
@@ -20,7 +23,6 @@ import sharp from 'sharp';
 
 const FEATHER_50 = '#faf7f1';
 const INK_950 = '#1b1410';
-const CLUB_500 = '#eb4024';
 
 const logo = await readFile(new URL('../public/images/logo-bc1.svg', import.meta.url), 'utf8');
 // potrace zet de vulkleur op de <g>; hergebruiken we om het logo te hertinten.
@@ -57,8 +59,8 @@ const GLYPHS = {
 async function shortcut(name) {
   // Android knipt ook deze iconen rond, dus geldt dezelfde veilige zone als bij
   // maskable — hier iets ruimer genomen omdat een lijntekening lichter weegt dan
-  // een vlak beeldmerk. Inkt op veerwit, gelijk aan het rustige app-icoon: de
-  // rij snelkoppelingen leest zo als familie van het rode beeldmerk erboven.
+  // een vlak beeldmerk. Inkt op veerwit, gelijk aan het app-icoon: de rij
+  // snelkoppelingen leest zo als familie van het beeldmerk erboven.
   const side = 192;
   const box = Math.round(side * 0.52);
   const svg = Buffer.from(
@@ -81,5 +83,5 @@ async function shortcut(name) {
 await mkdir(new URL('../public/icons/', import.meta.url), { recursive: true });
 await icon({ file: 'icon-192.png', side: 192, background: FEATHER_50, logoColor: INK_950, coverage: 0.78 });
 await icon({ file: 'icon-512.png', side: 512, background: FEATHER_50, logoColor: INK_950, coverage: 0.78 });
-await icon({ file: 'icon-maskable-512.png', side: 512, background: CLUB_500, logoColor: FEATHER_50, coverage: 0.56 });
+await icon({ file: 'icon-maskable-512.png', side: 512, background: FEATHER_50, logoColor: INK_950, coverage: 0.56 });
 for (const name of Object.keys(GLYPHS)) await shortcut(name);
