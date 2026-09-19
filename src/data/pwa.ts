@@ -29,6 +29,9 @@ export const SHELL_PATHS = [
   // mailapp verstuurt later). Het formulier zelf kan offline niets versturen, maar
   // de pagina toont dan het mailadres — zie src/components/ContactForm.astro.
   '/club/contact/',
+  // Het meldformulier ook: offline kan je er al schrijven en lezen wat er met
+  // een melding gebeurt, in plaats van op een doodlopende straat te botsen.
+  '/club/melden/',
   '/offline/',
 ];
 

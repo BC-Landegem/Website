@@ -149,6 +149,23 @@ import { url } from '../../lib/url';
         Cloudflare treedt daarbij op als verwerker.
       </p>
 
+      <h2>Het meldformulier</h2>
+      <p>
+        Op de <a href={url('/club/melden/')}>meldpagina</a> staat een formulier waarmee je een
+        voorval van grensoverschrijdend gedrag kan melden. Alleen je verhaal is verplicht; je naam
+        en een manier om je te bereiken vul je in als je dat wil. Wat je verstuurt, wordt door
+        onze eigen server als e-mail bezorgd aan het Aanspreekpunt Integriteit van de club, en aan
+        niemand anders: het bestuur leest het niet en we bewaren het niet in een database of in een
+        logboek. De melding blijft bestaan zolang het aanspreekpunt ze nodig heeft om je verder te
+        helpen, en je kan altijd vragen om ze te laten wissen.
+      </p>
+      <p>
+        Een melding kan gegevens bevatten over andere personen dan jezelf. We verwerken die op
+        grond van onze plicht om een veilige sportomgeving te bieden (gerechtvaardigd belang), en
+        alleen voor het behandelen van de melding. Ook dit formulier gebruikt Cloudflare Turnstile
+        tegen misbruik, op dezelfde manier als hierboven beschreven.
+      </p>
+
       <h2>Verstrekking van gegevens aan derden-verwerkers</h2>
       <p>
         De gegevens die je aan ons geeft, kunnen wij aan derde partijen verstrekken indien dit
@@ -159,8 +176,8 @@ import { url } from '../../lib/url';
         <li>het opslaan en verwerken van gegevens in de cloud (via een cloud service provider)</li>
         <li>het verzorgen van de internetomgeving (webhosting, mailhosting);</li>
         <li>
-          het beschermen van het contactformulier tegen misbruik door geautomatiseerde programma's
-          (Cloudflare Turnstile);
+          het beschermen van het contact- en het meldformulier tegen misbruik door
+          geautomatiseerde programma's (Cloudflare Turnstile);
         </li>
         <li>het verzorgen van IT-infrastructuur (o.a. IT-netwerk, servers, …);</li>
         <li>het verzorgen van de (financiële) administratie</li>

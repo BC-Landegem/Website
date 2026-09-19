@@ -1,0 +1,109 @@
+---
+// De meldpagina voor grensoverschrijdend gedrag. Bewust een eigen pagina en
+// niet onderaan /club/aanspreekpunt-integriteit/: dat is Lieselots brief, met
+// foto en "vele groetjes", en die toon wil je niet breken met een formulier.
+// Hier mag het zakelijk zijn: wie leest dit, wat gebeurt er dan, en het formulier.
+//
+// De vier stappen en de antwoordtermijn ("binnen een week") zijn een voorstel
+// dat het aanspreekpunt zelf moet bevestigen vóór deze pagina live gaat. Het is
+// haar mailbox en haar belofte, niet die van de site.
+import Layout from '../../layouts/Layout.astro';
+import Heading from '../../components/Heading.astro';
+import Link from '../../components/Link.astro';
+import Dot from '../../components/Dot.astro';
+import RailHeading from '../../components/RailHeading.astro';
+import ReportForm from '../../components/ReportForm.astro';
+import { INTEGRITY_NAME } from '../../data/contact';
+import { url } from '../../lib/url';
+
+const firstName = INTEGRITY_NAME.split(' ')[0];
+
+// Dezelfde belofte staat in de rode band op /club/gedragscode/ en in de
+// privacyverklaring. Verandert hier iets, dan daar ook.
+const steps = [
+  {
+    title: `${firstName} leest je melding`,
+    text: 'Alleen zij. Het bestuur en de trainers krijgen ze niet te zien, en op de server van de club blijft er niets van staan.',
+  },
+  {
+    title: 'Ze neemt contact met je op',
+    text: 'Binnen een week, als je een mailadres of nummer achterliet. Liet je niets achter, dan kan ze je niet bereiken en hoor je ook niet hoe het verder gaat. Dat is jouw keuze en dat mag.',
+  },
+  {
+    title: 'Jullie bekijken samen wat je wil',
+    text: `Misschien wil je gewoon dat iemand het weet. Misschien wil je dat er iets verandert. ${firstName} doet niets achter je rug, tenzij het nodig is om iemand te beschermen.`,
+  },
+  {
+    title: 'Ze helpt je verder als dat nodig is',
+    text: `${firstName} is geen hulpverlener, maar ze kent de weg: naar hulpverlening, naar het Meldpunt Integriteit van Badminton Vlaanderen, of naar de politie als het zover komt. Ze blijft het opvolgen.`,
+  },
+];
+---
+
+<Layout
+  title="Iets melden"
+  description="Meld een voorval van grensoverschrijdend gedrag bij BC Landegem. Je melding komt alleen bij het Aanspreekpunt Integriteit terecht; hier lees je wat er dan gebeurt."
+>
+  <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
+    <RailHeading
+      title="Iets melden"
+      intro={`Zit je met iets dat in de club gebeurd is en niet door de beugel kan? Hier kan je dat kwijt. Je melding gaat rechtstreeks naar ${firstName}, ons aanspreekpunt integriteit. Niemand anders leest ze.`}
+    />
+
+    {/* Bij wie komt dit terecht */}
+    <section class="mt-12 max-w-3xl pl-10">
+      <Heading>Wie leest dit?</Heading>
+      <p class="mt-4 leading-relaxed text-ink-700">
+        {INTEGRITY_NAME}. Zij is het aanspreekpunt integriteit van de club en zit niet in het
+        bestuur. Wat je hier schrijft, komt als mail bij haar aan en blijft bij haar.
+        <Link href={url('/club/aanspreekpunt-integriteit/')}>Op haar pagina</Link> stelt ze zich
+        voor.
+      </p>
+      <p class="mt-4 leading-relaxed text-ink-700">
+        Gaat het over {firstName} zelf, of praat je liever met iemand van buiten de club, dan kan
+        je terecht bij het
+        <Link href="https://badminton.vlaanderen/meldpunt-integriteit/">Meldpunt Integriteit van Badminton Vlaanderen</Link>.
+        Bellen kan ook, naar <Link href="tel:1712">1712</Link>. Dat is gratis en je hoeft je naam
+        niet te zeggen.
+      </p>
+    </section>
+
+    {/* Wat er dan gebeurt: de vier stappen, op de rail zoals de gedragscode */}
+    <section class="mt-16">
+      <Heading class="pl-10">Wat er daarna gebeurt</Heading>
+      <div class="relative mt-8">
+        <span class="absolute bottom-6 left-[6px] top-6 w-1 -translate-x-1/2 rounded-full bg-club-500" aria-hidden="true"></span>
+        <ol class="max-w-3xl">
+          {steps.map((step, i) => (
+            <li class="relative border-b border-ink-950/10 py-8 pl-10 first:border-t">
+              <Dot top="top-10" />
+              <p class="type-label text-xs text-club-700">Stap {i + 1}</p>
+              <h3 class="type-display mt-1 text-2xl text-ink-950">{step.title}</h3>
+              <p class="mt-3 leading-relaxed text-ink-700">{step.text}</p>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+
+    <ReportForm />
+  </div>
+
+  <section class="border-y-8 border-club-800 bg-club-600 text-white">
+    <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-6 px-4 py-12">
+      <div class="flex-[1_1_28rem]">
+        <Heading color="inherit">Liever gewoon eens praten?</Heading>
+        <p class="mt-2 max-w-xl text-xl font-bold text-white">
+          {firstName} is er vaak op zondag-, maandag- en woensdagavond. Spreek haar gerust aan in
+          de zaal.
+        </p>
+      </div>
+      <a
+        href={url('/club/aanspreekpunt-integriteit/')}
+        class="type-label rounded-full bg-white px-7 py-3.5 text-sm text-club-600 transition-colors hover:bg-club-50"
+      >
+        Over {firstName}
+      </a>
+    </div>
+  </section>
+</Layout>

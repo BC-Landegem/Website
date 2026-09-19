@@ -128,6 +128,13 @@ const unwanted = [
               Lees haar verhaal
             </a>
           </p>
+          {/* De meldknop: het formulier komt alleen bij haar terecht */}
+          <a
+            href={url('/club/melden/')}
+            class="type-label mt-4 inline-flex items-center rounded-full bg-white px-5 py-2.5 text-xs text-club-600 transition-colors hover:bg-club-50"
+          >
+            Iets melden
+          </a>
         </li>
         <li>
           <p class="type-label text-xs text-white">In de club</p>
@@ -163,7 +170,9 @@ const unwanted = [
 
       <p class="mt-8 max-w-2xl text-sm leading-relaxed text-white">
         Elke melding wordt vertrouwelijk behandeld. Je beslist mee wat er met je verhaal gebeurt:
-        er wordt geen stap gezet zonder dat je het weet.
+        er wordt geen stap gezet zonder jou, tenzij dat nodig is om iemand te beschermen. Wat er
+        precies met een melding gebeurt, lees je stap voor stap op
+        <a href={url('/club/melden/')} class="font-semibold underline hover:text-club-100">de meldpagina</a>.
       </p>
     </div>
   </section>

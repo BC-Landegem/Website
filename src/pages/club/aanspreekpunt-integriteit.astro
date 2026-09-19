@@ -3,6 +3,7 @@ import { Image } from 'astro:assets';
 import Layout from '../../layouts/Layout.astro';
 import RailHeading from '../../components/RailHeading.astro';
 import portrait from '../../assets/api.jpg';
+import { url } from '../../lib/url';
 ---
 
 <Layout
@@ -65,10 +66,24 @@ import portrait from '../../assets/api.jpg';
       </p>
       <p>
         Op zondag-, maandag- en/of woensdagavond ben ik vaak aanwezig in de sporthal en kan je mij
-        persoonlijk aanspreken. Maar je kan me gerust ook een mailtje
-        sturen: <a href="mailto:lieselot_van_haute@hotmail.com" class="font-semibold break-words text-club-700 underline hover:text-club-800">lieselot_van_haute@hotmail.com</a>
+        persoonlijk aanspreken. Schrijf je het liever op, dan kan dat via het meldformulier
+        hieronder. Wat je daar schrijft, komt rechtstreeks bij mij terecht en bij niemand anders.
       </p>
       <p>Vele groetjes,<br />Lieselot</p>
+    </div>
+
+    {/* De knop staat onder de brief, niet erin: de brief is Lieselots stem, de
+        knop is die van de club. Het formulier komt op hetzelfde adres uit. */}
+    <div class="mt-10 max-w-3xl pl-10">
+      <a
+        href={url('/club/melden/')}
+        class="type-label inline-flex items-center rounded-full bg-club-600 px-7 py-3.5 text-sm text-white transition-colors hover:bg-club-700"
+      >
+        Iets melden
+      </a>
+      <p class="mt-3 text-sm text-ink-500">
+        Je leest er ook stap voor stap wat er daarna gebeurt.
+      </p>
     </div>
   </div>
 </Layout>

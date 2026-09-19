@@ -88,6 +88,7 @@ aanraken.
 | Kalenderbronnen en -kleuren | `src/data/calendar.ts` | `/kalender/` en de events op de homepage |
 | App-naam, offline schil, snelkoppelingen | `src/data/pwa.ts` | Manifest en service worker (iconen genereer je apart) |
 | Contactformulier: endpoint, Turnstile-sleutel, clubadres | `src/data/contact.ts` | Het formulier op `/club/contact/` — zie Databronnen |
+| Meldformulier: endpoint, naam en adres van het Aanspreekpunt Integriteit | `src/data/contact.ts` | `/club/melden/`, de bedankpagina en de uitwijkadressen — de ontvanger zelf staat in de Laravel-config, zie Databronnen |
 | Kleuren en typografie | `src/styles/global.css` (`@theme`) | De hele site — voor het clubrood eerst het kleurlab, zie hieronder |
 | Losse tekst | De `.astro`-pagina zelf | Alleen die pagina |
 
@@ -210,6 +211,34 @@ dit op localhost, op github.io en na de domeinswitch werkt zonder aanpassing.
 > de server. Zet je hem aan, dan moet de bijhorende `TURNSTILE_SECRET` mee aan de
 > Laravel-kant: maar één van de twee betekent ofwel geen bescherming, ofwel dat
 > elke inzending geweigerd wordt.
+
+**Het meldformulier** — `/club/melden/` post naar een *tweede* endpoint in dezelfde
+Laravel-app, `https://intra.bclandegem.be/api/melding` (instelbaar via
+`PUBLIC_REPORT_ENDPOINT`). Zelfde mechaniek als het contactformulier, maar een
+eigen route met de ontvanger hard in de config: een melding over grensoverschrijdend
+gedrag mag nooit bij het bestuur belanden, en een bestemming die de client kiest is
+precies de bug die dat ooit laat gebeuren. Het contract dat de twee kanten
+bijeenhoudt:
+
+| | Contactformulier (`/api/contact`) | Meldformulier (`/api/melding`) |
+|---|---|---|
+| Velden | `name`, `email`, `message` — alle verplicht | `message` verplicht (max 10 000, en `maxlength` op het tekstvak staat daaraan gelijk); `name` (max 100) en `contact` (max 190, vrije tekst: e-mail óf telefoon) optioneel |
+| Anti-spam | honeypot `website` (stil 200 bij inhoud), `loaded_at` (tijdslot), 3 per IP per uur, Turnstile `cf-turnstile-response` met `action=contact` | idem, Turnstile-`action=melding` (wordt echt gecontroleerd) en een eigen emmer van 3 per IP per uur |
+| Turnstile onbereikbaar | dicht | **door**, met `[ongeverifieerd]` in het onderwerp |
+| Terug | `return_ok` / `return_error` tegen een allowlist van origins | idem; standaard `/club/melden/bedankt/` en `/club/melden/?error=<code>` — de site toont twee boodschappen: `validation`/`bot` → probeer opnieuw; al de rest → niet aangekomen, spreek het aanspreekpunt aan |
+| Ontvanger | `info@bclandegem.be` | het adres van het Aanspreekpunt Integriteit, **alleen uit de config en zonder standaardwaarde**, nooit uit het request; geen CC/BCC naar het bestuur. Staat het leeg, dan komt de site terug met `?error=unavailable` |
+| Onderwerp | `[Website] Bericht van <naam>` | `[Melding] <dd-mm-jjjj uu:mm>` — nooit de naam (die staat in de notificatie op een vergrendeld scherm); vast voorvoegsel voor een mailfilter |
+| Reply-To | de bezoeker | alleen als `contact` op een e-mailadres lijkt; anders géén Reply-To |
+| In de mail | naam, e-mail, bericht, tijdstip | bericht, naam en `contact` als ingevuld, tijdstip — **geen IP-adres, geen user-agent, geen Turnstile-details**: bij een anonieme melding breekt dat de anonimiteit |
+| Bewaring | mail-only | mail-only, en ook **niet in het Laravel-log** (geen `Log::info` met de inhoud) |
+| Bevestiging naar de inzender | geen | geen — een kopie van de melding in de inbox van een kind op een gedeelde computer is een risico, geen service |
+| In de browser | velden komen bij `?error=` terug uit `sessionStorage` | **niets**: `autocomplete="off"` op het formulier, geen storage; een mislukte inzending is het verhaal kwijt, en dat staat zo op het formulier |
+
+> Het mailadres van het aanspreekpunt staat **nergens op de site** (op haar vraag);
+> het formulier is de enige schriftelijke weg en de ontvanger staat alleen in de
+> Laravel-config. Wisselt de persoon, dan verandert `INTEGRITY_NAME` in
+> `src/data/contact.ts`, de tekst op `/club/aanspreekpunt-integriteit/` én die
+> config-regel. Vergeet je de laatste, dan post het formulier stil naar het oude adres.
 
 **De oude Joomla-site** — de enige bron die *eenmalig* is en een vervaldatum heeft.
 De databasedump staat in `scraped/` en blijft **buiten git** (zie `.gitignore`): hij

@@ -1,0 +1,62 @@
+---
+// Landing na een geslaagde melding: de Laravel-app op intra.bclandegem.be
+// stuurt hierheen terug. Bewust een eigen pagina en niet die van het
+// contactformulier: die zegt "spring eens binnen in de zaal", en dat is voor
+// wie net iets over die zaal meldde een pijnlijke zin. Hier herhalen we de
+// belofte van /club/melden/ in de verleden tijd, zonder namen van het bestuur.
+import Layout from '../../../layouts/Layout.astro';
+import RailHeading from '../../../components/RailHeading.astro';
+import Link from '../../../components/Link.astro';
+import { INTEGRITY_NAME } from '../../../data/contact';
+import { url } from '../../../lib/url';
+
+const firstName = INTEGRITY_NAME.split(' ')[0];
+---
+
+<Layout
+  title={`Je melding is bij ${firstName}`}
+  description="Je melding aan het Aanspreekpunt Integriteit van BC Landegem is verstuurd."
+  noindex
+>
+  <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
+    <RailHeading
+      title={`Je melding is bij ${firstName}`}
+      intro="Bedankt om dit op te schrijven. Dat is niet niks."
+    />
+
+    <section class="mt-12 max-w-3xl space-y-4 pl-10 leading-relaxed text-ink-700">
+      <p>
+        Alleen {firstName} leest ze. Liet je een mailadres of nummer achter, dan hoor je binnen
+        een week van haar. Ze luistert eerst, en dan bekijken jullie samen wat je wil dat er
+        gebeurt. Ze doet niets achter je rug, tenzij het nodig is om iemand te beschermen.
+      </p>
+      <p>
+        Liet je niets achter, dan kan ze je niet bereiken. Wil je later toch weten hoe het verder
+        ging, spreek haar dan aan in de zaal, of
+        <Link href={url('/club/melden/')}>doe een nieuwe melding</Link> met een mailadres of nummer
+        erbij.
+      </p>
+      <p>
+        Wil je nu met iemand praten, bel dan <Link href="tel:1712">1712</Link>. Dat is gratis en je
+        hoeft je naam niet te zeggen.
+      </p>
+    </section>
+
+    <section class="mt-12 pl-10">
+      <div class="flex flex-wrap gap-4">
+        <a
+          href={url('/club/aanspreekpunt-integriteit/')}
+          class="type-label inline-flex items-center gap-2 rounded-full border-2 border-ink-950 px-7 py-3 text-sm text-ink-950 transition-colors hover:border-club-600 hover:text-club-600"
+        >
+          Over {firstName}
+        </a>
+        <a
+          href={url('/')}
+          class="type-label inline-flex items-center gap-2 rounded-full border-2 border-ink-950/20 px-7 py-3 text-sm text-ink-950 transition-colors hover:border-club-600 hover:text-club-600"
+        >
+          Terug naar de startpagina
+        </a>
+      </div>
+    </section>
+  </div>
+</Layout>

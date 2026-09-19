@@ -1,0 +1,213 @@
+---
+// Het meldformulier voor grensoverschrijdend gedrag. Dezelfde mechaniek als
+// ContactForm.astro (native form-POST naar intra.bclandegem.be, redirect terug,
+// honeypot, tijdslot, Turnstile), maar bewust een eigen component en een eigen
+// endpoint: andere ontvanger, andere velden, andere beloftes. Wat hier binnenkomt
+// gaat alleen naar het Aanspreekpunt Integriteit, nooit naar het bestuur.
+//
+// Alleen het verhaal is verplicht. Naam en een manier om je te bereiken zijn
+// optioneel: verplichte identificatie is de grootste drempel voor precies de
+// meldingen die we willen binnenkrijgen. De prijs is meer spam voor het
+// aanspreekpunt, en dat is uitgesproken en aanvaard.
+import Heading from './Heading.astro';
+import Link from './Link.astro';
+import { REPORT_ENDPOINT, TURNSTILE_SITE_KEY, INTEGRITY_NAME } from '../data/contact';
+import { url } from '../lib/url';
+
+const thanksPath = url('/club/melden/bedankt/');
+const reportPath = url('/club/melden/');
+const origin = Astro.site?.origin ?? 'https://bc-landegem.github.io';
+const firstName = INTEGRITY_NAME.split(' ')[0];
+
+// Er is geen mailadres als uitwijk: het aanspreekpunt wil haar adres niet op de
+// site. Faalt het versturen, dan blijven de zaal en het Meldpunt Integriteit
+// van Badminton Vlaanderen over.
+//
+// De tekst wordt nergens bewaard, ook niet tijdelijk in de browser. Het
+// contactformulier zet de velden bij een fout terug uit sessionStorage; hier
+// niet: een melding die achterblijft op een gedeelde computer is hetzelfde
+// risico als de bevestigingsmail die er bewust niet is. Daarom ook
+// autocomplete="off" op het hele formulier — dat zet ook het terugzetten van
+// velden bij "vorige pagina" uit. De prijs is dat een mislukte inzending het
+// verhaal kwijt is; de maxlength op het tekstvak is daarom gelijk aan de
+// serverlimiet, zodat een validatiefout op lengte niet kán voorkomen.
+
+// Volledige klassennamen, want Tailwind leest de broncode statisch.
+const field =
+  'mt-2 w-full border-2 border-ink-950/20 bg-white px-3 py-2.5 text-sm text-ink-950 transition-colors hover:border-club-600';
+const label = 'type-label block text-xs text-ink-500';
+---
+
+<section id="formulier" class="mt-16 max-w-3xl scroll-mt-28 pl-10">
+  <Heading size="small">Schrijf het hier op</Heading>
+
+  <p class="mt-4 leading-relaxed text-ink-700">
+    In je eigen woorden. Het mag kort zijn en het hoeft niet af te zijn, {firstName} vraagt wel
+    door als iets niet duidelijk is.
+  </p>
+
+  {/* Verschijnen alleen wanneer de server ons terugstuurde met ?error=<code>.
+      Twee boodschappen, niet zes: voor de melder telt niet óf Cloudflare of SMTP
+      de boosdoener was, maar of hij iets anders moet doen.
+      - unavailable, mail, throttle, captcha (en elke onbekende code): de melding
+        is níét aangekomen en opnieuw proberen helpt niet — dan de zaal.
+      - validation, bot: er is niets misgelopen, enkel te snel of leeg
+        verstuurd. Dáár hoort het alternatief niet bij, anders wordt een
+        typfout onnodig dramatisch. */}
+  <p
+    id="report-error-failed"
+    hidden
+    class="mt-6 border-2 border-club-500 bg-club-50 p-4 font-medium text-club-800"
+  >
+    Je bericht is niet aangekomen. Spreek {firstName} aan in de zaal, of ga naar het <a
+      href="https://badminton.vlaanderen/meldpunt-integriteit/"
+      target="_blank"
+      rel="noopener"
+      class="underline">Meldpunt Integriteit van Badminton Vlaanderen</a>.
+  </p>
+  <p
+    id="report-error-retry"
+    hidden
+    class="mt-6 border-2 border-ink-950/20 bg-feather-100 p-4 text-sm font-medium text-ink-700"
+  >
+    Dat ging niet door: vul een bericht in, of wacht even en probeer opnieuw.
+  </p>
+
+  {/* Offline is de knop zinloos: de POST vertrekt toch niet. Zonder mailadres
+      als uitwijk blijft er één eerlijk advies: schrijf gerust al, en verstuur
+      zodra er weer verbinding is. */}
+  <p
+    id="report-offline"
+    hidden
+    class="mt-6 border-2 border-ink-950/20 bg-feather-100 p-4 text-sm font-medium text-ink-700"
+  >
+    Je hebt op dit moment geen internet, dus versturen lukt nog niet. Je kan wel al schrijven. Laat
+    deze pagina open, dan werkt de knop weer zodra je verbinding hebt.
+  </p>
+
+  <form id="report-form" action={REPORT_ENDPOINT} method="post" autocomplete="off" class="mt-6">
+    <input type="hidden" name="return_ok" value={new URL(thanksPath, origin).href} />
+    <input type="hidden" name="return_error" value={new URL(reportPath, origin).href} />
+    <input type="hidden" name="loaded_at" value="" />
+
+    {/* Honeypot: buiten beeld en buiten de tabvolgorde, dus een mens komt er
+        nooit. Een bot die blind alle velden invult wel. */}
+    <div class="absolute left-[-9999px] h-px w-px overflow-hidden" aria-hidden="true">
+      <label for="report-website">Laat dit veld leeg</label>
+      <input id="report-website" type="text" name="website" tabindex="-1" autocomplete="off" />
+    </div>
+
+    <p class="text-sm text-ink-500">
+      Wat je hier typt, wordt nergens bewaard. Sluit je de pagina of loopt het versturen mis,
+      dan is het weg.
+    </p>
+
+    <div class="mt-4">
+      <label for="report-message" class={label}>Wat is er gebeurd?</label>
+      {/* maxlength gelijk aan de serverlimiet — zie het commentaar bovenaan. */}
+      <textarea id="report-message" name="message" required rows="8" maxlength="10000" class={field}
+      ></textarea>
+    </div>
+
+    <div class="mt-5 grid gap-5 sm:grid-cols-2">
+      <div>
+        <label for="report-name" class={label}>
+          Je naam <span class="text-ink-500/70">(niet verplicht)</span>
+        </label>
+        <input id="report-name" name="name" type="text" maxlength="100" autocomplete="off" class={field} />
+      </div>
+      <div>
+        <label for="report-contact" class={label}>
+          Waar kan {firstName} je bereiken? <span class="text-ink-500/70">(niet verplicht)</span>
+        </label>
+        <input
+          id="report-contact"
+          name="contact"
+          type="text"
+          maxlength="190"
+          autocomplete="off"
+          aria-describedby="report-contact-help"
+          class={field}
+        />
+        <p id="report-contact-help" class="mt-2 text-sm text-ink-500">
+          Een mailadres of een gsm-nummer. Zonder kan ze je niet antwoorden.
+        </p>
+      </div>
+    </div>
+
+    {
+      TURNSTILE_SITE_KEY && (
+        <div
+          class="cf-turnstile mt-5"
+          data-sitekey={TURNSTILE_SITE_KEY}
+          data-action="melding"
+          data-theme="light"
+        />
+      )
+    }
+
+    <div class="mt-6">
+      <button
+        id="report-submit"
+        type="submit"
+        class="type-label rounded-full bg-club-600 px-7 py-3.5 text-sm text-white transition-colors hover:bg-club-700 disabled:cursor-not-allowed disabled:bg-ink-500"
+      >
+        Verstuur je melding
+      </button>
+    </div>
+
+    <p class="mt-4 text-xs text-ink-500">
+      Je melding gaat als mail rechtstreeks naar {firstName}. De club bewaart ze niet en het
+      bestuur ziet ze niet. Hoe we met je gegevens omgaan staat in de <Link
+        href={url('/club/privacy/')}
+        class="text-xs">privacyverklaring</Link>.
+    </p>
+  </form>
+</section>
+
+{
+  TURNSTILE_SITE_KEY && (
+    <script is:inline async defer src="https://challenges.cloudflare.com/turnstile/v0/api.js" />
+  )
+}
+
+<script is:inline define:vars={{ thanksPath, reportPath }}>
+  (() => {
+    const form = document.getElementById('report-form');
+    if (!form) return;
+    const at = (name) => form.querySelector('[name="' + name + '"]');
+    const submit = document.getElementById('report-submit');
+    const offline = document.getElementById('report-offline');
+
+    // Het tijdslot: houdt de domme bots tegen die binnen de seconde posten. Het
+    // echte werk doen Turnstile en de rate limit van de server.
+    at('loaded_at').value = String(Date.now());
+
+    // De server kent een allowlist van origins; wij vertellen hem op welke we
+    // staan, zodat dit op localhost, github.io en na de domeinswitch werkt.
+    at('return_ok').value = location.origin + thanksPath;
+    at('return_error').value = location.origin + reportPath;
+
+    // Kwam de melder terug met ?error=<code>, toon dan de juiste van de twee
+    // boodschappen en haal de code weer uit de adresbalk. Er wordt bewust niets
+    // teruggezet in de velden: zie het commentaar bovenaan.
+    const params = new URLSearchParams(location.search);
+    if (params.has('error')) {
+      const retry = ['validation', 'bot'].includes(params.get('error'));
+      document.getElementById(retry ? 'report-error-retry' : 'report-error-failed').hidden = false;
+      params.delete('error');
+      const rest = params.toString();
+      history.replaceState(null, '', location.pathname + (rest ? '?' + rest : '') + '#formulier');
+    }
+
+    // Offline is de knop een leugen: de POST vertrekt niet.
+    const sync = () => {
+      const down = navigator.onLine === false;
+      offline.hidden = !down;
+      submit.disabled = down;
+    };
+    sync();
+    addEventListener('online', sync);
+    addEventListener('offline', sync);
+  })();
+</script>

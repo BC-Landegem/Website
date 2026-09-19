@@ -61,6 +61,15 @@ const year = new Date().getFullYear();
       <p class="text-sm leading-relaxed">
         Badmintonclub Landegem. Recreatief en competitief badminton voor jong en oud, sinds 1987.
       </p>
+      {/* De meldknop staat op elke pagina, hier en niet in de header: daar zou
+          hij concurreren met "Word lid!", en twee rode knoppen die tegen elkaar
+          schreeuwen doen allebei minder goed hun werk. */}
+      <a
+        href={url('/club/melden/')}
+        class="type-label mt-5 inline-flex items-center rounded-full border-2 border-feather-50/40 px-5 py-2.5 text-xs text-white transition-colors hover:border-club-400 hover:text-club-300"
+      >
+        Iets melden
+      </a>
     </div>
     <div>
       <h2 class="type-label mb-3 text-xs text-white">Waar we spelen</h2>
