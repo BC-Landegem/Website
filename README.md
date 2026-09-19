@@ -306,6 +306,23 @@ node scripts/archive-conversion.mjs # die artikels omzetten naar src/content/arc
 python scripts/scrape-champions/scrape_champions.py  # kampioenstitels ophalen bij toernooi.nl — Python, zie de README in die map
 ```
 
+`intra-snapshot.mjs` schrijft het hele voorbeeld weg, inclusief de spelregels die
+per seizoen verschillen: de puntenschaal (`points_per_set`, 15 sinds 2026-2027) en
+de exacte basispunten op vier decimalen, die het apart bij
+`/seasons/{id}/statistics?members=0` haalt omdat de stand er maar twee geeft.
+
+> **Eén ding kan het script niet weten: met welk lotingsysteem er die avond
+> geloot is.** De API geeft dat veld niet, dus leidt het script het af uit de
+> maand van de speeldag — tot nieuwjaar "wisselende tegenstanders", vanaf januari
+> "sterktegroepen". Dat is een clubafspraak en geen code: in de Laravel-app is
+> `seasons.draw_system` één kolom die een beheerder met de hand omzet. Wijzigt de
+> afspraak, dan moeten het script én de tekst op `/intraclub/zo-werkt-het/` mee.
+
+Het script controleert zichzelf: het herberekent elk dagcijfer uit de setstanden
+en vergelijkt dat met `day_score` van de API. Wijken ze meer dan een afronding af,
+dan stopt het met een foutmelding, want dan zijn de rekenregels in de
+clubapplicatie veranderd en klopt de uitlegpagina niet meer.
+
 `archive-images.mjs` is idempotent: wat al in `public/archief/beelden/` staat wordt
 overgeslagen, dus opnieuw draaien pikt alleen op wat nog ontbreekt. Het heeft de
 SQL-dump nodig en stopt met een foutmelding als die er niet is.

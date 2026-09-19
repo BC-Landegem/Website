@@ -1,13 +1,16 @@
 {
- "frozenOn": "2026-08-31",
- "seasonId": 7,
- "matchdaysPlayed": 17,
- "playersInRanking": 88,
+ "frozenOn": "2026-09-19",
+ "seasonId": 8,
+ "pointsPerSet": 15,
+ "drawSystem": "varying",
+ "matchdaysPlayed": 1,
+ "playersInRanking": 89,
  "matchday": {
-  "id": "56",
-  "number": 17,
-  "date": "2026-05-20",
-  "averageAbsent": 15.84
+  "id": "57",
+  "number": 1,
+  "date": "2026-09-09",
+  "averageAbsent": 10.07,
+  "playersDrawnOut": 0
  },
  "players": [
   {
@@ -15,792 +18,840 @@
    "firstName": "Geert",
    "name": "De Baets",
    "rank": 1,
-   "average": 20.12,
+   "average": 14.5,
    "difference": 0,
-   "previousAverage": 20.283921568627452,
+   "basePoints": 14.0087,
+   "previousAverage": 14.0087,
    "bonus": 1,
    "rankOnEvening": 1
-  },
-  {
-   "id": "18",
-   "firstName": "Steven",
-   "name": "De Buck",
-   "rank": 2,
-   "average": 19.6,
-   "difference": 0,
-   "previousAverage": 19.596078431372547,
-   "bonus": 1,
-   "rankOnEvening": 2
-  },
-  {
-   "id": "48",
-   "firstName": "Lennart",
-   "name": "Martens",
-   "rank": 3,
-   "average": 19.37,
-   "difference": 0,
-   "previousAverage": 19.274117647058826,
-   "bonus": 2,
-   "rankOnEvening": 3
-  },
-  {
-   "id": "49",
-   "firstName": "Lowie",
-   "name": "Meganck",
-   "rank": 4,
-   "average": 19.28,
-   "difference": 0,
-   "previousAverage": 19.257254901960785,
-   "bonus": 1,
-   "rankOnEvening": 4
-  },
-  {
-   "id": "83",
-   "firstName": "Christophe",
-   "name": "Verbeke",
-   "rank": 5,
-   "average": 18.84,
-   "difference": 0,
-   "previousAverage": 18.771764705882354,
-   "bonus": 2,
-   "rankOnEvening": 5
   },
   {
    "id": "127",
    "firstName": "Jeroen",
    "name": "Huygebaert",
-   "rank": 6,
-   "average": 18.69,
-   "difference": 3,
-   "previousAverage": 18.554117647058824,
+   "rank": 2,
+   "average": 14.5,
+   "difference": 0,
+   "basePoints": 14.0082,
+   "previousAverage": 14.0082,
    "bonus": 5,
-   "rankOnEvening": 7
+   "rankOnEvening": 5
   },
   {
    "id": "4",
    "firstName": "Jana",
    "name": "Boeykens",
-   "rank": 7,
-   "average": 18.61,
+   "rank": 3,
+   "average": 14.5,
    "difference": 0,
-   "previousAverage": 18.724313725490195,
+   "basePoints": 14.0081,
+   "previousAverage": 14.0081,
    "bonus": 3,
    "rankOnEvening": 6
   },
   {
-   "id": "73",
-   "firstName": "Frank",
-   "name": "Van Hove",
-   "rank": 8,
-   "average": 18.59,
-   "difference": 2,
-   "previousAverage": 18.507058823529412,
-   "bonus": 2,
-   "rankOnEvening": 8
+   "id": "7",
+   "firstName": "Gert",
+   "name": "Brantegem",
+   "rank": 4,
+   "average": 14.5,
+   "difference": 0,
+   "basePoints": 14.0057,
+   "previousAverage": 14.0057,
+   "bonus": 0,
+   "rankOnEvening": 21
   },
   {
-   "id": "93",
-   "firstName": "Sigrid",
-   "name": "Wille",
-   "rank": 11,
-   "average": 18.53,
-   "difference": 1,
-   "previousAverage": 18.423921568627453,
-   "bonus": 7,
-   "rankOnEvening": 10
+   "id": "119",
+   "firstName": "Robin",
+   "name": "De Bruin",
+   "rank": 5,
+   "average": 14.5,
+   "difference": 0,
+   "basePoints": 14.0048,
+   "previousAverage": 14.0048,
+   "bonus": 5,
+   "rankOnEvening": 24
+  },
+  {
+   "id": "124",
+   "firstName": "Evert",
+   "name": "Huvenne",
+   "rank": 6,
+   "average": 14.5,
+   "difference": 0,
+   "basePoints": 14.0028,
+   "previousAverage": 14.0028,
+   "bonus": 5,
+   "rankOnEvening": 35
   },
   {
    "id": "40",
    "firstName": "Lien",
    "name": "Kerckvoorde",
-   "rank": 12,
-   "average": 18.39,
-   "difference": -1,
-   "previousAverage": 18.4521568627451,
+   "rank": 7,
+   "average": 14.19,
+   "difference": 0,
+   "basePoints": 14.0076,
+   "previousAverage": 14.0076,
    "bonus": 5,
    "rankOnEvening": 9
   },
   {
-   "id": "5",
-   "firstName": "Niels",
-   "name": "Bollaert",
-   "rank": 13,
-   "average": 18.34,
+   "id": "48",
+   "firstName": "Lennart",
+   "name": "Martens",
+   "rank": 8,
+   "average": 14.17,
    "difference": 0,
-   "previousAverage": 18.36,
+   "basePoints": 14.0085,
+   "previousAverage": 14.0085,
    "bonus": 2,
-   "rankOnEvening": 11
+   "rankOnEvening": 3
+  },
+  {
+   "id": "56",
+   "firstName": "Kevin",
+   "name": "Recollecte",
+   "rank": 9,
+   "average": 14.17,
+   "difference": 0,
+   "basePoints": 14.0024,
+   "previousAverage": 14.0024,
+   "bonus": 0,
+   "rankOnEvening": 37
+  },
+  {
+   "id": "146",
+   "firstName": "Thomas",
+   "name": "Debbaut",
+   "rank": 10,
+   "average": 14.17,
+   "difference": 0,
+   "basePoints": 14,
+   "previousAverage": 14,
+   "bonus": 5,
+   "rankOnEvening": 47
+  },
+  {
+   "id": "52",
+   "firstName": "Dirk",
+   "name": "Morel",
+   "rank": 11,
+   "average": 14,
+   "difference": 0,
+   "basePoints": 14.0072,
+   "previousAverage": 14.0072,
+   "bonus": 5,
+   "rankOnEvening": 12
+  },
+  {
+   "id": "57",
+   "firstName": "Jackie",
+   "name": "Snauwaert",
+   "rank": 12,
+   "average": 14,
+   "difference": 0,
+   "basePoints": 14.0065,
+   "previousAverage": 14.0065,
+   "bonus": 5,
+   "rankOnEvening": 17
+  },
+  {
+   "id": "139",
+   "firstName": "Bram",
+   "name": "Demaertelaere",
+   "rank": 13,
+   "average": 14,
+   "difference": 0,
+   "basePoints": 14.0031,
+   "previousAverage": 14.0031,
+   "bonus": 5,
+   "rankOnEvening": 33
   },
   {
    "id": "13",
    "firstName": "Pieterjan",
    "name": "Claeys",
    "rank": 14,
-   "average": 18.19,
+   "average": 13.84,
    "difference": 0,
-   "previousAverage": 18.29921568627451,
+   "basePoints": 14.0074,
+   "previousAverage": 14.0074,
    "bonus": 1,
-   "rankOnEvening": 12
+   "rankOnEvening": 10
   },
   {
    "id": "55",
    "firstName": "Ciska",
    "name": "Neyt",
    "rank": 15,
-   "average": 18.13,
+   "average": 13.84,
    "difference": 0,
-   "previousAverage": 18.098431372549015,
+   "basePoints": 14.0073,
+   "previousAverage": 14.0073,
    "bonus": 4,
-   "rankOnEvening": 13
+   "rankOnEvening": 11
   },
   {
-   "id": "52",
-   "firstName": "Dirk",
-   "name": "Morel",
+   "id": "76",
+   "firstName": "Luc",
+   "name": "Van Tornhout",
    "rank": 16,
-   "average": 18.12,
-   "difference": 1,
-   "previousAverage": 18.02901960784314,
-   "bonus": 5,
-   "rankOnEvening": 15
-  },
-  {
-   "id": "68",
-   "firstName": "Koen",
-   "name": "Van der Meulen",
-   "rank": 17,
-   "average": 18.08,
-   "difference": -1,
-   "previousAverage": 18.08470588235294,
-   "bonus": 4,
-   "rankOnEvening": 14
-  },
-  {
-   "id": "37",
-   "firstName": "Bart",
-   "name": "Ivens",
-   "rank": 18,
-   "average": 17.98,
-   "difference": 3,
-   "previousAverage": 17.88078431372549,
-   "bonus": 3,
-   "rankOnEvening": 17
-  },
-  {
-   "id": "98",
-   "firstName": "Jan",
-   "name": "Wylin",
-   "rank": 19,
-   "average": 17.92,
-   "difference": 8,
-   "previousAverage": 17.778039215686277,
-   "bonus": 5,
-   "rankOnEvening": 19
-  },
-  {
-   "id": "46",
-   "firstName": "Wim",
-   "name": "Maerevoet",
-   "rank": 20,
-   "average": 17.91,
-   "difference": 9,
-   "previousAverage": 17.728235294117646,
-   "bonus": 5,
-   "rankOnEvening": 20
-  },
-  {
-   "id": "87",
-   "firstName": "Cindy",
-   "name": "Vergult",
-   "rank": 21,
-   "average": 17.87,
-   "difference": -1,
-   "previousAverage": 17.921176470588236,
-   "bonus": 5,
-   "rankOnEvening": 16
-  },
-  {
-   "id": "59",
-   "firstName": "Gino",
-   "name": "Snoeck",
-   "rank": 22,
-   "average": 17.87,
-   "difference": 10,
-   "previousAverage": 17.685882352941178,
-   "bonus": 5,
-   "rankOnEvening": 21
-  },
-  {
-   "id": "61",
-   "firstName": "Lieven",
-   "name": "Tyvaert",
-   "rank": 25,
-   "average": 17.79,
-   "difference": 1,
-   "previousAverage": 17.79725490196078,
-   "bonus": 5,
-   "rankOnEvening": 18
-  },
-  {
-   "id": "54",
-   "firstName": "Laura",
-   "name": "Mussche",
-   "rank": 26,
-   "average": 17.76,
-   "difference": 7,
-   "previousAverage": 17.628235294117648,
-   "bonus": 4,
-   "rankOnEvening": 22
-  },
-  {
-   "id": "126",
-   "firstName": "Erben",
-   "name": "Nottebaert",
-   "rank": 30,
-   "average": 17.72,
-   "difference": 4,
-   "previousAverage": 17.561372549019605,
-   "bonus": 5,
-   "rankOnEvening": 23
-  },
-  {
-   "id": "92",
-   "firstName": "Kristof",
-   "name": "Wauters",
-   "rank": 32,
-   "average": 17.71,
-   "difference": 3,
-   "previousAverage": 17.555686274509807,
-   "bonus": 5,
-   "rankOnEvening": 24
-  },
-  {
-   "id": "88",
-   "firstName": "Evelien",
-   "name": "Verhelst",
-   "rank": 33,
-   "average": 17.67,
-   "difference": 3,
-   "previousAverage": 17.53294117647059,
-   "bonus": 2,
-   "rankOnEvening": 25
-  },
-  {
-   "id": "78",
-   "firstName": "Sander",
-   "name": "Vanderdrinck",
-   "rank": 37,
-   "average": 17.43,
+   "average": 13.84,
    "difference": 0,
-   "previousAverage": 17.514117647058825,
-   "bonus": 5,
-   "rankOnEvening": 26
-  },
-  {
-   "id": "137",
-   "firstName": "Dirk",
-   "name": "De Wulf",
-   "rank": 41,
-   "average": 17.18,
-   "difference": 3,
-   "previousAverage": 17.15137254901961,
-   "bonus": 5,
-   "rankOnEvening": 28
-  },
-  {
-   "id": "26",
-   "firstName": "Anneleen",
-   "name": "Devos",
-   "rank": 42,
-   "average": 17.13,
-   "difference": 4,
-   "previousAverage": 17.098431372549015,
-   "bonus": 5,
-   "rankOnEvening": 29
-  },
-  {
-   "id": "65",
-   "firstName": "Sylvie",
-   "name": "Van den Berge",
-   "rank": 45,
-   "average": 17.05,
-   "difference": 2,
-   "previousAverage": 17.0921568627451,
-   "bonus": 5,
-   "rankOnEvening": 30
+   "basePoints": 14.0064,
+   "previousAverage": 14.0064,
+   "bonus": 2,
+   "rankOnEvening": 18
   },
   {
    "id": "41",
    "firstName": "Peter",
    "name": "Keyngnaert",
-   "rank": 46,
-   "average": 17.05,
-   "difference": -5,
-   "previousAverage": 17.268627450980397,
+   "rank": 17,
+   "average": 13.84,
+   "difference": 0,
+   "basePoints": 14.0042,
+   "previousAverage": 14.0042,
    "bonus": 3,
-   "rankOnEvening": 27
+   "rankOnEvening": 26
+  },
+  {
+   "id": "20",
+   "firstName": "Stijn",
+   "name": "De Clercq",
+   "rank": 18,
+   "average": 13.84,
+   "difference": 0,
+   "basePoints": 14.0034,
+   "previousAverage": 14.0034,
+   "bonus": 5,
+   "rankOnEvening": 30
+  },
+  {
+   "id": "97",
+   "firstName": "Jacob",
+   "name": "Serruys",
+   "rank": 19,
+   "average": 13.67,
+   "difference": 0,
+   "basePoints": 14.0079,
+   "previousAverage": 14.0079,
+   "bonus": 3,
+   "rankOnEvening": 7
+  },
+  {
+   "id": "49",
+   "firstName": "Lowie",
+   "name": "Meganck",
+   "rank": 20,
+   "average": 13.5,
+   "difference": 0,
+   "basePoints": 14.0084,
+   "previousAverage": 14.0084,
+   "bonus": 1,
+   "rankOnEvening": 4
+  },
+  {
+   "id": "93",
+   "firstName": "Sigrid",
+   "name": "Wille",
+   "rank": 21,
+   "average": 13.5,
+   "difference": 0,
+   "basePoints": 14.0077,
+   "previousAverage": 14.0077,
+   "bonus": 7,
+   "rankOnEvening": 8
+  },
+  {
+   "id": "98",
+   "firstName": "Jan",
+   "name": "Wylin",
+   "rank": 22,
+   "average": 13.5,
+   "difference": 0,
+   "basePoints": 14.0069,
+   "previousAverage": 14.0069,
+   "bonus": 5,
+   "rankOnEvening": 15
+  },
+  {
+   "id": "129",
+   "firstName": "Quinten",
+   "name": "De Vos",
+   "rank": 23,
+   "average": 13.41,
+   "difference": 0,
+   "basePoints": 14.0061,
+   "previousAverage": 14.0061,
+   "bonus": 5,
+   "rankOnEvening": 19
+  },
+  {
+   "id": "68",
+   "firstName": "Koen",
+   "name": "Van der Meulen",
+   "rank": 24,
+   "average": 13.34,
+   "difference": 0,
+   "basePoints": 14.0071,
+   "previousAverage": 14.0071,
+   "bonus": 4,
+   "rankOnEvening": 13
+  },
+  {
+   "id": "90",
+   "firstName": "Filip",
+   "name": "Vydt",
+   "rank": 25,
+   "average": 13.34,
+   "difference": 0,
+   "basePoints": 14.0059,
+   "previousAverage": 14.0059,
+   "bonus": 5,
+   "rankOnEvening": 20
+  },
+  {
+   "id": "92",
+   "firstName": "Kristof",
+   "name": "Wauters",
+   "rank": 26,
+   "average": 13.34,
+   "difference": 0,
+   "basePoints": 14.0056,
+   "previousAverage": 14.0056,
+   "bonus": 5,
+   "rankOnEvening": 22
   },
   {
    "id": "17",
    "firstName": "Pascale",
    "name": "De Boever",
-   "rank": 48,
-   "average": 17.01,
-   "difference": 1,
-   "previousAverage": 17.04980392156863,
+   "rank": 27,
+   "average": 13.34,
+   "difference": 0,
+   "basePoints": 14.004,
+   "previousAverage": 14.004,
    "bonus": 7,
-   "rankOnEvening": 31
+   "rankOnEvening": 27
   },
   {
    "id": "125",
    "firstName": "Ian",
    "name": "McHale",
-   "rank": 50,
-   "average": 16.9,
-   "difference": 1,
-   "previousAverage": 16.796078431372546,
+   "rank": 28,
+   "average": 13.34,
+   "difference": 0,
+   "basePoints": 14.0038,
+   "previousAverage": 14.0038,
    "bonus": 5,
-   "rankOnEvening": 32
+   "rankOnEvening": 28
   },
   {
-   "id": "66",
-   "firstName": "Wim",
-   "name": "Van Der Heyden",
-   "rank": 51,
-   "average": 16.89,
-   "difference": 3,
-   "previousAverage": 16.648235294117647,
-   "bonus": 2,
-   "rankOnEvening": 34
+   "id": "18",
+   "firstName": "Steven",
+   "name": "De Buck",
+   "rank": 29,
+   "average": 13.17,
+   "difference": 0,
+   "basePoints": 14.0086,
+   "previousAverage": 14.0086,
+   "bonus": 1,
+   "rankOnEvening": 2
+  },
+  {
+   "id": "37",
+   "firstName": "Bart",
+   "name": "Ivens",
+   "rank": 30,
+   "average": 13.17,
+   "difference": 0,
+   "basePoints": 14.007,
+   "previousAverage": 14.007,
+   "bonus": 3,
+   "rankOnEvening": 14
   },
   {
    "id": "62",
    "firstName": "Eline",
    "name": "Van Cromphaut",
-   "rank": 53,
-   "average": 16.78,
-   "difference": -1,
-   "previousAverage": 16.74745098039216,
+   "rank": 31,
+   "average": 13,
+   "difference": 0,
+   "basePoints": 14.0035,
+   "previousAverage": 14.0035,
    "bonus": 5,
-   "rankOnEvening": 33
-  },
-  {
-   "id": "60",
-   "firstName": "Jean-Marie",
-   "name": "Telleir",
-   "rank": 55,
-   "average": 16.65,
-   "difference": 6,
-   "previousAverage": 16.45294117647059,
-   "bonus": 4,
-   "rankOnEvening": 40
-  },
-  {
-   "id": "136",
-   "firstName": "Filip",
-   "name": "Vanneste",
-   "rank": 56,
-   "average": 16.64,
-   "difference": 1,
-   "previousAverage": 16.540392156862744,
-   "bonus": 5,
-   "rankOnEvening": 37
-  },
-  {
-   "id": "139",
-   "firstName": "Bram",
-   "name": "Demaertelaere",
-   "rank": 57,
-   "average": 16.6,
-   "difference": 1,
-   "previousAverage": 16.498039215686276,
-   "bonus": 5,
-   "rankOnEvening": 38
-  },
-  {
-   "id": "16",
-   "firstName": "Sophie",
-   "name": "Danckaert",
-   "rank": 58,
-   "average": 16.59,
-   "difference": 1,
-   "previousAverage": 16.487450980392158,
-   "bonus": 7,
-   "rankOnEvening": 39
-  },
-  {
-   "id": "6",
-   "firstName": "Linda",
-   "name": "Bossier",
-   "rank": 59,
-   "average": 16.59,
-   "difference": -3,
-   "previousAverage": 16.546274509803922,
-   "bonus": 5,
-   "rankOnEvening": 35
-  },
-  {
-   "id": "124",
-   "firstName": "Evert",
-   "name": "Huvenne",
-   "rank": 60,
-   "average": 16.57,
-   "difference": -5,
-   "previousAverage": 16.54470588235294,
-   "bonus": 5,
-   "rankOnEvening": 36
+   "rankOnEvening": 29
   },
   {
    "id": "45",
    "firstName": "Laura",
    "name": "Maebe",
-   "rank": 61,
-   "average": 16.46,
-   "difference": 6,
-   "previousAverage": 16.2321568627451,
-   "bonus": 3,
-   "rankOnEvening": 43
-  },
-  {
-   "id": "14",
-   "firstName": "Bart",
-   "name": "Couck",
-   "rank": 62,
-   "average": 16.44,
-   "difference": 4,
-   "previousAverage": 16.304117647058824,
-   "bonus": 4,
-   "rankOnEvening": 42
-  },
-  {
-   "id": "122",
-   "firstName": "Thibault",
-   "name": "De Rynck",
-   "rank": 65,
-   "average": 16.39,
-   "difference": -3,
-   "previousAverage": 16.4521568627451,
-   "bonus": 5,
-   "rankOnEvening": 41
-  },
-  {
-   "id": "120",
-   "firstName": "Milan",
-   "name": "Laforce",
-   "rank": 71,
-   "average": 15.98,
+   "rank": 32,
+   "average": 13,
    "difference": 0,
-   "previousAverage": 15.939607843137253,
-   "bonus": 5,
-   "rankOnEvening": 44
+   "basePoints": 14.0027,
+   "previousAverage": 14.0027,
+   "bonus": 3,
+   "rankOnEvening": 36
   },
   {
-   "id": "72",
-   "firstName": "Lieselot",
-   "name": "Van Haute",
-   "rank": 72,
-   "average": 15.98,
-   "difference": 11,
-   "previousAverage": 15.68470588235294,
+   "id": "105",
+   "firstName": "Rein",
+   "name": "Vandeputte",
+   "rank": 33,
+   "average": 12.9,
+   "difference": 0,
+   "basePoints": 14.002,
+   "previousAverage": 14.002,
+   "bonus": 5,
+   "rankOnEvening": 40
+  },
+  {
+   "id": "88",
+   "firstName": "Evelien",
+   "name": "Verhelst",
+   "rank": 34,
+   "average": 12.84,
+   "difference": 0,
+   "basePoints": 14.0055,
+   "previousAverage": 14.0055,
+   "bonus": 2,
+   "rankOnEvening": 23
+  },
+  {
+   "id": "60",
+   "firstName": "Jean-Marie",
+   "name": "Telleir",
+   "rank": 35,
+   "average": 12.83,
+   "difference": 0,
+   "basePoints": 14.0033,
+   "previousAverage": 14.0033,
    "bonus": 4,
-   "rankOnEvening": 45
+   "rankOnEvening": 31
+  },
+  {
+   "id": "16",
+   "firstName": "Sophie",
+   "name": "Danckaert",
+   "rank": 36,
+   "average": 12.83,
+   "difference": 0,
+   "basePoints": 14.003,
+   "previousAverage": 14.003,
+   "bonus": 7,
+   "rankOnEvening": 34
+  },
+  {
+   "id": "59",
+   "firstName": "Gino",
+   "name": "Snoeck",
+   "rank": 37,
+   "average": 12.52,
+   "difference": 0,
+   "basePoints": 14.0066,
+   "previousAverage": 14.0066,
+   "bonus": 5,
+   "rankOnEvening": 16
   },
   {
    "id": "121",
    "firstName": "Caleb",
    "name": "Hautekeette",
-   "rank": 85,
-   "average": 15.62,
+   "rank": 38,
+   "average": 12.33,
    "difference": 0,
-   "previousAverage": 15.538823529411763,
+   "basePoints": 14.0003,
+   "previousAverage": 14.0003,
    "bonus": 5,
-   "rankOnEvening": 46
-  },
-  {
-   "id": "9",
-   "firstName": "Karen",
-   "name": "Buysse",
-   "rank": 86,
-   "average": 15.54,
-   "difference": 0,
-   "previousAverage": 15.512941176470587,
-   "bonus": 7,
-   "rankOnEvening": 47
+   "rankOnEvening": 44
   },
   {
    "id": "64",
    "firstName": "Ilse",
    "name": "Van De Walle",
-   "rank": 88,
-   "average": 14.69,
+   "rank": 39,
+   "average": 12.33,
    "difference": 0,
-   "previousAverage": 14.710980392156863,
+   "basePoints": 14,
+   "previousAverage": 14,
    "bonus": 7,
    "rankOnEvening": 48
+  },
+  {
+   "id": "136",
+   "firstName": "Filip",
+   "name": "Vanneste",
+   "rank": 40,
+   "average": 12.17,
+   "difference": 0,
+   "basePoints": 14.0032,
+   "previousAverage": 14.0032,
+   "bonus": 5,
+   "rankOnEvening": 32
+  },
+  {
+   "id": "122",
+   "firstName": "Thibault",
+   "name": "De Rynck",
+   "rank": 41,
+   "average": 12.17,
+   "difference": 0,
+   "basePoints": 14.0023,
+   "previousAverage": 14.0023,
+   "bonus": 5,
+   "rankOnEvening": 38
+  },
+  {
+   "id": "12",
+   "firstName": "Marieke",
+   "name": "Claes",
+   "rank": 42,
+   "average": 12.17,
+   "difference": 0,
+   "basePoints": 14.0012,
+   "previousAverage": 14.0012,
+   "bonus": 7,
+   "rankOnEvening": 42
+  },
+  {
+   "id": "117",
+   "firstName": "Sara",
+   "name": "Talloen",
+   "rank": 43,
+   "average": 12.17,
+   "difference": 0,
+   "basePoints": 14.0001,
+   "previousAverage": 14.0001,
+   "bonus": 7,
+   "rankOnEvening": 46
+  },
+  {
+   "id": "137",
+   "firstName": "Dirk",
+   "name": "De Wulf",
+   "rank": 85,
+   "average": 12,
+   "difference": 0,
+   "basePoints": 14.0047,
+   "previousAverage": 14.0047,
+   "bonus": 5,
+   "rankOnEvening": 25
+  },
+  {
+   "id": "120",
+   "firstName": "Milan",
+   "name": "Laforce",
+   "rank": 86,
+   "average": 12,
+   "difference": 0,
+   "basePoints": 14.0017,
+   "previousAverage": 14.0017,
+   "bonus": 5,
+   "rankOnEvening": 41
+  },
+  {
+   "id": "144",
+   "firstName": "Naut",
+   "name": "De Roo",
+   "rank": 87,
+   "average": 12,
+   "difference": 0,
+   "basePoints": 14.0004,
+   "previousAverage": 14.0004,
+   "bonus": 5,
+   "rankOnEvening": 43
+  },
+  {
+   "id": "143",
+   "firstName": "Lieselot",
+   "name": "Moons",
+   "rank": 88,
+   "average": 11.17,
+   "difference": 0,
+   "basePoints": 14.0021,
+   "previousAverage": 14.0021,
+   "bonus": 7,
+   "rankOnEvening": 39
+  },
+  {
+   "id": "9",
+   "firstName": "Karen",
+   "name": "Buysse",
+   "rank": 89,
+   "average": 11,
+   "difference": 0,
+   "basePoints": 14.0002,
+   "previousAverage": 14.0002,
+   "bonus": 7,
+   "rankOnEvening": 45
   }
  ],
  "courts": [
   {
    "players": [
-    "93",
-    "88",
-    "61",
-    "78"
-   ],
-   "sets": [
-    [
-     21,
-     11
-    ],
-    [
-     21,
-     18
-    ],
-    [
-     19,
-     21
-    ]
-   ]
-  },
-  {
-   "players": [
     "60",
-    "126",
-    "45",
-    "14"
+    "7",
+    "88",
+    "41"
    ],
    "sets": [
     [
-     21,
-     19
+     15,
+     13
     ],
     [
-     24,
-     22
+     7,
+     15
     ],
     [
-     18,
-     21
-    ]
-   ]
-  },
-  {
-   "players": [
-    "41",
-    "127",
-    "13",
-    "4"
-   ],
-   "sets": [
-    [
-     21,
-     19
-    ],
-    [
-     9,
-     21
-    ],
-    [
-     10,
-     21
-    ]
-   ]
-  },
-  {
-   "players": [
-    "65",
-    "136",
-    "72",
-    "17"
-   ],
-   "sets": [
-    [
-     17,
-     21
-    ],
-    [
-     21,
-     17
-    ],
-    [
-     11,
-     21
-    ]
-   ]
-  },
-  {
-   "players": [
-    "68",
-    "52",
-    "54",
-    "92"
-   ],
-   "sets": [
-    [
-     17,
-     21
-    ],
-    [
-     18,
-     21
-    ],
-    [
-     19,
-     21
-    ]
-   ]
-  },
-  {
-   "players": [
-    "120",
-    "125",
-    "46",
-    "121"
-   ],
-   "sets": [
-    [
-     17,
-     21
-    ],
-    [
-     21,
-     18
-    ],
-    [
-     12,
-     21
-    ]
-   ]
-  },
-  {
-   "players": [
-    "5",
-    "137",
-    "40",
-    "48"
-   ],
-   "sets": [
-    [
-     17,
-     21
-    ],
-    [
-     16,
-     21
-    ],
-    [
-     21,
+     13,
      15
     ]
    ]
   },
   {
    "players": [
-    "66",
-    "9",
-    "6",
-    "26"
+    "129",
+    "119",
+    "105",
+    "121"
    ],
    "sets": [
     [
-     21,
-     18
+     15,
+     7
     ],
     [
-     21,
-     14
+     17,
+     19
     ],
     [
-     21,
+     10,
+     15
+    ]
+   ]
+  },
+  {
+   "players": [
+    "92",
+    "94",
+    "68",
+    "13"
+   ],
+   "sets": [
+    [
+     15,
+     13
+    ],
+    [
+     10,
+     15
+    ],
+    [
+     13,
+     15
+    ]
+   ]
+  },
+  {
+   "players": [
+    "90",
+    "64",
+    "76",
+    "146"
+   ],
+   "sets": [
+    [
+     8,
+     15
+    ],
+    [
+     15,
+     13
+    ],
+    [
+     15,
+     11
+    ]
+   ]
+  },
+  {
+   "players": [
+    "20",
+    "17",
+    "12",
+    "52"
+   ],
+   "sets": [
+    [
+     15,
+     12
+    ],
+    [
+     11,
+     15
+    ],
+    [
+     15,
+     8
+    ]
+   ]
+  },
+  {
+   "players": [
+    "125",
+    "144",
+    "97",
+    "139"
+   ],
+   "sets": [
+    [
+     8,
+     15
+    ],
+    [
+     15,
+     12
+    ],
+    [
+     15,
+     10
+    ]
+   ]
+  },
+  {
+   "players": [
+    "40",
+    "59",
+    "56",
+    "18"
+   ],
+   "sets": [
+    [
+     14,
+     16
+    ],
+    [
+     15,
+     7
+    ],
+    [
+     15,
      13
     ]
    ]
   },
   {
    "players": [
-    "87",
-    "55",
-    "98",
-    "83"
+    "127",
+    "120",
+    "143",
+    "137"
    ],
    "sets": [
     [
-     14,
-     21
+     15,
+     5
     ],
     [
-     19,
-     21
+     15,
+     10
     ],
     [
-     18,
-     21
+     15,
+     5
     ]
    ]
   },
   {
    "players": [
-    "62",
-    "124",
-    "122",
-    "59"
+    "93",
+    "16",
+    "4",
+    "37"
    ],
    "sets": [
     [
-     18,
-     21
+     11,
+     15
+    ],
+    [
+     15,
+     9
     ],
     [
      13,
-     21
+     15
+    ]
+   ]
+  },
+  {
+   "players": [
+    "122",
+    "136",
+    "117",
+    "124"
+   ],
+   "sets": [
+    [
+     8,
+     15
     ],
     [
-     21,
-     12
+     8,
+     15
+    ],
+    [
+     15,
+     8
     ]
    ]
   },
   {
    "players": [
     "49",
-    "94",
-    "73",
-    "18"
+    "98",
+    "9",
+    "45"
    ],
    "sets": [
     [
-     17,
-     21
+     15,
+     6
     ],
     [
-     21,
-     17
+     9,
+     15
     ],
     [
-     21,
-     18
+     15,
+     9
     ]
    ]
   },
   {
    "players": [
-    "64",
-    "16",
-    "37",
-    "139"
+    "55",
+    "62",
+    "48",
+    "57"
    ],
    "sets": [
     [
-     13,
-     21
+     11,
+     15
     ],
     [
-     17,
-     21
+     15,
+     12
     ],
     [
-     13,
-     21
+     15,
+     13
     ]
    ]
   }

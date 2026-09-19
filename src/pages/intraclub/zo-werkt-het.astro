@@ -16,10 +16,18 @@ import {
   isHomeSide,
   opponentPoints,
   trimSet,
-  lead,
+  startScores,
+  signed,
+  setCap,
+  startingBasePoints,
   fullName,
+  DRAW_SYSTEM_NAME,
+  DRAW_SYSTEM_PERIOD,
   type Court,
+  type CourtSource,
+  type DrawSystem,
   type Player,
+  type PointsPerSet,
 } from '../../lib/intra-explainer';
 
 // Alles op deze pagina komt uit één bevroren speeldag: src/data/intraclub-example.json,
@@ -30,9 +38,14 @@ import {
 // echte uitslag. Daarom worden alle cijfers hieronder ook hier al berekend.
 const players = example.players as Player[];
 const courts = example.courts as Court[];
+const pointsPerSet = example.pointsPerSet as PointsPerSet;
+// Met welk systeem er die avond geloot werd: volgt uit de datum (zie het script).
+const eveningSystem = example.drawSystem as DrawSystem;
 const { matchday, matchdaysPlayed, playersInRanking } = example;
+const cap = setCap(pointsPerSet);
+const basePoint = startingBasePoints(pointsPerSet);
 
-// Voor de loting telt de volgorde van de avond zelf: de stand ná de vórige speeldag.
+// Voor de sterktegroepen telt de volgorde van de avond zelf: de stand ná de vórige speeldag.
 const byStrength = [...players].sort((a, b) => a.rankOnEvening - b.rankOnEvening);
 const count = byStrength.length;
 const { upperEnd, lowerStart } = bands(count);
@@ -44,29 +57,56 @@ const groups = [
   { kind: 'overlap', heading: 'In beide groepen', players: byStrength.slice(lowerStart, upperEnd) },
   { kind: 'lower', heading: 'Alleen de onderste groep', players: byStrength.slice(upperEnd) },
 ] as const;
+// De groepsindeling is alleen zichtbaar wanneer de demo op sterktegroepen staat.
+const bandsVisible = eveningSystem === 'strength';
 
 const courtById = new Map<string, Court>();
 for (const court of courts) for (const id of court.players) courtById.set(id, court);
 
-/** Uit welke band een échte baan van die avond getrokken is. */
+/** Uit welke band een échte baan van een avond met sterktegroepen getrokken is. */
 function sourceOf(court: Court) {
   const positions = court.players.map((id) => positionById.get(id)!);
   if (positions.every((p) => p < upperEnd)) return 'upper';
   if (positions.every((p) => p >= lowerStart)) return 'lower';
   return 'rest';
 }
-const actualSources = courts.map(sourceOf);
+const actualSources: CourtSource[] =
+  eveningSystem === 'strength' ? courts.map(sourceOf) : courts.map(() => 'varying');
 const restCourtNumber = actualSources.indexOf('rest') + 1;
 const hasRestCourt = restCourtNumber > 0;
 
-// De speler die het verhaal draagt tot je zelf iemand kiest: iemand uit de
-// overlapband — die laat zien dat je naar boven én naar onder geloot kan worden —
-// die bovendien een set in verlenging speelde, want daarop draait stap 4.
-const inOverlap = new Set(groups[1].players.map((s) => s.id));
-const start =
-  byStrength.find(
-    (s) => inOverlap.has(s.id) && courtById.get(s.id)!.sets.some(([h, a]) => h > 21 || a > 21),
-  ) ?? byStrength[0];
+// De speler die het verhaal draagt tot je zelf iemand kiest. Niet de eerste de
+// beste: op een avond waar de helft van de banen vier gelijke bonussen heeft en
+// de helft van de spelers alles won, toont die niets. De rangschikking hieronder
+// kiest wie stap 3 én stap 4 laat werken, in die volgorde van belang:
+//
+//   1. Zijn baan heeft een oneven handicap. Dan staat er in één set 5 tegen −4
+//      op het bord, en dat is meteen de regel én de afronding erbij.
+//   2. Hij verloor een set in verlenging. Alleen dan is er iets terug te
+//      schalen, en stap 4 draait daarop.
+//   3. Hij won ook een set, zodat de rekenmachine beide gevallen toont.
+//
+// Wisselt de snapshot, dan wisselt de speler mee — zonder dat hier iets moet.
+function tellsTheStory(player: Player): number {
+  const court = courtById.get(player.id)!;
+  const bonuses = court.players.map((id) => playerById.get(id)!.bonus);
+  const position = court.players.indexOf(player.id);
+  const sets = [0, 1, 2].map((set) => {
+    const [home, away] = court.sets[set];
+    const home_ = isHomeSide(position, set);
+    return { own: home_ ? home : away, other: home_ ? away : home };
+  });
+  const gaps = [0, 1, 2].map((set) => startScores(bonuses, set).gap);
+
+  return (
+    (gaps.some((gap) => gap % 2 === 1) ? 4 : gaps.some((gap) => gap > 0) ? 2 : 0) +
+    (sets.some((s) => s.own < s.other && Math.max(s.own, s.other) > pointsPerSet) ? 2 : 0) +
+    (sets.some((s) => s.own > s.other) && sets.some((s) => s.own < s.other) ? 1 : 0)
+  );
+}
+const start = byStrength.reduce((best, player) =>
+  tellsTheStory(player) > tellsTheStory(best) ? player : best,
+);
 
 const startCourt = courtById.get(start.id)!;
 const startCourtNumber = courts.indexOf(startCourt) + 1;
@@ -74,29 +114,34 @@ const startPosition = startCourt.players.indexOf(start.id);
 const startCourtPlayers = startCourt.players.map((id) => playerById.get(id)!);
 const startBonuses = startCourtPlayers.map((s) => s.bonus);
 
-// Stap 3, set 1: wie met wie, en met welke voorsprong.
+// Stap 3, set 1: wie met wie, en waarop ze beginnen.
 const pairNames = (positions: readonly number[]) =>
   positions.map((p) => fullName(startCourtPlayers[p])).join(' & ');
-const startLead = lead(startBonuses, 0);
-const startGap = Math.max(startLead.home, startLead.away);
-const startLeadingPair =
-  startLead.home > 0
-    ? pairNames(SET_LINEUP[0].home)
-    : startLead.away > 0
-      ? pairNames(SET_LINEUP[0].away)
-      : null;
+const startScore = startScores(startBonuses, 0);
+const startWeaker = startScore.homeBonus > startScore.awayBonus ? SET_LINEUP[0].home : SET_LINEUP[0].away;
+const startStronger = startScore.homeBonus > startScore.awayBonus ? SET_LINEUP[0].away : SET_LINEUP[0].home;
+const startExplainer =
+  startScore.gap === 0
+    ? 'Even veel bonuspunten aan beide kanten: beide duo’s beginnen op nul.'
+    : `${startScore.homeBonus} tegen ${startScore.awayBonus} bonuspunten, verschil ${startScore.gap}: ` +
+      `${pairNames(startWeaker)} beginnen op ${signed(Math.max(startScore.home, startScore.away))}, ` +
+      `${pairNames(startStronger)} op ${signed(Math.min(startScore.home, startScore.away))}.`;
 
 // Stap 4: de echte sets van deze speler, en wat ze opleveren.
 const startSets = [0, 1, 2].map((set) => {
   const [home, away] = startCourt.sets[set];
   const own = isHomeSide(startPosition, set) ? home : away;
   const other = isHomeSide(startPosition, set) ? away : home;
-  return { won: own > other, points: own, counted: trimSet(own, other) };
+  return { won: own > other, points: own, counted: trimSet(own, other, pointsPerSet) };
 });
-const startScore = dayScore(startSets.map((s) => s.counted));
-const startAverage = newAverage(start.previousAverage, startScore, matchdaysPlayed);
+const startDayScore = dayScore(startSets.map((s) => s.counted));
+const startAverage = newAverage(start.previousAverage, startDayScore, matchdaysPlayed);
+const averageExplanation =
+  matchdaysPlayed === 1
+    ? 'het gemiddelde van je basispunt en je eerste speeldagcijfer.'
+    : `het gemiddelde van je basispunt en al je ${matchdaysPlayed} speeldagcijfers.`;
 
-const absent = absenteeScore(courts);
+const absent = absenteeScore(courts, pointsPerSet);
 const dateText = new Date(matchday.date).toLocaleDateString('nl-BE', {
   day: 'numeric',
   month: 'long',
@@ -113,7 +158,17 @@ const bonusRules = [
   { who: 'Dubbelklassement 1 tot 4', points: '0' },
 ];
 
-const sourceLabel = { upper: 'bovenste groep', lower: 'onderste groep', rest: 'restbaan' } as const;
+// Het label op een echte baan. Onder wisselende tegenstanders kent de pagina het
+// seizoensgeheugen van die avond niet, behalve op speeldag 1: dan is het leeg.
+const sourceLabel: Record<CourtSource, string> = {
+  upper: 'bovenste groep',
+  lower: 'onderste groep',
+  rest: 'restbaan',
+  varying: matchdaysPlayed === 1 ? 'niemand kende elkaar al' : 'wisselende tegenstanders',
+  // Komt in deze lijst niet voor: de snapshot bevat alleen banen. Wie uitgeloot
+  // is, verschijnt pas wanneer je zelf opnieuw loot, en dat gebeurt in de browser.
+  drawnOut: 'uitgeloot',
+};
 const arrowPath = 'M4 12h16m0 0l-6-6m6 6l-6 6';
 ---
 
@@ -124,7 +179,7 @@ const arrowPath = 'M4 12h16m0 0l-6-6m6 6l-6 6';
   <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
     <RailHeading
       title="Zo werkt intraclub"
-      intro={`Om de twee weken is het woensdag intraclub. Je wordt bij drie andere spelers geloot, je speelt drie sets met telkens een andere partner, en achteraf wordt je plaats in het klassement bijgewerkt. Hieronder staat wat er die avond gebeurt, met de cijfers van speeldag ${matchday.number}.`}
+      intro={`Om de twee weken is het woensdag intraclub. Je wordt bij drie andere spelers geloot, je speelt drie sets tot ${pointsPerSet} met telkens een andere partner, en achteraf wordt je plaats in het klassement bijgewerkt. Hieronder staat wat er die avond gebeurt, met de cijfers van speeldag ${matchday.number}.`}
       continuous
     >
       <p class="mt-4 max-w-2xl text-sm text-ink-500">
@@ -183,54 +238,104 @@ const arrowPath = 'M4 12h16m0 0l-6-6m6 6l-6 6';
 
         <Heading eyebrow="Stap 2 · 20u30">De loting</Heading>
         <p class="mt-4 max-w-2xl text-ink-700">
-          De aanwezigen worden op sterkte gezet en in twee groepen verdeeld. Elke groep beslaat 60% van
-          de aanwezigen: de eerste groep vanaf de best gerangschikte speler naar beneden, de tweede groep vanaf de laatst gerangschikte speler naar boven. Wie in de middelste
-          20% valt, zit dus in allebei de groepen en kan naar boven én naar onder geloot worden.
-        </p>
-        <p class="mt-3 max-w-2xl text-ink-700">
-          Daarna trekt de computer beurtelings vier namen uit de bovenste groep en vier uit de onderste,
-          tot er in geen van beide groepen nog vier namen overblijven. Wie geloot is, verdwijnt uit
-          allebei de groepen. Zo speel je zelden ver boven of onder je eigen niveau, en sta je toch
-          bijna elke speeldag met andere mensen op de baan.
+          De computer verdeelt de aanwezigen in viertallen. Hoe hij dat doet, hangt af van het
+          moment in het seizoen: tot nieuwjaar met wisselende tegenstanders, vanaf januari met
+          sterktegroepen. Op {dateText} was dat {DRAW_SYSTEM_NAME[eveningSystem].toLowerCase()}.
         </p>
 
-        {/* De pot: iedereen die aanwezig was, op sterkte, met de overlap als eigen baan. */}
-        <div class="mt-8">
+        {/* De twee systemen naast elkaar, in de volgorde van het seizoen. */}
+        <div class="mt-8 grid gap-4 sm:grid-cols-2">
+          <div class="border-2 border-ink-950 p-5">
+            <p class="type-label text-xs text-club-700">Tot nieuwjaar</p>
+            <h3 class="type-display mt-1 text-2xl text-ink-950">Wisselende tegenstanders</h3>
+            <p class="mt-3 text-sm text-ink-700">
+              De computer onthoudt met wie je dit seizoen al op een baan stond en zet je zo veel
+              mogelijk bij mensen die je nog niet tegenkwam. Sterkte speelt geen rol. Hij begint
+              telkens bij wie het moeilijkst te plaatsen is, de speler die al de meeste aanwezigen
+              kent, en vult de baan aan met wie die het minst tegenkwam.
+            </p>
+            <p class="mt-3 text-sm text-ink-700">
+              Zijn er meerdere even goede kandidaten, dan kiest hij die waarbij de voorsprong in
+              geen enkele van de drie sets groot wordt.
+            </p>
+          </div>
+          <div class="border-2 border-ink-950 p-5">
+            <p class="type-label text-xs text-club-700">Vanaf januari</p>
+            <h3 class="type-display mt-1 text-2xl text-ink-950">Sterktegroepen</h3>
+            <p class="mt-3 text-sm text-ink-700">
+              De aanwezigen worden op de stand gezet en in twee groepen verdeeld die elk 60% beslaan:
+              de bovenste vanaf de best gerangschikte speler naar beneden, de onderste vanaf de
+              laatste naar boven. Wie in de middelste 20% valt, zit in allebei en kan naar boven én
+              naar onder geloot worden.
+            </p>
+            <p class="mt-3 text-sm text-ink-700">
+              Beurtelings trekt de computer vier namen uit de bovenste en vier uit de onderste
+              groep; wie geloot is, verdwijnt uit allebei. Je speelt zo tegen je eigen helft van het
+              klassement, maar binnen de groep beslist het toeval.
+            </p>
+          </div>
+        </div>
+
+        {/* De demo: één pot met alle aanwezigen, twee systemen om mee te loten. */}
+        <div class="mt-10">
+          <p class="type-label text-xs text-club-700">Probeer het zelf</p>
+          <div class="mt-3 flex flex-wrap gap-2" role="group" aria-label="Lotingsysteem">
+            {(['varying', 'strength'] as const).map((system) => (
+              <Pill data-system={system} aria-pressed={system === eveningSystem ? 'true' : 'false'}>
+                {DRAW_SYSTEM_NAME[system]}
+                <span class="ml-1 opacity-60">· {DRAW_SYSTEM_PERIOD[system]}</span>
+              </Pill>
+            ))}
+          </div>
+        </div>
+
+        {/* De pot: iedereen die aanwezig was, op sterkte. De groepsindeling is
+             alleen te zien wanneer er met sterktegroepen geloot wordt. */}
+        <div class="mt-6">
           <p class="type-label text-xs text-ink-500">
             De {count} aanwezigen, op rangschikking
-            <span class="text-ink-950/40">· de stand zoals die vóór deze speeldag was</span>
+            <span class="text-ink-950/40">
+              {' · '}
+              {matchdaysPlayed === 1 ? 'de eindstand van vorig seizoen' : 'de stand zoals die vóór deze speeldag was'}
+            </span>
           </p>
-          <p class="mt-1 text-xs text-ink-500">
-            Wijs een baan aan of tik erop om te zien waar die vier spelers vandaan komen.
+          <p id="pot-legend" class="mt-1 text-xs text-ink-500">
+            {bandsVisible
+              ? 'Wijs een baan aan of tik erop om te zien uit welke groep die vier spelers komen.'
+              : `Wijs een baan aan of tik erop om te zien waar die vier in de stand staan. Doorstreept: wie ${start.firstName} in dit voorbeeld al tegenkwam.`}
           </p>
-          <div class="mt-3 border border-ink-950/10">
+          {/* Eén doorlopende lijst. De groepskoppen zijn volle-breedte-items die de
+              regel breken; staan ze op `hidden`, dan vallen ze uit de flexstroom en
+              lopen de namen aan één stuk door — zoals het hoort bij een loting die
+              geen groepen kent. */}
+          <div class="mt-3 flex flex-wrap gap-1 border border-ink-950/10 bg-white p-3">
             {groups.map((group) => (
-              <div
-                class:list={[
-                  'px-3 py-3',
-                  group.kind === 'overlap' ? 'border-y-2 border-club-500/30 bg-club-50' : 'bg-white',
-                ]}
-              >
-                <p class="type-label text-[0.65rem] text-club-700">
+              <>
+                <p
+                  data-band-heading
+                  class:list={[
+                    'type-label basis-full text-[0.65rem] text-club-700',
+                    group.kind !== 'upper' && 'mt-3',
+                    !bandsVisible && 'hidden',
+                  ]}
+                >
                   {group.heading}
                   <span class="text-ink-500">
                     {' · '}plaats {group.players[0].rankOnEvening}–{group.players[group.players.length - 1].rankOnEvening}
                   </span>
                 </p>
-                <div class="mt-2 flex flex-wrap gap-1">
-                  {group.players.map((player) => (
-                    <span
-                      data-chip={player.id}
-                      class:list={[
-                        'border px-2 py-1 text-xs leading-tight transition-colors',
-                        player.id === start.id
-                          ? 'border-club-500 bg-club-100 font-bold text-ink-950'
-                          : 'border-ink-950/15 bg-white text-ink-700',
-                      ]}
-                    ><span class="type-numeral text-club-700">{player.rankOnEvening}.</span> {fullName(player)}</span>
-                  ))}
-                </div>
-              </div>
+                {group.players.map((player) => (
+                  <span
+                    data-chip={player.id}
+                    class:list={[
+                      'border px-2 py-1 text-xs leading-tight transition-colors',
+                      player.id === start.id
+                        ? 'border-club-500 bg-club-100 font-bold text-ink-950'
+                        : 'border-ink-950/15 bg-white text-ink-700',
+                    ]}
+                  ><span class="type-numeral text-club-700">{player.rankOnEvening}.</span> {fullName(player)}</span>
+                ))}
+              </>
             ))}
           </div>
         </div>
@@ -257,6 +362,9 @@ const arrowPath = 'M4 12h16m0 0l-6-6m6 6l-6 6';
 
         <p id="draw-caption" class="mt-4 text-sm text-ink-500" aria-live="polite">
           Zo zag de loting van {dateText} er echt uit.
+          {eveningSystem === 'varying' && matchdaysPlayed === 1 && (
+            <> Het was de eerste speeldag van het seizoen, dus het geheugen was nog leeg.</>
+          )}
         </p>
 
         <div class="mt-5 grid gap-2 sm:grid-cols-2">
@@ -288,21 +396,28 @@ const arrowPath = 'M4 12h16m0 0l-6-6m6 6l-6 6';
         </div>
 
         <p class="mt-5 max-w-2xl text-sm text-ink-500">
-          De twee groepen lopen zelden gelijk leeg. De spelers uit de middelste 20% worden nu eens naar
-          boven, dan weer naar onder geloot, en daardoor blijft er op de meeste speeldagen een handvol
-          namen over, ook wanneer het aantal aanwezigen netjes door vier deelt. Die komen samen op
-          de restbaan, de enige baan waar de sterkste en de zwakste van de zaal naast elkaar kunnen
-          staan.
-          {hasRestCourt ? (
-            <> Op {dateText} was dat baan {restCourtNumber}.</>
+          Bij de sterktegroepen lopen de twee groepen zelden gelijk leeg. De spelers uit de middelste
+          20% worden nu eens naar boven, dan weer naar onder geloot, en daardoor blijft er op de
+          meeste speeldagen een handvol namen over. Die komen samen op de restbaan, de enige baan waar
+          de sterkste en de zwakste van de zaal naast elkaar kunnen staan.
+          {eveningSystem === 'strength' && hasRestCourt && <> Op {dateText} was dat baan {restCourtNumber}.</>}
+        </p>
+        <p class="mt-3 max-w-2xl text-sm text-ink-500">
+          Deelt het aantal aanwezigen niet door vier, dan blijven er één tot drie spelers aan de kant:
+          zij zijn uitgeloot. Dat gebeurt vóór de indeling en onder beide systemen op dezelfde manier.
+          Eerst aan de beurt is wie de voorbije vijf speeldagen niet aan de kant stond; wie uitgeloot
+          is, blijft de volgende vijf speeldagen gespaard. Een uitgelote speeldag telt niet mee voor je
+          stand, ook niet als afwezigheid.
+          {matchday.playersDrawnOut === 0 ? (
+            <> Op {dateText} pasten alle {count} aanwezigen precies op {courts.length} banen.</>
           ) : (
-            <> Op {dateText} viel dat niet voor: alle {count} aanwezigen pasten precies op banen.</>
+            <> Op {dateText} bleven er zo {matchday.playersDrawnOut} aan de kant.</>
           )}
         </p>
         <p class="mt-3 max-w-2xl text-sm text-ink-500">
-          Blijven er minder dan vier namen over, dan wordt de baan aangevuld door iemand die al
-          gespeeld heeft. Die tweede match telt niet mee voor de rangschikking: wie de baan mee helpt vol maken,
-          speelt voor het plezier.
+          Komt er nog iemand binnen of wil iemand een tweede match spelen, dan wordt met de uitgelote
+          spelers toch een baan gevuld. Die tweede match telt niet mee voor de rangschikking: wie de
+          baan mee helpt vol maken, speelt voor het plezier.
         </p>
       </section>
 
@@ -313,14 +428,16 @@ const arrowPath = 'M4 12h16m0 0l-6-6m6 6l-6 6';
 
         <Heading eyebrow="Stap 3 · op de baan">Drie sets, elke keer een ander duo</Heading>
         <p class="mt-4 max-w-2xl text-ink-700">
-          Op je baan staan vier spelers en er worden drie sets gespeeld. Met elk van de drie anderen
-          speel je één set samen, tegen elk van hen speel je twee sets. Wie je partner is, weegt dus
-          even zwaar door als wie tegenover je staat.
+          Op je baan staan vier spelers en er worden drie sets tot {pointsPerSet} gespeeld. Met elk van
+          de drie anderen speel je één set samen, tegen elk van hen speel je twee sets. Wie je partner
+          is, weegt dus even zwaar door als wie tegenover je staat.
         </p>
         <p class="mt-3 max-w-2xl text-ink-700">
-          Elke speler brengt ook bonuspunten mee. Per duo worden die samengeteld en het verschil tussen
-          de twee duo's is de voorsprong waarmee de set begint. Omdat de duo's elke set veranderen,
-          verandert die voorsprong mee: dezelfde vier spelers starten drie keer anders.
+          Elke speler brengt ook bonuspunten mee. Per duo worden die samengeteld, en het verschil
+          tussen de twee duo's is de handicap van die set. Die wordt gesplitst: het duo met de meeste
+          bonuspunten begint op de helft ervan in de plus, het andere duo op de helft in de min. Omdat
+          de duo's elke set veranderen, verandert die startstand mee: dezelfde vier spelers starten
+          drie keer anders.
         </p>
 
         <div class="mt-8 border border-ink-950/10 bg-white">
@@ -359,29 +476,25 @@ const arrowPath = 'M4 12h16m0 0l-6-6m6 6l-6 6';
               ))}
             </div>
 
-            {/* Het scorebord: twee duo's met hun opgetelde bonus, en de stand waarmee ze starten. */}
+            {/* Het scorebord: twee duo's met hun opgetelde bonus, en de stand waarop ze beginnen. */}
             <div class="mt-6 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3">
               <div class="text-right">
                 <p id="pair-home" class="text-sm leading-snug text-ink-950">{pairNames(SET_LINEUP[0].home)}</p>
                 <p class="type-label mt-1 text-[0.65rem] text-ink-500">
-                  bonus <span id="bonus-home" class="type-numeral text-club-700">{startLead.homeBonus}</span>
+                  bonus <span id="bonus-home" class="type-numeral text-club-700">{startScore.homeBonus}</span>
                 </p>
               </div>
               <p class="type-numeral bg-feather-100 px-4 py-2 text-center text-2xl text-ink-950">
-                <span id="start-home">{startLead.home}</span><span class="text-ink-950/30"> – </span><span id="start-away">{startLead.away}</span>
+                <span id="start-home">{signed(startScore.home)}</span><span class="text-ink-950/30"> – </span><span id="start-away">{signed(startScore.away)}</span>
               </p>
               <div>
                 <p id="pair-away" class="text-sm leading-snug text-ink-950">{pairNames(SET_LINEUP[0].away)}</p>
                 <p class="type-label mt-1 text-[0.65rem] text-ink-500">
-                  bonus <span id="bonus-away" class="type-numeral text-club-700">{startLead.awayBonus}</span>
+                  bonus <span id="bonus-away" class="type-numeral text-club-700">{startScore.awayBonus}</span>
                 </p>
               </div>
             </div>
-            <p id="lead-explainer" class="mt-3 text-center text-sm text-ink-500">
-              {startLeadingPair
-                ? `${startLead.homeBonus} tegen ${startLead.awayBonus} bonuspunten: ${startLeadingPair} begint ${startGap} punt${startGap === 1 ? '' : 'en'} voor.`
-                : 'Even veel bonuspunten aan beide kanten: deze set begint op nul.'}
-            </p>
+            <p id="lead-explainer" class="mt-3 text-center text-sm text-ink-500">{startExplainer}</p>
 
             <p class="type-label mt-6 text-[0.65rem] text-ink-500">De echte uitslag van deze set</p>
             <p class="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
@@ -400,8 +513,8 @@ const arrowPath = 'M4 12h16m0 0l-6-6m6 6l-6 6';
             Waar komt dat bonuscijfer vandaan?
           </summary>
           <p class="mt-3 text-sm text-ink-700">
-            Wie op papier zwakker staat, begint elke set met een voorsprong. Zo blijft het voor alle
-            vier spelers spannend. De club telt op:
+            Wie op papier zwakker staat, krijgt een voorsprong. Zo blijft het voor alle vier spelers
+            spannend. De club telt op:
           </p>
           <table class="mt-3 w-full max-w-sm text-left text-sm">
             <tbody>
@@ -418,6 +531,12 @@ const arrowPath = 'M4 12h16m0 0l-6-6m6 6l-6 6';
             niveau betekent. Een dame die geen competitie speelt komt zo aan 7 bonuspunten, het
             hoogste dat voorkomt. Hierboven staat alleen het totaal per speler.
           </p>
+          <p class="mt-3 text-sm text-ink-500">
+            Tot en met 2025-2026 kreeg het zwakkere duo het hele verschil als voorsprong. Die gratis
+            punten gingen rechtstreeks in het klassement van één kant. Sinds 2026-2027 ligt de
+            startstand rond nul: even ver uit elkaar, maar zonder dat iemand er punten aan wint. Bij
+            een oneven verschil gaat het overschietende punt naar het zwakkere duo.
+          </p>
         </details>
       </section>
 
@@ -433,9 +552,10 @@ const arrowPath = 'M4 12h16m0 0l-6-6m6 6l-6 6';
           van wat je in je drie sets bij elkaar speelde.
         </p>
         <p class="mt-3 max-w-2xl text-ink-700">
-          Een set die in verlenging gaat, telt niet zwaarder mee: alles boven 21 wordt teruggerekend.
-          Wie wint krijgt dus altijd 21, of de set nu op 21–5 of op 30–29 eindigde. Alleen als je
-          verliest, maakt het uit hoeveel punten je haalde.
+          Een set gaat tot {pointsPerSet} met twee punten verschil, in verlenging tot hoogstens {cap}.
+          Zo'n verlenging telt niet zwaarder mee: alles boven {pointsPerSet} wordt teruggerekend. Wie
+          wint krijgt dus altijd {pointsPerSet}, of de set nu op {pointsPerSet}–5 of op {cap}–{cap - 1} eindigde.
+          Alleen als je verliest, maakt het uit hoeveel punten je haalde.
         </p>
 
         <div class="mt-8 border border-ink-950/10 bg-white p-4 sm:p-6">
@@ -467,9 +587,9 @@ const arrowPath = 'M4 12h16m0 0l-6-6m6 6l-6 6';
                     type="range"
                     data-points={set}
                     min="0"
-                    max="28"
+                    max={cap - 1}
                     step="1"
-                    value={setResult.won ? 21 : setResult.points}
+                    value={setResult.won ? pointsPerSet : setResult.points}
                     disabled={setResult.won}
                     class="h-1 w-full min-w-32 cursor-pointer appearance-none rounded-full bg-ink-950/15 accent-club-500 disabled:cursor-not-allowed disabled:opacity-30"
                   />
@@ -477,7 +597,7 @@ const arrowPath = 'M4 12h16m0 0l-6-6m6 6l-6 6';
 
                 <p class="col-start-2 justify-self-start sm:col-start-4 sm:justify-self-end">
                   <span data-score={set} class="type-numeral text-sm text-ink-500">
-                    {setResult.won ? 'gewonnen' : `${setResult.points} – ${opponentPoints(setResult.points)}`}
+                    {setResult.won ? 'gewonnen' : `${setResult.points} – ${opponentPoints(setResult.points, pointsPerSet)}`}
                   </span>
                   <span data-counted={set} class="type-numeral ml-2 bg-feather-100 px-2 py-0.5 text-sm text-ink-950">
                     {formatComma(setResult.counted)}
@@ -499,7 +619,7 @@ const arrowPath = 'M4 12h16m0 0l-6-6m6 6l-6 6';
           <div class="mt-6 border-t-2 border-ink-950 pt-5">
             <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
               <p class="type-label text-xs text-ink-500">Je cijfer voor deze speeldag</p>
-              <p id="day-score" class="type-numeral text-3xl text-ink-950">{formatComma(startScore)}</p>
+              <p id="day-score" class="type-numeral text-3xl text-ink-950">{formatComma(startDayScore)}</p>
             </div>
             <p id="day-score-sum" class="mt-1 text-sm text-ink-500">
               ({startSets.map((s) => formatComma(s.counted)).join(' + ')}) ÷ 3, je gemiddeld aantal punten per set.
@@ -514,8 +634,8 @@ const arrowPath = 'M4 12h16m0 0l-6-6m6 6l-6 6';
               </p>
             </div>
             <p id="average-sum" class="mt-1 text-sm text-ink-500">
-              ({formatComma(start.previousAverage)} × {matchdaysPlayed} + {formatComma(startScore)}) ÷ {matchdaysPlayed + 1},
-              het gemiddelde van je basispunt en al je {matchdaysPlayed} speeldagcijfers.
+              ({formatComma(start.previousAverage)} × {matchdaysPlayed} + {formatComma(startDayScore)}) ÷ {matchdaysPlayed + 1},
+              {' '}{averageExplanation}
             </p>
           </div>
         </div>
@@ -526,7 +646,8 @@ const arrowPath = 'M4 12h16m0 0l-6-6m6 6l-6 6';
             Dan krijg je geen nul, maar het gemiddelde van alle verliezende duo's van die avond.
             Op {dateText} was dat <span class="type-numeral text-ink-950">{formatComma(absent)}</span>,
             terwijl de top van de stand rond {formatComma(players[0].average, 1)} zit. Sta je hoger dan dat cijfer,
-            dan kost elke gemiste speeldag je een beetje.
+            dan kost elke gemiste speeldag je een beetje. Uitgeloot worden is iets anders: dan telt
+            die speeldag voor jou gewoon niet mee en blijft je stand staan.
           </p>
         </div>
 
@@ -537,25 +658,27 @@ const arrowPath = 'M4 12h16m0 0l-6-6m6 6l-6 6';
           <ul class="mt-3 space-y-3 text-sm text-ink-700">
             <li>
               <strong class="font-bold">Het basispunt.</strong> Bij de start van een seizoen krijgt
-              iedereen 19,000 als eerste waarde. Je stand is het gemiddelde van dat basispunt en al
-              je speeldagcijfers, dus na {matchdaysPlayed} speeldagen weegt het nog één
-              {matchdaysPlayed + 1}de mee. Vroeg in het seizoen springt je stand daardoor flink,
-              later verschuift ze nog nauwelijks.
+              iedereen {formatComma(basePoint, 3)} als eerste waarde. Je stand is het gemiddelde van
+              dat basispunt en al je speeldagcijfers, dus na{' '}
+              {matchdaysPlayed === 1 ? 'één speeldag weegt het nog voor de helft mee' : `${matchdaysPlayed} speeldagen weegt het nog één ${matchdaysPlayed + 1}de mee`}.
+              Vroeg in het seizoen springt je stand daardoor flink, later verschuift ze nog nauwelijks.
             </li>
             <li>
               <strong class="font-bold">De tiebreaker.</strong> Dat basispunt is niet voor iedereen
               exact gelijk. Wie vorig seizoen hoger eindigde, krijgt er tienduizendsten bovenop
-              (19,0001, 19,0002 en zo verder). Genoeg om twee gelijke standen te scheiden, en
-              verder onzichtbaar.
+              ({formatComma(basePoint + 0.0001, 4)}, {formatComma(basePoint + 0.0002, 4)} en zo verder).
+              Genoeg om twee gelijke standen te scheiden, en verder onzichtbaar.
+              {' '}<span id="base-point-name">{fullName(start)}</span> begon dit seizoen op
+              {' '}<span id="base-point-value" class="type-numeral">{formatComma(start.basePoints, 4)}</span>.
             </li>
             <li>
-              <strong class="font-bold">Terugschalen.</strong> Bij een set boven 21 wordt elke score
-              vermenigvuldigd met 21 gedeeld door de hoogste score. Bij 24–22 geeft dat 21 en
-              21⁄24 × 22 = {formatComma((21 / 24) * 22)}.
+              <strong class="font-bold">Terugschalen.</strong> Bij een set boven {pointsPerSet} wordt elke score
+              vermenigvuldigd met {pointsPerSet} gedeeld door de hoogste score. Bij {pointsPerSet + 2}–{pointsPerSet} geeft dat {pointsPerSet} en
+              {' '}{pointsPerSet}⁄{pointsPerSet + 2} × {pointsPerSet} = {formatComma((pointsPerSet / (pointsPerSet + 2)) * pointsPerSet)}.
             </li>
             <li>
-              <strong class="font-bold">De code.</strong> De loting, de puntenberekening en de hele
-              clubapplicatie staan open op
+              <strong class="font-bold">De code.</strong> De twee lotingen, de handicap, de
+              puntenberekening en de hele clubapplicatie staan open op
                <a href="https://github.com/BC-Landegem/Intraclub" class="text-club-700 underline hover:text-club-800" rel="noopener">GitHub</a>.
               Wat hierboven staat, komt daaruit.
             </li>
@@ -608,9 +731,10 @@ const arrowPath = 'M4 12h16m0 0l-6-6m6 6l-6 6';
           <div class="bg-club-500 p-5 text-ink-950">
             <p class="type-label text-xs">Nog nooit meegedaan?</p>
             <p class="mt-2 text-sm font-medium">
-              Je hoeft er niets voor te kunnen. Door de groepen speel je tegen je eigen niveau, en met de
-              bonuspunten klopt een recreant geregeld een competitiespeler. Kom gewoon eens langs op
-              woensdag, vanaf 20u in Sporthal Oostbroek.
+              Je hoeft er niets voor te kunnen. Tot nieuwjaar kom je bij telkens andere clubgenoten
+              terecht, daarna speel je tegen je eigen niveau, en met de bonuspunten klopt een
+              recreant geregeld een competitiespeler. Kom gewoon eens langs op woensdag, vanaf 20u in
+              Sporthal Oostbroek.
             </p>
             <a
               href={url('/club/word-lid/')}
@@ -635,22 +759,32 @@ const arrowPath = 'M4 12h16m0 0l-6-6m6 6l-6 6';
     dayScore,
     formatComma,
     draw,
+    remember,
+    timesMet,
     newAverage,
     SET_LINEUP,
     isHomeSide,
     opponentPoints,
     trimSet,
-    lead,
+    startScores,
+    signed,
+    setCap,
     fullName,
     type Court,
     type CourtSource,
     type DrawnCourt,
+    type DrawSystem,
+    type Encounters,
     type Player,
+    type PointsPerSet,
   } from '../../lib/intra-explainer';
 
   const players = example.players as Player[];
   const courts = example.courts as Court[];
+  const pointsPerSet = example.pointsPerSet as PointsPerSet;
+  const eveningSystem = example.drawSystem as DrawSystem;
   const matchdaysPlayed = example.matchdaysPlayed;
+  const cap = setCap(pointsPerSet);
 
   const playerById = new Map(players.map((p) => [p.id, p]));
   const byStrength = [...players].sort((a, b) => a.rankOnEvening - b.rankOnEvening);
@@ -677,29 +811,82 @@ const arrowPath = 'M4 12h16m0 0l-6-6m6 6l-6 6';
 
   const chips = Array.from(document.querySelectorAll<HTMLElement>('[data-chip]'));
   const courtRows = Array.from(document.querySelectorAll<HTMLElement>('[data-court]'));
+  const systemButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-system]'));
+  const bandHeadings = Array.from(document.querySelectorAll<HTMLElement>('[data-band-heading]'));
   const caption = el('draw-caption');
+  const potLegend = el('pot-legend');
 
-  const sourceName: Record<CourtSource, string> = {
+  const sourceName: Record<Exclude<CourtSource, 'varying'>, string> = {
     upper: 'bovenste groep',
     lower: 'onderste groep',
     rest: 'restbaan',
     drawnOut: 'uitgeloot',
   };
 
+  let system: DrawSystem = eveningSystem;
+
+  // Het geheugen van de loting. In de clubapplicatie zijn dat alle wedstrijden van
+  // het seizoen; hier begint het bij de echte banen van deze avond en groeit het
+  // met elke herloting, zodat je ziet wat "wisselende tegenstanders" doet.
+  const encounters: Encounters = new Map();
+  let simulatedRounds = 0;
+
+  function resetMemory() {
+    encounters.clear();
+    for (const court of courts) remember(encounters, court.players.map((id) => playerById.get(id)!));
+    simulatedRounds = 0;
+  }
+
   /** De echte loting van die avond, in hetzelfde formaat als een simulatie. */
   function actualDraw(): DrawnCourt[] {
     return courts.map((court) => {
       const positions = court.players.map((id) => positionById.get(id)!);
-      const source: CourtSource = positions.every((p) => p < upperEnd)
-        ? 'upper'
-        : positions.every((p) => p >= lowerStart)
-          ? 'lower'
-          : 'rest';
-      return { source, players: court.players.map((id) => playerById.get(id)!) };
+      const source: CourtSource =
+        eveningSystem === 'varying'
+          ? 'varying'
+          : positions.every((p) => p < upperEnd)
+            ? 'upper'
+            : positions.every((p) => p >= lowerStart)
+              ? 'lower'
+              : 'rest';
+      return { source, players: court.players.map((id) => playerById.get(id)!), repeats: 0 };
     });
   }
 
   let currentDraw = actualDraw();
+  let showingActual = true;
+
+  /** Hoe vaak twee spelers elkaar al tegenkwamen vóór de baan die nu getoond wordt. */
+  function metBefore(a: Player, b: Player): number {
+    const sameCourtNow = currentDraw.some(
+      (court) => court.source !== 'drawnOut' && court.players.includes(a) && court.players.includes(b),
+    );
+    return timesMet(encounters, a, b) - (sameCourtNow ? 1 : 0);
+  }
+
+  function labelFor(court: DrawnCourt): string {
+    if (court.source !== 'varying') return sourceName[court.source];
+    // Van een echte avond kent de pagina het seizoensgeheugen niet, behalve op
+    // speeldag 1: dan is het leeg.
+    if (showingActual && matchdaysPlayed > 1) return 'wisselende tegenstanders';
+    if (court.repeats === 0) return 'niemand kende elkaar al';
+    return court.repeats === 1 ? '1 tweetal al eens samen' : `${court.repeats} tweetallen al eens samen`;
+  }
+
+  function renderSystem() {
+    for (const button of systemButtons) {
+      button.setAttribute('aria-pressed', String(button.dataset.system === system));
+    }
+    const showBands = system === 'strength';
+    for (const heading of bandHeadings) heading.classList.toggle('hidden', !showBands);
+    potLegend.textContent =
+      (showBands
+        ? 'Wijs een baan aan of tik erop om te zien uit welke groep die vier spelers komen.'
+        : 'Wijs een baan aan of tik erop om te zien waar die vier in de stand staan.') +
+      (showingActual
+        ? ''
+        : ` Doorstreept: wie ${current.firstName} in dit voorbeeld al tegenkwam.`);
+  }
 
   /**
    * Zet een loting in de vaste rijen die al in de HTML staan — alleen hun inhoud
@@ -713,7 +900,7 @@ const arrowPath = 'M4 12h16m0 0l-6-6m6 6l-6 6';
       const court = drawnCourts[i];
       row.hidden = !court;
       if (!court) return;
-      row.querySelector('[data-source]')!.textContent = sourceName[court.source];
+      row.querySelector('[data-source]')!.textContent = labelFor(court);
       court.players.forEach((player, position) => {
         const nameEl = row.querySelector<HTMLElement>(`[data-position="${position}"]`);
         if (!nameEl) return;
@@ -728,11 +915,13 @@ const arrowPath = 'M4 12h16m0 0l-6-6m6 6l-6 6';
     });
 
     for (const chip of chips) {
-      mark(chip, chip.dataset.chip === current.id, [
-        'border-ink-950/15',
-        'bg-white',
-        'text-ink-700',
-      ]);
+      const player = playerById.get(chip.dataset.chip!)!;
+      mark(chip, player.id === current.id, ['border-ink-950/15', 'bg-white', 'text-ink-700']);
+      // Zodra je zelf loot: wie je in dit voorbeeld al tegenkwam, staat doorstreept.
+      // Ook onder sterktegroepen, want net daar loopt die lijst snel vol.
+      const known = !showingActual && player.id !== current.id && metBefore(current, player) > 0;
+      chip.classList.toggle('line-through', known);
+      chip.classList.toggle('opacity-40', known);
     }
 
     updateChipHighlight();
@@ -750,19 +939,73 @@ const arrowPath = 'M4 12h16m0 0l-6-6m6 6l-6 6';
     }
   }
 
-  el('draw-again').addEventListener('click', () => {
-    renderDraw(draw(byStrength), true);
+  /**
+   * Het bijschrift onder de knoppen. Het noemt telkens hetzelfde cijfer — hoeveel
+   * van de drie tegenstanders nieuw zijn — want dat is de enige maat waarop de twee
+   * systemen te vergelijken zijn. Blijf klikken en onder sterktegroepen zakt het.
+   */
+  function describeDraw() {
     const index = currentDraw.findIndex((court) => court.players.some((p) => p.id === current.id));
     const court = currentDraw[index];
+    const first = current.firstName;
+    const day = `Speeldag ${matchdaysPlayed + simulatedRounds} in dit voorbeeld`;
+
+    if (court.source === 'drawnOut') {
+      caption.textContent = `${day}: ${first} is uitgeloot en blijft aan de kant.`;
+      return;
+    }
+
+    const mates = court.players.filter((p) => p.id !== current.id);
+    const known = mates.filter((mate) => metBefore(current, mate) > 0).length;
+    const fresh = mates.length - known;
+    const where =
+      system === 'strength'
+        ? court.source === 'rest'
+          ? ', in de restbaan'
+          : `, uit de ${sourceName[court.source as 'upper' | 'lower']}`
+        : '';
+
     caption.textContent =
-      `Zo had het er die avond ook kunnen uitzien. ${current.firstName} komt op baan ${index + 1} terecht` +
-      (court.source === 'rest' ? ', in de restbaan.' : `, uit de ${sourceName[court.source]}.`);
-  });
+      `${day}: ${first} komt op baan ${index + 1}${where}, bij ` +
+      `${fresh} ${fresh === 1 ? 'nieuw gezicht' : 'nieuwe gezichten'}` +
+      (known > 0 ? ` en ${known} ${known === 1 ? 'bekende' : 'bekenden'}.` : '.');
+  }
+
+  function redraw() {
+    const next = draw(byStrength, system, encounters);
+    // Het geheugen groeit onder beide systemen. Sterktegroepen lezen het niet, maar
+    // de pagina telt wel door: anders valt er na een wissel niets te vergelijken.
+    for (const court of next) if (court.source !== 'drawnOut') remember(encounters, court.players);
+    simulatedRounds++;
+    showingActual = false;
+    renderSystem();
+    renderDraw(next, true);
+    describeDraw();
+  }
+
+  el('draw-again').addEventListener('click', redraw);
 
   el('show-actual').addEventListener('click', () => {
+    resetMemory();
+    system = eveningSystem;
+    showingActual = true;
+    renderSystem();
     renderDraw(actualDraw(), true);
-    caption.textContent = 'Zo zag de loting van die avond er echt uit.';
+    caption.textContent =
+      'Zo zag de loting van die avond er echt uit.' +
+      (eveningSystem === 'varying' && matchdaysPlayed === 1
+        ? ' Het was de eerste speeldag van het seizoen, dus het geheugen was nog leeg.'
+        : '');
   });
+
+  for (const button of systemButtons) {
+    button.addEventListener('click', () => {
+      const chosen = button.dataset.system as DrawSystem;
+      if (chosen === system && !showingActual) return;
+      system = chosen;
+      redraw();
+    });
+  }
 
   // Een baan aanwijzen licht zijn vier spelers op in de lijst hierboven: zo zie je
   // meteen uit welk deel van de zaal ze geplukt zijn.
@@ -822,7 +1065,7 @@ const arrowPath = 'M4 12h16m0 0l-6-6m6 6l-6 6';
     });
   });
 
-  /* ── Stap 3: duo's en voorsprongen ─────────────────────────────────── */
+  /* ── Stap 3: duo's en startstanden ─────────────────────────────────── */
 
   const courtPlayerEls = Array.from(document.querySelectorAll<HTMLElement>('[data-court-player]'));
   const setTabs = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-set-tab]'));
@@ -844,7 +1087,7 @@ const arrowPath = 'M4 12h16m0 0l-6-6m6 6l-6 6';
     const court = courtById.get(current.id)!;
     const onCourt = court.players.map((id) => playerById.get(id)!);
     const { home, away } = SET_LINEUP[activeSet];
-    const v = lead(onCourt.map((p) => p.bonus), activeSet);
+    const v = startScores(onCourt.map((p) => p.bonus), activeSet);
     const names = (positions: readonly number[]) =>
       positions.map((p) => fullName(onCourt[p])).join(' & ');
 
@@ -852,14 +1095,18 @@ const arrowPath = 'M4 12h16m0 0l-6-6m6 6l-6 6';
     el('pair-away').textContent = names(away);
     el('bonus-home').textContent = String(v.homeBonus);
     el('bonus-away').textContent = String(v.awayBonus);
-    el('start-home').textContent = String(v.home);
-    el('start-away').textContent = String(v.away);
+    el('start-home').textContent = signed(v.home);
+    el('start-away').textContent = signed(v.away);
 
-    const ahead = v.home > 0 ? names(home) : v.away > 0 ? names(away) : null;
-    const gap = Math.max(v.home, v.away);
-    el('lead-explainer').textContent = ahead
-      ? `${v.homeBonus} tegen ${v.awayBonus} bonuspunten: ${ahead} begint ${gap} punt${gap === 1 ? '' : 'en'} voor.`
-      : 'Even veel bonuspunten aan beide kanten: deze set begint op nul.';
+    if (v.gap === 0) {
+      el('lead-explainer').textContent = 'Even veel bonuspunten aan beide kanten: beide duo’s beginnen op nul.';
+    } else {
+      const weaker = v.homeBonus > v.awayBonus ? home : away;
+      const stronger = v.homeBonus > v.awayBonus ? away : home;
+      el('lead-explainer').textContent =
+        `${v.homeBonus} tegen ${v.awayBonus} bonuspunten, verschil ${v.gap}: ` +
+        `${names(weaker)} beginnen op ${signed(Math.max(v.home, v.away))}, ${names(stronger)} op ${signed(Math.min(v.home, v.away))}.`;
+    }
 
     const [homeScore, awayScore] = court.sets[activeSet];
     el('actual-result').textContent = `${homeScore} – ${awayScore}`;
@@ -879,7 +1126,7 @@ const arrowPath = 'M4 12h16m0 0l-6-6m6 6l-6 6';
 
   /* ── Stap 4: van uitslag naar stand ────────────────────────────────── */
 
-  // Per set: won je hem (dan telt hij altijd als 21), of verloor je met zoveel punten?
+  // Per set: won je hem (dan telt hij altijd als het setmaximum), of verloor je met zoveel punten?
   type SetResult = { won: boolean; points: number };
   let setResults: SetResult[] = [];
 
@@ -902,13 +1149,13 @@ const arrowPath = 'M4 12h16m0 0l-6-6m6 6l-6 6';
     el('calculator-name').textContent = fullName(current);
 
     const counted = setResults.map((result) =>
-      result.won ? 21 : trimSet(result.points, opponentPoints(result.points)),
+      result.won ? pointsPerSet : trimSet(result.points, opponentPoints(result.points, pointsPerSet), pointsPerSet),
     );
 
     setResults.forEach((result, set) => {
       const slider = sliders[set];
       slider.disabled = result.won;
-      slider.value = String(result.won ? 21 : result.points);
+      slider.value = String(result.won ? pointsPerSet : result.points);
 
       for (const button of resultButtons) {
         if (Number(button.dataset.result) !== set) continue;
@@ -917,7 +1164,7 @@ const arrowPath = 'M4 12h16m0 0l-6-6m6 6l-6 6';
 
       document.querySelector(`[data-score="${set}"]`)!.textContent = result.won
         ? 'gewonnen'
-        : `${result.points} – ${opponentPoints(result.points)}`;
+        : `${result.points} – ${opponentPoints(result.points, pointsPerSet)}`;
       document.querySelector(`[data-counted="${set}"]`)!.textContent = formatComma(counted[set]);
     });
 
@@ -931,12 +1178,17 @@ const arrowPath = 'M4 12h16m0 0l-6-6m6 6l-6 6';
     el('average-new').textContent = formatComma(next);
     el('average-sum').textContent =
       `(${formatComma(current.previousAverage)} × ${matchdaysPlayed} + ${formatComma(score)}) ÷ ${matchdaysPlayed + 1}, ` +
-      `het gemiddelde van je basispunt en al je ${matchdaysPlayed} speeldagcijfers.`;
+      (matchdaysPlayed === 1
+        ? 'het gemiddelde van je basispunt en je eerste speeldagcijfer.'
+        : `het gemiddelde van je basispunt en al je ${matchdaysPlayed} speeldagcijfers.`);
+
+    el('base-point-name').textContent = fullName(current);
+    el('base-point-value').textContent = formatComma(current.basePoints, 4);
   }
 
   for (const slider of sliders) {
     slider.addEventListener('input', () => {
-      setResults[Number(slider.dataset.points)] = { won: false, points: Number(slider.value) };
+      setResults[Number(slider.dataset.points)] = { won: false, points: Math.min(Number(slider.value), cap - 1) };
       renderCalculator();
     });
   }
@@ -945,7 +1197,10 @@ const arrowPath = 'M4 12h16m0 0l-6-6m6 6l-6 6';
     button.addEventListener('click', () => {
       const set = Number(button.dataset.result);
       const won = button.dataset.kind === 'won';
-      setResults[set] = { won, points: won ? 21 : Math.min(setResults[set].points, 19) };
+      setResults[set] = {
+        won,
+        points: won ? pointsPerSet : Math.min(setResults[set].points, pointsPerSet - 2),
+      };
       renderCalculator();
     });
   }
@@ -961,7 +1216,9 @@ const arrowPath = 'M4 12h16m0 0l-6-6m6 6l-6 6';
     current = playerById.get(id)!;
     activeSet = 0;
     setResults = actualSetResults();
+    renderSystem();
     renderDraw(currentDraw, false);
+    if (!showingActual) describeDraw();
     renderCourt();
     renderCalculator();
 
@@ -970,6 +1227,7 @@ const arrowPath = 'M4 12h16m0 0l-6-6m6 6l-6 6';
     el('link-own-text').textContent = `Het verloop van ${fullName(current)}`;
   }
 
+  resetMemory();
   picker.addEventListener('change', () => selectPlayer(picker.value));
   selectPlayer(picker.value);
 </script>

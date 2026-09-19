@@ -43,6 +43,20 @@ if (!round) throw new Error('Geen berekende speeldag: het seizoen is nog niet be
 
 const { data: detail } = await fetchApi(`/rounds/${round.id}`);
 
+// Tot hoeveel punten een set gaat, is een seizoenskeuze (15 sinds 2026-2027,
+// 21 daarvoor). Terugschalen, basispunt en verlenging hangen er allemaal van af,
+// dus de pagina leest dit ene getal en rekent verder.
+const pointsPerSet = detail.season.points_per_set;
+if (pointsPerSet !== 15 && pointsPerSet !== 21) {
+  throw new Error(`Onbekende puntenschaal: sets tot ${pointsPerSet}`);
+}
+
+// Welke loting die avond gebruikt werd, geeft de API niet mee. Het volgt uit de
+// clubregel die de pagina uitlegt: tot nieuwjaar wisselende tegenstanders,
+// vanaf januari sterktegroepen. Wijzigt het bestuur die regel, pas dan hier én
+// op de pagina aan.
+const drawSystem = new Date(round.date).getMonth() >= 8 ? 'varying' : 'strength';
+
 /**
  * De vier spelers van een baan, op de plaats die de rotatie hun geeft: set 1 is
  * P1+P2, set 2 is P1+P3, set 3 is P1+P4. P1 is dus de enige die alle drie de
@@ -66,8 +80,9 @@ const courts = detail.games.map((game) => ({
 
 const presentIds = new Set(courts.flatMap((court) => court.players));
 
-/** Terugschalen boven 21, zoals de API het doet bij het berekenen. */
-const trim = (own, other) => (Math.max(own, other) > 21 ? (21 / Math.max(own, other)) * own : own);
+/** Terugschalen boven het setmaximum, zoals de API het doet bij het berekenen. */
+const trim = (own, other) =>
+  Math.max(own, other) > pointsPerSet ? (pointsPerSet / Math.max(own, other)) * own : own;
 
 /** Wie met wie per set: 1+2, 1+3, 1+4 aan de thuiskant. */
 const SET_LINEUP = [
@@ -106,6 +121,13 @@ function exactDayScore(id) {
 const standingById = new Map(rankings.data.map((row) => [String(row.id), row]));
 const matchdays = round.number;
 
+// De exacte basispunten, op vier decimalen. De stand geeft er maar twee, en de
+// tienduizendsten zijn net wat de spelers op speeldag 1 van elkaar onderscheidt.
+const { data: seasonStatistics } = await fetchApi(`/seasons/${rankings.meta.season.id}/statistics?members=0`);
+const basePointsById = new Map(
+  seasonStatistics.map((row) => [String(row.player.id), row.statistics.base_points]),
+);
+
 let largestDeviation = 0;
 
 // Het gemiddelde ná de vorige speeldag is nodig om de stand te kunnen
@@ -128,6 +150,8 @@ const players = detail.attendances
     if (!standing) throw new Error(`Speler ${id} stond op een baan maar niet in de stand`);
     const dayScore = exactDayScore(id);
     largestDeviation = Math.max(largestDeviation, Math.abs(dayScore - row.day_score));
+    const basePoints = basePointsById.get(id);
+    if (basePoints === undefined) throw new Error(`Speler ${id} heeft geen basispunten dit seizoen`);
     return {
       id,
       // De ledenadministratie bevat hier en daar een spatie te veel.
@@ -136,7 +160,12 @@ const players = detail.attendances
       rank: standing.rank,
       average: standing.average,
       difference: standing.difference,
-      previousAverage: (standing.average * (matchdays + 1) - dayScore) / matchdays,
+      basePoints,
+      // Op speeldag 1 ís het vorige gemiddelde het basispunt, en dat kennen we
+      // exact. Afleiden uit de afgeronde stand zou hier ruis van ±0,01 geven, meer
+      // dan de 0,0001 die de spelers op dat moment van elkaar scheidt.
+      previousAverage:
+        matchdays === 1 ? basePoints : (standing.average * (matchdays + 1) - dayScore) / matchdays,
       // Kwam vroeger uit een herhaling van calculateBonusPoints uit de intra-app;
       // de API rekent hem nu zelf uit en zet hem op de speler.
       bonus: row.player.bonus_points,
@@ -144,7 +173,9 @@ const players = detail.attendances
   })
   .sort((a, b) => a.rank - b.rank);
 
-if (largestDeviation > 0.005) {
+// Een halve honderdste is precies de afrondingsgrens; iets ruimer, anders valt
+// een dagcijfer als 12,345 er op een zwevendekommafout in.
+if (largestDeviation > 0.0051) {
   throw new Error(
     `Herberekende dagscore wijkt ${largestDeviation.toFixed(3)} af van die van de API — ` +
       'controleer of de rekenregels in de applicatie veranderd zijn.',
@@ -155,11 +186,11 @@ if (players.length !== presentIds.size) {
   throw new Error(`${presentIds.size} spelers op een baan, ${players.length} in de aanwezigheden`);
 }
 
-// De loting van die avond werkte met de stand ná de vórige speeldag — de
-// speeldag zelf was toen nog niet berekend. Sorteren op `average` (ná deze
-// speeldag) geeft een net andere volgorde en verklaart de echte banen niet:
-// met `previousAverage` vallen 11 van de 12 banen zuiver binnen één band, de
-// twaalfde is de restbaan uit het algoritme. Vandaar dit aparte veld.
+// De loting met sterktegroepen werkt met de stand ná de vórige speeldag — de
+// speeldag zelf is dan nog niet berekend. Sorteren op `average` (ná deze
+// speeldag) geeft een net andere volgorde en verklaart de echte banen niet.
+// Vandaar dit aparte veld. Op speeldag 1 is dit de volgorde van de basispunten,
+// dus de eindstand van vorig seizoen.
 const eveningOrder = [...players].sort((a, b) => b.previousAverage - a.previousAverage);
 eveningOrder.forEach((player, i) => {
   player.rankOnEvening = i + 1;
@@ -169,6 +200,9 @@ const snapshot = {
   // Vastgelegd op deze datum; de spelregels die de pagina uitlegt veranderen niet.
   frozenOn: new Date().toISOString().slice(0, 10),
   seasonId: rankings.meta.season.id,
+  pointsPerSet,
+  // Zie hierboven: afgeleid uit de datum, niet uit de API.
+  drawSystem,
   // Aantal speeldagen tot en met deze; het basispunt telt als extra deler mee.
   matchdaysPlayed: round.number,
   playersInRanking: rankings.data.length,
@@ -177,6 +211,9 @@ const snapshot = {
     number: round.number,
     date: round.date.slice(0, 10),
     averageAbsent: detail.average_absent,
+    // Wie aan de kant bleef, staat niet op een baan en dus niet in `players`;
+    // alleen het aantal is nodig om te zeggen of de avond precies uitkwam.
+    playersDrawnOut: detail.players_drawn_out,
   },
   players,
   courts,
