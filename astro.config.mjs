@@ -1,13 +1,23 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
+import { loadEnv } from 'vite';
 
-// GitHub Pages: https://bc-landegem.github.io/Website/
-// Bij de latere domein-switch naar bclandegem.be: site aanpassen en base op '/' zetten.
-const base = '/Website';
+// Twee bestemmingen, één broncode:
+//   GitHub Pages   https://bc-landegem.github.io/Website/   (deploy.yml, standaard)
+//   Shared hosting https://www.bclandegem.be/               (deploy-ftp.yml)
+// De workflows zetten SITE_URL en BASE_PATH; zonder die variabelen (lokaal, in
+// de container, in deploy.yml) blijft alles zoals het was: /Website op github.io.
+// Lokaal tegen de root bouwen kan met dezelfde variabelen in .env — zie .env.example.
+// Alles wat van de base afhangt (url(), manifest, service worker, redirects)
+// leest hem uit import.meta.env.BASE_URL en volgt dus vanzelf.
+const env = { ...loadEnv(process.env.NODE_ENV ?? 'production', process.cwd(), ''), ...process.env };
+const site = env.SITE_URL || 'https://bc-landegem.github.io';
+// Altijd met voorloopslash en zonder slash op het einde; '/' blijft '/'.
+const base = `/${(env.BASE_PATH ?? '/Website').replace(/^\/+|\/+$/g, '')}`;
 
 export default defineConfig({
-  site: 'https://bc-landegem.github.io',
+  site,
   // Aan sinds Astro 7: de compressor plakte vroeger woorden aaneen wanneer een
   // tekstregel na een tag begon (bv. </strong> op het regeleinde). Dat is opgelost —
   // nagemeten over alle pagina's, de tekstinhoud is identiek. Scheelt ~180 kB ruw.

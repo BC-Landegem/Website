@@ -1,0 +1,106 @@
+# Deploy naar de shared hosting (DirectAdmin) via FTPS. Bouwt dezelfde broncode
+# als deploy.yml, maar voor de root van een eigen domein (SITE_URL en BASE_PATH,
+# zie astro.config.mjs), en zet dist/ met een incrementele sync op de server:
+# alleen gewijzigde bestanden gaan over, verwijderde worden opgeruimd. Daarvoor
+# bewaart de action .ftp-deploy-sync-state.json in de doelmap — laat dat staan.
+#
+# Vandaag wijst dit naar het testsubdomein (eigen FTP-account, eigen
+# DirectAdmin-paneel). De domeinswitch is dan: SITE_URL op https://www.bclandegem.be,
+# de FTP-secrets op het hoofdaccount, NOINDEX weg, en deploy.yml (GitHub Pages)
+# verwijderen. Tot dan draaien beide workflows naast elkaar.
+#
+# Instellingen (Settings → Environments → shared-hosting):
+#   secrets   FTP_SERVER, FTP_USERNAME, FTP_PASSWORD
+#   variables SITE_URL        verplicht, bv. https://nieuw.bclandegem.be
+#             FTP_SERVER_DIR  standaard public_html/ (DirectAdmin-webroot)
+#             FTP_PROTOCOL    standaard ftps
+#             NOINDEX         'true' zolang het een testomgeving is
+# De repository variable TURNSTILE_SITE_KEY wordt gedeeld met deploy.yml.
+name: Deploy via FTP
+
+on:
+  push:
+    branches: [master]
+  # Zelfde reden als in deploy.yml: een seizoen krijgt pas een eindstandpagina
+  # zodra de kalender zegt dat het voorbij is, en een statische site heeft geen
+  # klok. Eigen concurrency-groep, dus beide workflows mogen tegelijk om 04:00.
+  schedule:
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Niet afbreken: een halve FTP-sync laat de server in een tussenstand achter.
+# Een tweede run wacht gewoon.
+concurrency:
+  group: ftp
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # FTP-gegevens en SITE_URL staan op deze environment, niet op de repo: zo
+    # kan er later een goedkeuring of branchbeperking op, en verschillen test en
+    # productie alleen in wat hier ingevuld staat.
+    environment:
+      name: shared-hosting
+      url: ${{ vars.SITE_URL }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Controleer instellingen
+        # Zonder SITE_URL zou de build voor github.io bouwen en dan op het
+        # subdomein staan met verkeerde canonical-, manifest- en formulier-URL's.
+        # Liever hard falen dan een verkeerde site online.
+        run: |
+          if [ -z "${{ vars.SITE_URL }}" ]; then
+            echo "::error::Variable SITE_URL ontbreekt op environment shared-hosting."
+            exit 1
+          fi
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          # De root van het eigen domein in plaats van /Website op github.io.
+          SITE_URL: ${{ vars.SITE_URL }}
+          BASE_PATH: /
+          # Zie deploy.yml voor de uitleg bij deze twee.
+          PUBLIC_INTRA_API: https://intra.bclandegem.be/api
+          PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.TURNSTILE_SITE_KEY }}
+
+      - name: Testomgeving afschermen voor zoekmachines
+        # Een geïndexeerde kopie concurreert met www.bclandegem.be en blijft na
+        # de switch in de zoekresultaten hangen. De header dekt ook wat robots.txt
+        # niet dekt (pagina's die via een externe link gevonden worden).
+        if: ${{ vars.NOINDEX == 'true' }}
+        run: |
+          printf '\n# Testomgeving (variable NOINDEX)\n<IfModule mod_headers.c>\n  Header set X-Robots-Tag "noindex, nofollow"\n</IfModule>\n' >> dist/.htaccess
+          printf 'User-agent: *\nDisallow: /\n' > dist/robots.txt
+
+      - name: Upload naar de hosting
+        uses: SamKirkland/FTP-Deploy-Action@v4.4.0
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          # FTPS (expliciete TLS). Een zelfondertekend servercertificaat is
+          # geen probleem: de action controleert de keten standaard niet
+          # (security: loose). Kan de host geen TLS, zet dan FTP_PROTOCOL op
+          # 'ftp' — het wachtwoord gaat dan in klare tekst over het net.
+          protocol: ${{ vars.FTP_PROTOCOL || 'ftps' }}
+          local-dir: ./dist/
+          # Webroot van een DirectAdmin-account, met slash op het einde.
+          server-dir: ${{ vars.FTP_SERVER_DIR || 'public_html/' }}
+          # De action sluit zelf .git* en node_modules uit; in dist/ staat daar
+          # niets van. .htaccess moet wél mee, dus geen eigen exclude-lijst.

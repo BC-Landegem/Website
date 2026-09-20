@@ -56,4 +56,6 @@ jobs:
         if: ${{ steps.commit.outputs.pushed == 'true' }}
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh workflow run deploy.yml --ref master
+        run: |
+          gh workflow run deploy.yml --ref master
+          gh workflow run deploy-ftp.yml --ref master

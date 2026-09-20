@@ -1,0 +1,24 @@
+# Apache-instellingen voor de shared hosting (deploy-ftp.yml). GitHub Pages leest
+# dit bestand niet; daar is het onschadelijk.
+
+# Astro bouwt dist/404.html; Apache moet weten dat dat de foutpagina is.
+ErrorDocument 404 /404.html
+
+<IfModule mod_mime.c>
+  AddType application/manifest+json .webmanifest
+</IfModule>
+
+<IfModule mod_headers.c>
+  # Alleen wat onder /_astro/ staat draagt een hash in zijn naam: elke wijziging
+  # is een nieuwe URL, dus mag de browser dat een jaar bijhouden. Iconen, favicons
+  # en de archiefbeelden staan op een vast pad en krijgen bewust géén jaar.
+  <IfModule mod_setenvif.c>
+    SetEnvIf Request_URI "^/_astro/" hashed_asset
+    Header set Cache-Control "public, max-age=31536000, immutable" env=hashed_asset
+  </IfModule>
+  # De service worker staat op een vast pad en moet na elke deploy vers opgehaald
+  # worden; HTML en het manifest evengoed — een pagina heet altijd hetzelfde.
+  <FilesMatch "\.(html|webmanifest)$|^sw\.js$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+</IfModule>
