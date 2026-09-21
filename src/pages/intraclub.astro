@@ -7,6 +7,7 @@ import ArchiveLink from '../components/ArchiveLink.astro';
 import RailHeading from '../components/RailHeading.astro';
 import { url } from '../lib/url';
 import { allSeasons } from '../lib/intra-build';
+import { PUSH_ENABLED } from '../data/push';
 
 const tabs = [
   { key: 'general', label: 'Algemeen', kind: 'ranking' },
@@ -41,6 +42,16 @@ const oldest = seasons[0]?.label.slice(0, 4);
           <path stroke-linecap="round" stroke-linejoin="round" d="M4 12h16m0 0l-6-6m6 6l-6 6" />
         </svg>
       </a>
+      {/* De ene plek waar push zichzelf verkoopt: wie hier om de twee weken
+          komt kijken of de stand er al staat, kan zich dat besparen. */}
+      {PUSH_ENABLED && (
+        <a
+          href={url('/club/pushberichten/')}
+          class="type-label mt-3 inline-flex items-center gap-2 text-xs text-ink-500 hover:text-club-700 hover:underline"
+        >
+          Krijg een bericht bij een nieuwe stand
+        </a>
+      )}
     </RailHeading>
 
     <div

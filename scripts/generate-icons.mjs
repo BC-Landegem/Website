@@ -18,6 +18,11 @@
 // Plus drie iconen voor de snelkoppelingen uit de manifest. Die komen niet uit
 // het logo maar zijn getekend in het icoonidioom van de site (24-grid, stroke
 // 2.5, round caps) — zie DESIGN.md.
+//
+// En één badge voor pushberichten (badge-96.png): het beeldmerk in wit op een
+// doorzichtige achtergrond. Android toont een badge in één kleur in de
+// statusbalk en gebruikt alleen het alfakanaal; kleur of achtergrond zouden
+// er een grijze klodder van maken.
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import sharp from 'sharp';
 
@@ -85,3 +90,10 @@ await icon({ file: 'icon-192.png', side: 192, background: FEATHER_50, logoColor:
 await icon({ file: 'icon-512.png', side: 512, background: FEATHER_50, logoColor: INK_950, coverage: 0.78 });
 await icon({ file: 'icon-maskable-512.png', side: 512, background: FEATHER_50, logoColor: INK_950, coverage: 0.56 });
 for (const name of Object.keys(GLYPHS)) await shortcut(name);
+await icon({
+  file: 'badge-96.png',
+  side: 96,
+  background: { r: 0, g: 0, b: 0, alpha: 0 },
+  logoColor: '#ffffff',
+  coverage: 0.9,
+});

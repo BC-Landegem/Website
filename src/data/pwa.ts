@@ -48,4 +48,7 @@ export const SHELL_ASSETS = [
   '/icons/shortcut-kalender.png',
   '/icons/shortcut-intraclub.png',
   '/icons/shortcut-competitie.png',
+  // Het badge-icoon van een pushbericht (statusbalk op Android). Klein, en zo
+  // is het er ook wanneer een bericht binnenkomt op een dode lijn.
+  '/icons/badge-96.png',
 ];

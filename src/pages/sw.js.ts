@@ -9,6 +9,7 @@
 import type { APIRoute } from 'astro';
 import template from '../sw/service-worker.js?raw';
 import { SHELL_ASSETS, SHELL_PATHS } from '../data/pwa';
+import { PUSH_ENDPOINT, VAPID_PUBLIC_KEY } from '../data/push';
 import { url } from '../lib/url';
 
 export const GET: APIRoute = () => {
@@ -20,6 +21,8 @@ export const GET: APIRoute = () => {
   const code = template
     .replace('__VERSION__', version)
     .replace('__BASE__', url('/'))
+    .replace('__PUSH_ENDPOINT__', PUSH_ENDPOINT)
+    .replace('__VAPID_PUBLIC_KEY__', VAPID_PUBLIC_KEY)
     .replace('/* __SHELL__ */ []', JSON.stringify(shell));
 
   return new Response(code, {

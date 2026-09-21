@@ -1,0 +1,66 @@
+---
+// Pushberichten aan- en afzetten. Eén pagina voor de uitleg én de vinkjes: wie
+// hier landt via de footer of vanaf /intraclub/, moet in één oogopslag zien wat
+// hij krijgt, hoe vaak, en dat het per toestel is. Het echte werk staat in
+// src/components/PushSettings.astro; de keuzes erachter in PRODUCT.md.
+//
+// De pagina bestaat ook zonder VAPID-sleutel (dan zegt ze dat push nog niet aan
+// staat), maar de links ernaartoe verschijnen pas mét sleutel — zie Footer,
+// Header en /intraclub/.
+import Layout from '../../layouts/Layout.astro';
+import Heading from '../../components/Heading.astro';
+import Link from '../../components/Link.astro';
+import RailHeading from '../../components/RailHeading.astro';
+import PushSettings from '../../components/PushSettings.astro';
+import { PUSH_TOPICS } from '../../data/push';
+import { url } from '../../lib/url';
+---
+
+<Layout
+  title="Pushberichten"
+  description="Krijg een bericht op je telefoon of computer als de club iets te melden heeft of als er een nieuwe intraclubstand is. Zelf te kiezen, per onderwerp, en altijd weer af te zetten."
+>
+  <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
+    <RailHeading
+      title="Pushberichten"
+      intro="Een seintje op je telefoon of computer als er iets te weten valt. Jij kiest waarover, en je zet het even makkelijk weer af."
+    />
+
+    <section class="mt-12 max-w-3xl pl-10">
+      <Heading>Wat je kan krijgen</Heading>
+      <ul class="mt-6">
+        {PUSH_TOPICS.map((topic) => (
+          <li class="border-b border-ink-950/10 py-5 first:border-t">
+            <h3 class="font-bold text-ink-950">{topic.label}</h3>
+            <p class="mt-1 leading-relaxed text-ink-700">{topic.description}</p>
+          </li>
+        ))}
+      </ul>
+      <p class="mt-6 leading-relaxed text-ink-700">
+        Meer is het niet. Geen reclame, geen dagelijkse herinneringen. De berichten over je ploeg
+        en je aanwezigheid blijven via <Link href={url('/club/twizzit/')}>Twizzit</Link> lopen; dit
+        komt daar niet in de plaats van.
+      </p>
+    </section>
+
+    <PushSettings />
+
+    <section class="mt-16 max-w-3xl pl-10">
+      <Heading size="small">Goed om te weten</Heading>
+      <ul class="mt-4 list-disc space-y-2 pl-5 leading-relaxed text-ink-700">
+        <li>
+          De berichten komen aan zolang je de site niet uit je browser wist. Op een telefoon werkt
+          het het best als de site als app op je beginscherm staat.
+        </li>
+        <li>
+          Je browser vraagt één keer om toestemming. Zeg je daar nee, dan kan je dat alleen in de
+          instellingen van je browser terugdraaien; de site kan het niet opnieuw vragen.
+        </li>
+        <li>
+          We weten niet wie je bent. Je browser geeft ons een adres om berichten naartoe te
+          sturen, en dat is alles wat we bewaren, samen met je gekozen onderwerpen.
+        </li>
+      </ul>
+    </section>
+  </div>
+</Layout>

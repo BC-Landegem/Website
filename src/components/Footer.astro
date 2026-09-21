@@ -3,6 +3,7 @@ import { Image } from 'astro:assets';
 import { url } from '../lib/url';
 import sponsors from '../data/sponsors.json';
 import { channels } from '../data/social';
+import { PUSH_ENABLED } from '../data/push';
 import trainings from '../data/trainings.json';
 import libertatem from '../assets/sponsors/libertatem.png';
 import lieventyvaert from '../assets/sponsors/lieventyvaert.png';
@@ -109,6 +110,9 @@ const year = new Date().getFullYear();
         <li><a href={url('/club/word-lid/')} class="transition-colors hover:text-club-300">Word lid!</a></li>
         <li><a href={url('/kalender/')} class="transition-colors hover:text-club-300">Kalender</a></li>
         <li><a href={url('/club/contact/')} class="transition-colors hover:text-club-300">Contact</a></li>
+        {PUSH_ENABLED && (
+          <li><a href={url('/club/pushberichten/')} class="transition-colors hover:text-club-300">Pushberichten</a></li>
+        )}
         <li><a href={url('/club/gedragscode/')} class="transition-colors hover:text-club-300">Gedragscode</a></li>
         <li><a href={url('/club/privacy/')} class="transition-colors hover:text-club-300">Privacy</a></li>
       </ul>

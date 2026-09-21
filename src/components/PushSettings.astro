@@ -1,0 +1,186 @@
+---
+// De instellingen voor pushberichten: twee vinkjes, één per onderwerp. Het
+// eerste vinkje vraagt de browser om toestemming en maakt het abonnement; het
+// laatste vinkje uit haalt het weer weg. Geen aparte aan/uit-knop: de
+// onderwerpen zíjn de knop, en "niets aangevinkt" is de uit-stand.
+//
+// Wat hieronder staat, is de HTML van alle toestanden tegelijk, met `hidden`
+// erop. Het script kiest welke zichtbaar wordt. Zonder JavaScript ziet de
+// bezoeker de uitleg en een verborgen formulier — push zonder JavaScript
+// bestaat sowieso niet.
+import Heading from './Heading.astro';
+import Link from './Link.astro';
+import { PUSH_TOPICS } from '../data/push';
+import { url } from '../lib/url';
+
+// Volledige klassennamen, want Tailwind leest de broncode statisch.
+const notice = 'mt-6 border-2 p-4 text-sm font-medium leading-relaxed';
+---
+
+<section id="instellingen" class="mt-12 max-w-3xl scroll-mt-28 pl-10">
+  <Heading>Kies je berichten</Heading>
+  <p class="mt-4 leading-relaxed text-ink-700">
+    Dit geldt voor het toestel waar je nu op zit. Wil je de berichten ook op je telefoon, zet ze
+    daar dan ook aan. Afzetten kan hier altijd, of in de instellingen van je browser.
+  </p>
+
+  {/* Geen sleutel meegebouwd: push staat uit voor deze site. */}
+  <p id="push-disabled" hidden class:list={[notice, 'border-ink-950/20 bg-feather-100 text-ink-700']}>
+    Pushberichten staan op deze site nog niet aan. Kom later nog eens terug.
+  </p>
+
+  {/* iOS in de browser: push werkt pas na een installatie op het beginscherm. */}
+  <div id="push-ios" hidden class:list={[notice, 'border-ink-950/20 bg-feather-100 text-ink-700']}>
+    <p>
+      Op een iPhone of iPad werken berichten alleen als de site op je beginscherm staat. Zo doe je
+      dat:
+    </p>
+    <ol class="mt-3 list-decimal space-y-1 pl-5">
+      <li>Tik in Safari onderaan op <strong>Delen</strong> (het vierkant met de pijl omhoog).</li>
+      <li>Kies <strong>Zet op beginscherm</strong> en bevestig.</li>
+      <li>Open BC Landegem vanaf je beginscherm en kom terug naar deze pagina.</li>
+    </ol>
+  </div>
+
+  <p id="push-unsupported" hidden class:list={[notice, 'border-ink-950/20 bg-feather-100 text-ink-700']}>
+    Deze browser ondersteunt geen pushberichten. In een privévenster lukt het meestal ook niet.
+    Probeer het in je gewone browser, of installeer de site als app.
+  </p>
+
+  <p id="push-denied" hidden class:list={[notice, 'border-club-500 bg-club-50 text-club-800']}>
+    Je browser blokkeert berichten van deze site. Dat zet je terug aan in de instellingen van je
+    browser, bij de rechten van deze website. Herlaad daarna deze pagina.
+  </p>
+
+  <p id="push-offline" hidden class:list={[notice, 'border-ink-950/20 bg-feather-100 text-ink-700']}>
+    Je bent even zonder internet. Je keuze bewaren lukt pas weer zodra je verbinding hebt.
+  </p>
+
+  <p id="push-error" hidden class:list={[notice, 'border-club-500 bg-club-50 text-club-800']}></p>
+
+  <fieldset id="push-topics" hidden disabled class="mt-6 border-t border-ink-950/10">
+    <legend class="sr-only">Onderwerpen</legend>
+    {PUSH_TOPICS.map((topic) => (
+      <div class="flex gap-4 border-b border-ink-950/10 py-5">
+        <input
+          id={`push-topic-${topic.id}`}
+          type="checkbox"
+          name="topics"
+          value={topic.id}
+          class="mt-1 h-5 w-5 shrink-0 accent-club-600 disabled:cursor-not-allowed"
+        />
+        <label for={`push-topic-${topic.id}`} class="cursor-pointer">
+          <span class="block font-bold text-ink-950">{topic.label}</span>
+          <span class="mt-1 block text-sm leading-relaxed text-ink-700">{topic.description}</span>
+        </label>
+      </div>
+    ))}
+  </fieldset>
+
+  <p id="push-status" hidden class="mt-4 text-sm text-ink-500" aria-live="polite"></p>
+
+  <p class="mt-6 text-xs text-ink-500">
+    We bewaren alleen het adres dat je browser ons geeft en je gekozen onderwerpen; geen naam, geen
+    e-mail. Zie de <Link href={url('/club/privacy/')}>privacyverklaring</Link>.
+  </p>
+</section>
+
+<script>
+  import { currentTopics, permission, pushSupport, setTopics } from '../lib/push-client';
+  import { PUSH_TOPICS, type PushTopic } from '../data/push';
+
+  const byId = (id: string) => document.getElementById(id) as HTMLElement | null;
+  const fieldset = byId('push-topics') as HTMLFieldSetElement | null;
+  const status = byId('push-status');
+  const error = byId('push-error');
+  const offline = byId('push-offline');
+
+  if (fieldset && status && error && offline) {
+    const boxes = [...fieldset.querySelectorAll<HTMLInputElement>('input[name="topics"]')];
+    const labels = new Map<string, string>(PUSH_TOPICS.map((topic) => [topic.id, topic.label]));
+    let known: PushTopic[] = [];
+
+    const show = (id: string) => {
+      const box = byId(id);
+      if (box) box.hidden = false;
+    };
+
+    const checked = (): PushTopic[] =>
+      boxes.filter((box) => box.checked).map((box) => box.value as PushTopic);
+
+    const render = (topics: PushTopic[]) => {
+      known = topics;
+      for (const box of boxes) box.checked = topics.includes(box.value as PushTopic);
+      status.hidden = false;
+      if (topics.length === 0) {
+        status.textContent = 'Je krijgt op dit toestel geen berichten.';
+      } else {
+        const names = topics.map((topic) => labels.get(topic) ?? topic);
+        status.textContent = `Je krijgt berichten over ${names.join(' en ')}.`;
+      }
+    };
+
+    const fail = (reason: unknown) => {
+      error.textContent =
+        reason instanceof Error && reason.message
+          ? reason.message
+          : 'Er is iets misgelopen. Probeer het straks opnieuw.';
+      error.hidden = false;
+    };
+
+    // Offline is de keuze niet te bewaren; dan liever de vinkjes op slot dan
+    // een fout na een klik.
+    const connectivity = () => {
+      const online = navigator.onLine !== false;
+      offline.hidden = online;
+      fieldset.disabled = !online;
+    };
+
+    const start = async () => {
+      const support = pushSupport();
+      if (support !== 'ok') {
+        show(support === 'disabled' ? 'push-disabled' : support === 'ios-install' ? 'push-ios' : 'push-unsupported');
+        return;
+      }
+      if (permission() === 'denied') {
+        show('push-denied');
+        return;
+      }
+
+      fieldset.hidden = false;
+      try {
+        render((await currentTopics()) ?? []);
+      } catch (reason) {
+        // De server was even weg: laat de vinkjes zien zoals de browser ze
+        // kent (niets), dan kan de bezoeker toch iets doen.
+        render([]);
+        fail(reason);
+      }
+      connectivity();
+      addEventListener('online', connectivity);
+      addEventListener('offline', connectivity);
+
+      fieldset.addEventListener('change', async () => {
+        const wanted = checked();
+        fieldset.disabled = true;
+        error.hidden = true;
+        try {
+          render(await setTopics(wanted));
+        } catch (reason) {
+          render(known);
+          if (permission() === 'denied') {
+            show('push-denied');
+            fieldset.hidden = true;
+            status.hidden = true;
+            return;
+          }
+          fail(reason);
+        } finally {
+          if (!fieldset.hidden) connectivity();
+        }
+      });
+    };
+
+    start();
+  }
+</script>
