@@ -4,9 +4,9 @@
 // foto en "vele groetjes", en die toon wil je niet breken met een formulier.
 // Hier mag het zakelijk zijn: wie leest dit, wat gebeurt er dan, en het formulier.
 //
-// De vier stappen en de antwoordtermijn ("binnen een week") zijn een voorstel
-// dat het aanspreekpunt zelf moet bevestigen vóór deze pagina live gaat. Het is
-// haar mailbox en haar belofte, niet die van de site.
+// De teksten hieronder — de intro, "Wie leest je bericht?" en de vier stappen —
+// zijn die van het aanspreekpunt zelf (september 2026). Het is haar mailbox en
+// haar belofte, niet die van de site: wijzig ze niet zonder haar.
 import Layout from '../../layouts/Layout.astro';
 import Heading from '../../components/Heading.astro';
 import Link from '../../components/Link.astro';
@@ -22,46 +22,47 @@ const firstName = INTEGRITY_NAME.split(' ')[0];
 // privacyverklaring. Verandert hier iets, dan daar ook.
 const steps = [
   {
-    title: `${firstName} leest je melding`,
-    text: 'Alleen zij. Het bestuur en de trainers krijgen ze niet te zien, en op de server van de club blijft er niets van staan.',
+    title: `${firstName} leest je bericht`,
+    text: 'Wat je schrijft, komt als mailtje bij haar binnen en blijft ook bij haar. Het bestuur krijgt het niet te zien, en ook op de website van de club wordt niets bewaard.',
   },
   {
     title: 'Ze neemt contact met je op',
-    text: 'Binnen een week, als je een mailadres of nummer achterliet. Liet je niets achter, dan kan ze je niet bereiken en hoor je ook niet hoe het verder gaat. Dat is jouw keuze en dat mag.',
+    text: `Doorgaans beantwoordt ${firstName} je bericht binnen de week. Heb je geen contactgegevens achtergelaten? Dan wordt het moeilijk om in contact te staan met elkaar, maar het kan zeker als je een anonieme melding wil doen.`,
   },
   {
-    title: 'Jullie bekijken samen wat je wil',
-    text: `Misschien wil je gewoon dat iemand het weet. Misschien wil je dat er iets verandert. ${firstName} doet niets achter je rug, tenzij het nodig is om iemand te beschermen.`,
+    title: 'Jullie bekijken samen wat je nodig hebt',
+    text: `Misschien wil je gewoon dat iemand het weet. Misschien hoop je dat er zo iets verandert. ${firstName} doet niets zonder overleg, tenzij het echt nodig is om iemand te beschermen. Jij bepaalt mee wat er gebeurt.`,
   },
   {
-    title: 'Ze helpt je verder als dat nodig is',
-    text: `${firstName} is geen hulpverlener, maar ze kent de weg: naar hulpverlening, naar het Meldpunt Integriteit van Badminton Vlaanderen, of naar de politie als het zover komt. Ze blijft het opvolgen.`,
+    title: 'Ze helpt je verder als je dat wil',
+    text: `${firstName} is geen hulpverlener, maar ze weet wie je verder kan helpen. Bijvoorbeeld hulpverlening, het Meldpunt Integriteit van Badminton Vlaanderen, of de politie als het ernstig is. Ze volgt het samen met jou op.`,
   },
 ];
 ---
 
 <Layout
   title="Iets melden"
-  description="Meld een voorval van grensoverschrijdend gedrag bij BC Landegem. Je melding komt alleen bij het Aanspreekpunt Integriteit terecht; hier lees je wat er dan gebeurt."
+  description="Meld een voorval van grensoverschrijdend gedrag bij BC Landegem. Je bericht komt alleen bij het Aanspreekpunt Integriteit terecht; hier lees je wat er dan gebeurt."
 >
   <div class="mx-auto max-w-6xl px-4 py-14 sm:py-16">
     <RailHeading
       title="Iets melden"
-      intro={`Zit je met iets dat in de club gebeurd is en niet door de beugel kan? Hier kan je dat kwijt. Je melding gaat rechtstreeks naar ${firstName}, ons aanspreekpunt integriteit. Niemand anders leest ze.`}
+      intro={`Zit er jou iets dwars, of is er iets gebeurd in de club waar je mee zit? Heb je een vraag, een vermoeden of een klacht over grensoverschrijdend gedrag? Je kan, als jouw grenzen of die van iemand anders worden overschreven, terecht bij ${firstName}, ons Aanspreekpunt Integriteit.`}
     />
 
     {/* Bij wie komt dit terecht */}
     <section class="mt-12 max-w-3xl pl-10">
-      <Heading>Wie leest dit?</Heading>
+      <Heading>Wie leest je bericht?</Heading>
       <p class="mt-4 leading-relaxed text-ink-700">
-        {INTEGRITY_NAME}. Zij is het aanspreekpunt integriteit van de club en zit niet in het
-        bestuur. Wat je hier schrijft, komt als mail bij haar aan en blijft bij haar.
-        <Link href={url('/club/aanspreekpunt-integriteit/')}>Op haar pagina</Link> stelt ze zich
-        voor.
+        Je bericht komt rechtstreeks bij {firstName} terecht. Zij is het Aanspreekpunt Integriteit
+        (API) van onze club. Belangrijk om te weten is dat zij geen deel uitmaakt van het bestuur:
+        haar functie als API staat los van de bestuurswerking.
+        <Link href={url('/club/aanspreekpunt-integriteit/')}>Op haar pagina</Link> kan je
+        kennismaken.
       </p>
       <p class="mt-4 leading-relaxed text-ink-700">
-        Gaat het over {firstName} zelf, of praat je liever met iemand van buiten de club, dan kan
-        je terecht bij het
+        Het kan altijd gebeuren dat je liever met iemand anders praat. Misschien wil je overleggen
+        met iemand van buiten de club? Dan kan je terecht bij het
         <Link href="https://badminton.vlaanderen/meldpunt-integriteit/">Meldpunt Integriteit van Badminton Vlaanderen</Link>.
         Bellen kan ook, naar <Link href="tel:1712">1712</Link>. Dat is gratis en je hoeft je naam
         niet te zeggen.
@@ -70,7 +71,7 @@ const steps = [
 
     {/* Wat er dan gebeurt: de vier stappen, op de rail zoals de gedragscode */}
     <section class="mt-16">
-      <Heading class="pl-10">Wat er daarna gebeurt</Heading>
+      <Heading class="pl-10">Wat gebeurt er daarna?</Heading>
       <div class="relative mt-8">
         <span class="absolute bottom-6 left-[6px] top-6 w-1 -translate-x-1/2 rounded-full bg-club-500" aria-hidden="true"></span>
         <ol class="max-w-3xl">
