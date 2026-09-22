@@ -10,9 +10,12 @@
 // de pagina niet (navigator.serviceWorker.controller is null); bij elk volgend
 // bezoek, en dus zeker in de geïnstalleerde app, wél. Geen bezoekteller in
 // localStorage nodig. Verder blijft ze weg voor wie al geabonneerd is, wie
-// berichten geblokkeerd heeft, en op toestellen waar push niet kan (iOS in
-// Safari zonder installatie: daar zou de strook naar een pagina leiden die
-// eerst om een installatie vraagt, en dat is twee stappen voor één zin).
+// berichten geblokkeerd heeft, en in browsers zonder push.
+//
+// iOS in Safari zonder installatie is het geval apart: Apple geeft push daar
+// alleen aan een app op het beginscherm. Dan zegt de strook niet "kies je
+// berichten" maar "zet de site op je beginscherm", en wijst ze naar de stappen
+// op de instellingenpagina. De tekst zit al in de HTML; het script kiest.
 //
 // Wegklikken onthoudt de datum in localStorage en zwijgt dan een half jaar: een
 // seizoen ver, zodat wie in september opnieuw begint het nog één keer hoort.
@@ -24,9 +27,14 @@ import { url } from '../lib/url';
 interface Props {
   /** De ene zin die zegt wat je krijgt. Per pagina anders. */
   text: string;
+  /** Dezelfde zin voor iOS zonder installatie, waar de eerste stap het beginscherm is. */
+  iosText?: string;
 }
 
-const { text } = Astro.props;
+const {
+  text,
+  iosText = 'Zet de site op je beginscherm en krijg een seintje bij clubnieuws of een nieuwe intraclubstand.',
+} = Astro.props;
 ---
 
 {
@@ -40,15 +48,28 @@ const { text } = Astro.props;
     >
       <div class="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3 sm:gap-6">
         <p class="min-w-0 flex-1 text-sm font-medium leading-snug sm:text-base">
-          {text}{' '}
-          <a
-            id="push-nudge-link"
-            href={url('/club/pushberichten/')}
-            class="type-label inline-flex items-center gap-1.5 whitespace-nowrap text-xs text-club-300 hover:text-white hover:underline"
-          >
-            Kies je berichten
-            <Arrow class="h-3.5 w-3.5" />
-          </a>
+          <span id="push-nudge-default">
+            {text}{' '}
+            <a
+              id="push-nudge-link"
+              href={url('/club/pushberichten/')}
+              class="type-label inline-flex items-center gap-1.5 whitespace-nowrap text-xs text-club-300 hover:text-white hover:underline"
+            >
+              Kies je berichten
+              <Arrow class="h-3.5 w-3.5" />
+            </a>
+          </span>
+          <span id="push-nudge-ios" hidden>
+            {iosText}{' '}
+            <a
+              id="push-nudge-ios-link"
+              href={url('/club/pushberichten/#instellingen')}
+              class="type-label inline-flex items-center gap-1.5 whitespace-nowrap text-xs text-club-300 hover:text-white hover:underline"
+            >
+              Zo doe je dat
+              <Arrow class="h-3.5 w-3.5" />
+            </a>
+          </span>
         </p>
         <button
           id="push-nudge-close"
@@ -92,24 +113,37 @@ const { text } = Astro.props;
     if (nudge) nudge.hidden = true;
   };
 
-  const shouldShow = async (): Promise<boolean> => {
-    if (pushSupport() !== 'ok' || permission() === 'denied') return false;
+  // Welke variant er komt, of geen: 'default' met de vinkjes als volgende stap,
+  // 'ios' met het beginscherm als volgende stap.
+  const variant = async (): Promise<'default' | 'ios' | null> => {
+    const support = pushSupport();
+    if (support !== 'ok' && support !== 'ios-install') return null;
+    // In Safari zonder installatie bestaat Notification niet, dus is er ook
+    // niets geweigerd; die controle geldt alleen waar push echt kan.
+    if (support === 'ok' && permission() === 'denied') return null;
     const since = dismissedAt();
-    if (since === 0 || (since !== null && Date.now() - since < SILENCE_MS)) return false;
+    if (since === 0 || (since !== null && Date.now() - since < SILENCE_MS)) return null;
     // Wie hier voor het eerst is, heeft nog geen besturende worker: dan niet.
-    if (!navigator.serviceWorker.controller) return false;
+    if (!('serviceWorker' in navigator) || !navigator.serviceWorker.controller) return null;
+    if (support === 'ios-install') return 'ios';
     const registration = await navigator.serviceWorker.getRegistration();
-    if (!registration) return false;
-    return (await registration.pushManager.getSubscription()) === null;
+    if (!registration) return null;
+    return (await registration.pushManager.getSubscription()) === null ? 'default' : null;
   };
 
   if (nudge) {
-    shouldShow()
-      .then((show) => {
-        if (!show) return;
+    variant()
+      .then((which) => {
+        if (!which) return;
+        const ios = which === 'ios';
+        const defaultText = document.getElementById('push-nudge-default');
+        const iosText = document.getElementById('push-nudge-ios');
+        if (defaultText) defaultText.hidden = ios;
+        if (iosText) iosText.hidden = !ios;
         nudge.hidden = false;
-        document.getElementById('push-nudge-close')?.addEventListener('click', dismiss);
-        document.getElementById('push-nudge-link')?.addEventListener('click', dismiss);
+        for (const id of ['push-nudge-close', 'push-nudge-link', 'push-nudge-ios-link']) {
+          document.getElementById(id)?.addEventListener('click', dismiss);
+        }
       })
       .catch(() => {
         // Een browser die halverwege struikelt, krijgt gewoon geen strook.

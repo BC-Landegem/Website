@@ -49,7 +49,7 @@ const oldest = seasons[0]?.label.slice(0, 4);
       {PUSH_ENABLED && (
         <a
           href={url('/club/pushberichten/')}
-          class="type-label mt-3 inline-flex items-center gap-2 text-xs text-ink-500 hover:text-club-700 hover:underline"
+          class="type-label mt-3 flex w-fit items-center gap-2 text-xs text-ink-500 hover:text-club-700 hover:underline"
         >
           Krijg een bericht bij een nieuwe stand
         </a>
@@ -170,7 +170,10 @@ const oldest = seasons[0]?.label.slice(0, 4);
       <ArchiveLink group="intraclub" />
     </div>
   </div>
-  <PushNudge text="Een seintje zodra de nieuwe stand er staat?" />
+  <PushNudge
+    text="Een seintje zodra de nieuwe stand er staat?"
+    iosText="Zet de site op je beginscherm en krijg een seintje zodra de nieuwe stand er staat."
+  />
 </Layout>
 
 <script>
