@@ -78,6 +78,10 @@ jobs:
           # Zie deploy.yml voor de uitleg bij deze twee.
           PUBLIC_INTRA_API: https://intra.bclandegem.be/api
           PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.TURNSTILE_SITE_KEY }}
+          # Publieke VAPID-sleutel voor pushberichten, als variable op de
+          # environment: zo krijgt het testsubdomein een ander sleutelpaar dan
+          # productie. Leeg = push uit.
+          PUBLIC_VAPID_PUBLIC_KEY: ${{ vars.VAPID_PUBLIC_KEY }}
 
       - name: Testomgeving afschermen voor zoekmachines
         # Een geïndexeerde kopie concurreert met www.bclandegem.be en blijft na

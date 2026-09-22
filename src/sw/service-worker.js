@@ -25,11 +25,19 @@
  * training tonen die intussen voorbij is. Dat is de prijs voor iets zien in een
  * sporthal zonder bereik; de service worker kent de betekenis van de data niet
  * en kan er niet op filteren.
+ *
+ * Onderaan staat een vierde taak, los van de caches: pushberichten ontvangen
+ * en tonen (zie src/data/push.ts en de README onder Databronnen).
  */
 
 const VERSION = '__VERSION__';
 const BASE = '__BASE__';
 const SHELL = /* __SHELL__ */ [];
+// Pushberichten. Een lege sleutel betekent: push staat uit, en dan doen de
+// handlers onderaan niets — het abonnement dat er misschien nog staat, blijft
+// dan stil tot een build mét sleutel het weer oppikt.
+const PUSH_ENDPOINT = '__PUSH_ENDPOINT__';
+const VAPID_PUBLIC_KEY = '__VAPID_PUBLIC_KEY__';
 
 // De schil- en assetcaches horen bij één build en worden bij elke nieuwe
 // versie weggegooid. De datacache overleeft dat bewust: anders sta je na een
@@ -282,4 +290,106 @@ async function cacheFirst(event, request) {
     event.waitUntil(cache.put(request, response.clone()));
   }
   return response;
+}
+
+/*
+ * Pushberichten.
+ *
+ * De server (Laravel, intra.bclandegem.be) stuurt een JSON-payload:
+ *   { title, body, url?, tag?, topic? }
+ * `url` is waar een tik naartoe gaat, relatief aan de site (bv.
+ * "/intraclub/speeldag/?id=123") of absoluut. `tag` laat een nieuw bericht een
+ * ouder met dezelfde tag vervangen in plaats van ernaast te komen: één "nieuwe
+ * stand" tegelijk, niet vijf. Ontbreekt de payload of is hij geen JSON, dan
+ * tonen we toch iets: een stil verloren bericht is erger dan een karig bericht.
+ */
+self.addEventListener('push', (event) => {
+  if (!VAPID_PUBLIC_KEY) return;
+  let payload = {};
+  try {
+    payload = event.data ? event.data.json() : {};
+  } catch {
+    payload = { body: event.data ? event.data.text() : '' };
+  }
+  const title = payload.title || 'BC Landegem';
+  const options = {
+    body: payload.body || '',
+    icon: `${BASE}icons/icon-192.png`,
+    // Het badge-icoon is wat Android in de statusbalk zet: één kleur, alleen
+    // de vorm telt. Zie scripts/generate-icons.mjs.
+    badge: `${BASE}icons/badge-96.png`,
+    lang: 'nl-BE',
+    data: { url: payload.url || BASE, topic: payload.topic || null },
+  };
+  if (payload.tag) {
+    options.tag = payload.tag;
+    // Zonder renotify vervangt een bericht met dezelfde tag het vorige stíl:
+    // geen trilling, geen geluid. Een nieuwe stand verdient wel een seintje.
+    options.renotify = true;
+  }
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+/*
+ * Een tik op het bericht opent de bijhorende pagina. Staat de app al open op
+ * precies die pagina, dan halen we dat venster naar voren in plaats van een
+ * tweede te openen. Enkel http(s), en enkel als het pad naar onze eigen site
+ * of een absolute link uit onze eigen payload wijst — alles anders valt terug
+ * op de startpagina.
+ */
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const target = resolveUrl(event.notification.data && event.notification.data.url);
+  event.waitUntil(
+    (async () => {
+      const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+      const open = windows.find((client) => client.url.split('#')[0] === target);
+      if (open && 'focus' in open) return open.focus();
+      return self.clients.openWindow(target);
+    })(),
+  );
+});
+
+function resolveUrl(url) {
+  const fallback = new URL(BASE, self.location.origin).href;
+  if (typeof url !== 'string' || !url) return fallback;
+  try {
+    const resolved = new URL(url, self.location.origin);
+    return resolved.protocol === 'https:' || resolved.protocol === 'http:' ? resolved.href : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+/*
+ * De browser kan een abonnement van zijn kant vernieuwen (de pushdienst
+ * roteert, het endpoint verloopt). Dan krijgt de server het oude endpoint mee,
+ * zodat hij de onderwerpen kan overzetten en het oude kan wissen. Zonder dit
+ * verdwijnt zo'n abonnee stil uit de lijst en weet hij dat zelf niet.
+ */
+self.addEventListener('pushsubscriptionchange', (event) => {
+  if (!VAPID_PUBLIC_KEY) return;
+  event.waitUntil(
+    (async () => {
+      const previous = event.oldSubscription ? event.oldSubscription.endpoint : null;
+      const subscription = await self.registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: vapidKey(),
+      });
+      const body = subscription.toJSON();
+      body.previous_endpoint = previous;
+      await fetch(PUSH_ENDPOINT, {
+        method: 'PUT',
+        headers: { 'content-type': 'application/json', accept: 'application/json' },
+        body: JSON.stringify(body),
+      });
+    })().catch(() => {}),
+  );
+});
+
+/** base64url → Uint8Array, wat pushManager.subscribe als applicationServerKey wil. */
+function vapidKey() {
+  const padded = VAPID_PUBLIC_KEY + '='.repeat((4 - (VAPID_PUBLIC_KEY.length % 4)) % 4);
+  const raw = atob(padded.replace(/-/g, '+').replace(/_/g, '/'));
+  return Uint8Array.from(raw, (char) => char.charCodeAt(0));
 }

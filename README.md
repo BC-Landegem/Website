@@ -66,7 +66,7 @@ src/
   content/      archief/: 837 markdownbestanden uit de oude Joomla-site
   data/         Alle inhoud die geen code is — zie "Inhoud aanpassen"
   layouts/      Layout.astro: de enige layout, draagt <head>, PWA en navigatie
-  lib/          Logica: intraclub, kalender, media, de verloopgrafiek, en url()
+  lib/          Logica: intraclub, kalender, media, pushabonnement, de verloopgrafiek, en url()
   pages/        Eén bestand per route (plus twee endpoints: manifest en sw.js)
   styles/       global.css met de Tailwind @theme-tokens
   sw/           Broncode van de service worker en het opruimscript
@@ -95,6 +95,7 @@ aanraken.
 | App-naam, offline schil, snelkoppelingen | `src/data/pwa.ts` | Manifest en service worker (iconen genereer je apart) |
 | Contactformulier: endpoint, Turnstile-sleutel, clubadres | `src/data/contact.ts` | Het formulier op `/club/contact/` — zie Databronnen |
 | Meldformulier: endpoint, naam en adres van het Aanspreekpunt Integriteit | `src/data/contact.ts` | `/club/melden/`, de bedankpagina en de uitwijkadressen — de ontvanger zelf staat in de Laravel-config, zie Databronnen |
+| Pushberichten: onderwerpen, endpoint | `src/data/push.ts` | `/club/pushberichten/` en de service worker — de sleutel komt uit de build-omgeving (`PUBLIC_VAPID_PUBLIC_KEY`), zie Databronnen |
 | Kleuren en typografie | `src/styles/global.css` (`@theme`) | De hele site — voor het clubrood eerst het kleurlab, zie hieronder |
 | Losse tekst | De `.astro`-pagina zelf | Alleen die pagina |
 
@@ -245,6 +246,37 @@ bijeenhoudt:
 > Laravel-config. Wisselt de persoon, dan verandert `INTEGRITY_NAME` in
 > `src/data/contact.ts`, de tekst op `/club/aanspreekpunt-integriteit/` én die
 > config-regel. Vergeet je de laatste, dan post het formulier stil naar het oude adres.
+
+**Pushberichten** — eigen Web Push (VAPID) met de abonnementen in dezelfde
+Laravel-app: `https://intra.bclandegem.be/api/push/subscriptions`, instelbaar via
+`PUBLIC_PUSH_ENDPOINT`. De oude Joomla-site deed dit via OneSignal; waarom we dat
+niet overnemen en iedereen van nul start, staat in PRODUCT.md. Drie stukken code:
+`src/data/push.ts` (endpoint, sleutel, de twee onderwerpen), `src/lib/push-client.ts`
+met `src/components/PushSettings.astro` (de vinkjes op `/club/pushberichten/`) en het
+staartstuk van `src/sw/service-worker.js` (ontvangen, tikken, een verlopen abonnement
+vernieuwen).
+
+Dit is, anders dan de formulieren, wél een `fetch` met JSON — een abonnement is een
+object, geen formulierveld — dus geldt de CORS-waarschuwing hierboven: het origin van
+de site moet bij `CORS_ALLOWED_ORIGINS` van de API, en `PUT`/`DELETE` moeten door
+op dit pad. Het contract:
+
+| | |
+|---|---|
+| `PUT /api/push/subscriptions` | Body: de `PushSubscription.toJSON()` van de browser (`endpoint`, `keys.p256dh`, `keys.auth`) plus optioneel `topics: string[]` en `previous_endpoint`. Upsert op `endpoint`. **Zonder `topics`** blijven de bewaarde onderwerpen staan (nieuw endpoint: `[]`) — zo leest de pagina de stand terug zonder eigen GET. Met `previous_endpoint` (uit `pushsubscriptionchange`) neemt de rij de onderwerpen van het oude endpoint over en verdwijnt dat oude. Antwoord `200 { "topics": [...] }`; onbekend onderwerp → `422` |
+| `DELETE /api/push/subscriptions` | Body `{ "endpoint" }` → `204`. De site roept dit aan als de abonnee alle vinkjes uitzet, vóór `subscription.unsubscribe()` |
+| Onderwerpen | `club` (met de hand: een afgelasting, open speeldag, lessenreeks, ledenfeest) en `intraclub` (automatisch zodra een nieuwe speeldag berekend is, met `url` naar `/intraclub/speeldag/?id=…`). De lijst staat in `PUSH_TOPICS`; een nieuw onderwerp moet aan beide kanten |
+| Payload naar de browser | JSON `{ "title", "body", "url"?, "tag"?, "topic"? }`. `url` relatief aan de site of absoluut; `tag` laat een nieuw bericht het vorige met dezelfde tag vervangen (mét seintje), bv. `intraclub` zodat er nooit vijf standen naast elkaar hangen. Zet een TTL van hoogstens een paar dagen: een afgelasting van vorige week hoeft niet meer aan te komen |
+| Opruimen | Antwoordt de pushdienst `404` of `410` op een bericht, dan is het endpoint dood en gaat de rij eruit. Dat is ook het pad voor wie zich via de browserinstellingen afmeldt in plaats van via de pagina |
+| Bewaring | Endpoint, de twee sleutels, onderwerpen, tijdstip. Geen IP, geen user-agent, geen koppeling aan een lid — de privacyverklaring belooft dat |
+| Sleutels | Eén VAPID-paar per omgeving. De private helft en het `mailto:`-contact staan in de Laravel-config; de publieke helft komt als `PUBLIC_VAPID_PUBLIC_KEY` in de build (zie "Bouwen en deployen"). Een ander paar voor test en productie houdt testberichten weg van echte abonnees — en een abonnement hangt sowieso aan het origin, dus wat op het testsubdomein of op github.io geabonneerd raakt, bestaat na de switch niet meer |
+
+> **Zonder `PUBLIC_VAPID_PUBLIC_KEY` staat push uit.** `/club/pushberichten/` zegt dat
+> dan, de links ernaartoe (footer, `/intraclub/`, `llms.txt`) verschijnen
+> niet, en de service worker doet niets met een `push`-event. Een verkeerde sleutel
+> (niet base64url, niet 65 bytes) geeft op de pagina "De sleutel van de site klopt
+> niet" zodra iemand een vinkje zet. De badge in de statusbalk (`badge-96.png`) komt
+> uit `scripts/generate-icons.mjs`, net als de andere iconen.
 
 **De oude Joomla-site** — de enige bron die *eenmalig* is en een vervaldatum heeft.
 De databasedump staat in `scraped/` en blijft **buiten git** (zie `.gitignore`): hij
@@ -397,7 +429,11 @@ workflow staan: `PUBLIC_INTRA_API` (hardgecodeerd) en
 `PUBLIC_TURNSTILE_SITE_KEY`, die uit de repository variable
 `TURNSTILE_SITE_KEY` komt. Die laatste is geen secret — een Turnstile-sitesleutel
 staat sowieso in de HTML — vandaar een variable en geen secret. Is ze niet gezet,
-dan bouwt het contactformulier zonder captcha en faalt er niets.
+dan bouwt het contactformulier zonder captcha en faalt er niets. Hetzelfde geldt
+voor `PUBLIC_VAPID_PUBLIC_KEY` uit de variable `VAPID_PUBLIC_KEY`: leeg betekent een
+site zonder pushberichten. Op Pages zet je die hoogstens om te testen, met een ander
+sleutelpaar dan productie — een abonnement hangt aan het origin en overleeft de
+domeinswitch niet.
 
 **De FTP-deploy** leest zijn instellingen van de environment `shared-hosting`
 (Settings → Environments), zodat test en productie alleen verschillen in wat
@@ -410,6 +446,7 @@ daar ingevuld staat:
 | variable | `FTP_SERVER_DIR` | Webroot op de server, standaard `public_html/` (met slash) |
 | variable | `FTP_PROTOCOL` | Standaard `ftps`; alleen `ftp` als de host geen TLS kan — dan gaat het wachtwoord in klare tekst |
 | variable | `NOINDEX` | `true` zolang het een testomgeving is: de workflow voegt `X-Robots-Tag: noindex` aan `.htaccess` toe en schrijft een `robots.txt` met `Disallow: /` |
+| variable | `VAPID_PUBLIC_KEY` | De publieke VAPID-sleutel van déze omgeving; leeg = geen pushberichten. Per environment, zodat test en productie een eigen sleutelpaar hebben — zie "Databronnen · Pushberichten" |
 
 De upload is een incrementele sync ([FTP-Deploy-Action](https://github.com/SamKirkland/FTP-Deploy-Action)):
 alleen gewijzigde bestanden gaan over, en wat lokaal verdween wordt op de server
@@ -424,12 +461,14 @@ blijven ongemoeid. De sync wordt nooit halverwege afgebroken
 gehashte bestanden onder `/_astro/` en `no-cache` voor HTML, manifest en `sw.js`.
 Op Pages is het bestand onschadelijk.
 
-> **Drie dingen staan buiten deze repo en moeten mee bij een nieuw domein**, ook
+> **Vier dingen staan buiten deze repo en moeten mee bij een nieuw domein**, ook
 > bij het testsubdomein: het origin bij `CORS_ALLOWED_ORIGINS` van de
-> intraclub-API (anders "De standen konden niet geladen worden"), datzelfde
-> origin in de redirect-allowlist van het contact- en meldformulier aan de
-> Laravel-kant, en het domein bij de Turnstile-widget in Cloudflare (anders
-> weigert de captcha). Zie "Databronnen".
+> intraclub-API (anders "De standen konden niet geladen worden", en anders kan
+> ook niemand zich op pushberichten abonneren), datzelfde origin in de
+> redirect-allowlist van het contact- en meldformulier aan de Laravel-kant, het
+> domein bij de Turnstile-widget in Cloudflare (anders weigert de captcha), en
+> een VAPID-sleutelpaar voor die omgeving (privaat in de Laravel-config, publiek
+> als `VAPID_PUBLIC_KEY` op de environment). Zie "Databronnen".
 
 **De domeinswitch** is met deze opzet geen code-wijziging: `SITE_URL` op
 `https://www.bclandegem.be`, de FTP-secrets op het hoofdaccount, `NOINDEX` weg

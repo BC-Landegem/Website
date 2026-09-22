@@ -44,6 +44,12 @@ jobs:
           # Is hij niet gezet, dan bouwt het formulier zonder widget en leunt de
           # verdediging op honeypot, tijdslot en de rate limit van de server.
           PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.TURNSTILE_SITE_KEY }}
+          # Publieke VAPID-sleutel voor pushberichten; ook geen secret. Leeg =
+          # push uit. Abonnementen hangen aan het origin, dus wat hier op
+          # github.io geabonneerd raakt, is na de domeinswitch waardeloos —
+          # zet deze variable op Pages dus alleen om te testen, en met een
+          # ander sleutelpaar dan productie.
+          PUBLIC_VAPID_PUBLIC_KEY: ${{ vars.VAPID_PUBLIC_KEY }}
 
   deploy:
     needs: build

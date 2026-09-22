@@ -10,6 +10,7 @@
 // staan er niet in — zonder parameter tonen ze niets.
 import type { APIRoute } from 'astro';
 import { url } from '../lib/url';
+import { PUSH_ENABLED } from '../data/push';
 
 type Link = [path: string, name: string, note: string];
 
@@ -42,6 +43,9 @@ const SECTIONS: { heading: string; links: Link[] }[] = [
       ['/club/aanspreekpunt-integriteit/', 'Aanspreekpunt Integriteit', 'Waar je terechtkan met vragen, vermoedens of klachten over grensoverschrijdend gedrag.'],
       ['/club/melden/', 'Iets melden', 'Meldformulier grensoverschrijdend gedrag; komt alleen bij het Aanspreekpunt Integriteit terecht.'],
       ['/club/privacy/', 'Privacy', 'Hoe de club met persoonsgegevens omgaat (GDPR).'],
+      ...(PUSH_ENABLED
+        ? [['/club/pushberichten/', 'Pushberichten', 'Berichten op je toestel over clubnieuws en nieuwe intraclubstanden aan- en afzetten, per onderwerp.'] as Link]
+        : []),
     ],
   },
   {
