@@ -44,7 +44,7 @@ const SECTIONS: { heading: string; links: Link[] }[] = [
       ['/club/melden/', 'Iets melden', 'Meldformulier grensoverschrijdend gedrag; komt alleen bij het Aanspreekpunt Integriteit terecht.'],
       ['/club/privacy/', 'Privacy', 'Hoe de club met persoonsgegevens omgaat (GDPR).'],
       ...(PUSH_ENABLED
-        ? [['/club/pushberichten/', 'Pushberichten', 'Berichten op je toestel over clubnieuws en nieuwe intraclubstanden aan- en afzetten, per onderwerp.'] as Link]
+        ? [['/club/pushberichten/', 'Pushberichten', 'Berichten op je toestel over nieuwe intraclubstanden, en af en toe een clubbericht, aan- en afzetten per onderwerp.'] as Link]
         : []),
     ],
   },

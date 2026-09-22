@@ -36,17 +36,21 @@ export const PUSH_ENABLED = VAPID_PUBLIC_KEY !== '';
  * onderwerp bij, dan ook aan de Laravel-kant (validatie én een verzender).
  */
 export const PUSH_TOPICS = [
-  {
-    id: 'club',
-    label: 'Clubberichten',
-    description:
-      'Wat het bestuur je wil laten weten: een speelavond die niet doorgaat, een open speeldag, een lessenreeks, het ledenfeest. Enkele keren per seizoen.',
-  },
+  // Intraclub staat eerst: daar bewijst push zijn nut. Clubberichten is bijzaak.
+  // De clubcommunicatie (mailings, ploegberichten, afgelastingen) loopt via
+  // Twizzit; dit kanaal dient hoogstens om occasioneel iets extra rond te
+  // sturen. De teksten mogen het dus nergens groter maken dan het is.
   {
     id: 'intraclub',
     label: 'Intraclub',
     description:
       'Een bericht zodra de stand van een nieuwe speeldag berekend is, met een link naar de uitslag. Om de twee weken tijdens het seizoen.',
+  },
+  {
+    id: 'club',
+    label: 'Clubberichten',
+    description:
+      'Heel af en toe iets extra van het bestuur, naast wat al via Twizzit komt: een open speeldag, een lessenreeks. Hoogstens een paar keer per seizoen, vaak minder.',
   },
 ] as const;
 
