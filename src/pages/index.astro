@@ -4,6 +4,7 @@ import Heading from '../components/Heading.astro';
 import Dot from '../components/Dot.astro';
 import Layout from '../layouts/Layout.astro';
 import Arrow from '../components/Arrow.astro';
+import PushNudge from '../components/PushNudge.astro';
 import { url } from '../lib/url';
 import trainings from '../data/trainings.json';
 import hero from '../assets/hero.jpg';
@@ -424,6 +425,9 @@ const photoCuts = [
       <path id="thread-core" fill="none" stroke="var(--color-club-500)" stroke-width="4" stroke-linecap="round" />
     </svg>
   </div>
+  {/* Wie terugkomt, en zeker wie de app op zijn beginscherm heeft, hoort
+       één keer dat pushberichten bestaan. Zie PushNudge.astro. */}
+  <PushNudge text="Een seintje op je telefoon bij clubnieuws of een nieuwe intraclubstand?" />
 </Layout>
 
 {/* Zonder JS komt er nooit data: verberg dan de gereserveerde blokken,

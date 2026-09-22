@@ -252,7 +252,8 @@ Laravel-app: `https://intra.bclandegem.be/api/push/subscriptions`, instelbaar vi
 `PUBLIC_PUSH_ENDPOINT`. De oude Joomla-site deed dit via OneSignal; waarom we dat
 niet overnemen en iedereen van nul start, staat in PRODUCT.md. Drie stukken code:
 `src/data/push.ts` (endpoint, sleutel, de twee onderwerpen), `src/lib/push-client.ts`
-met `src/components/PushSettings.astro` (de vinkjes op `/club/pushberichten/`) en het
+met `src/components/PushSettings.astro` (de vinkjes op `/club/pushberichten/`) plus
+`src/components/PushNudge.astro` (de wegklikbare strook die naar die pagina wijst), en het
 staartstuk van `src/sw/service-worker.js` (ontvangen, tikken, een verlopen abonnement
 vernieuwen).
 

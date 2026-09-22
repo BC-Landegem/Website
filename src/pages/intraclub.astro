@@ -5,6 +5,7 @@ import Pill from '../components/Pill.astro';
 import Dot from '../components/Dot.astro';
 import ArchiveLink from '../components/ArchiveLink.astro';
 import RailHeading from '../components/RailHeading.astro';
+import PushNudge from '../components/PushNudge.astro';
 import { url } from '../lib/url';
 import { allSeasons } from '../lib/intra-build';
 import { PUSH_ENABLED } from '../data/push';
@@ -42,8 +43,9 @@ const oldest = seasons[0]?.label.slice(0, 4);
           <path stroke-linecap="round" stroke-linejoin="round" d="M4 12h16m0 0l-6-6m6 6l-6 6" />
         </svg>
       </a>
-      {/* De ene plek waar push zichzelf verkoopt: wie hier om de twee weken
-          komt kijken of de stand er al staat, kan zich dat besparen. */}
+      {/* Hier verkoopt push zichzelf: wie om de twee weken komt kijken of de
+          stand er al staat, kan zich dat besparen. De strook onderaan
+          (PushNudge) zegt hetzelfde één keer luider, voor wie terugkomt. */}
       {PUSH_ENABLED && (
         <a
           href={url('/club/pushberichten/')}
@@ -168,6 +170,7 @@ const oldest = seasons[0]?.label.slice(0, 4);
       <ArchiveLink group="intraclub" />
     </div>
   </div>
+  <PushNudge text="Een seintje zodra de nieuwe stand er staat?" />
 </Layout>
 
 <script>

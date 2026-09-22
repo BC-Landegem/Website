@@ -1,0 +1,118 @@
+---
+// De strook onderaan die zegt dat pushberichten bestaan. Eén zin, een link naar
+// /club/pushberichten/ en een kruisje; nooit de browserprompt zelf (die komt
+// pas bij het eerste vinkje op die pagina, zie PRODUCT.md). Staat op de
+// startpagina en op /intraclub/: de twee plekken waar iemand die de app op zijn
+// beginscherm heeft, binnenkomt.
+//
+// De strook verschijnt alleen voor wie terugkomt. Het signaal daarvoor is de
+// service worker: bij een allereerste bezoek installeert hij nog en bestuurt hij
+// de pagina niet (navigator.serviceWorker.controller is null); bij elk volgend
+// bezoek, en dus zeker in de geïnstalleerde app, wél. Geen bezoekteller in
+// localStorage nodig. Verder blijft ze weg voor wie al geabonneerd is, wie
+// berichten geblokkeerd heeft, en op toestellen waar push niet kan (iOS in
+// Safari zonder installatie: daar zou de strook naar een pagina leiden die
+// eerst om een installatie vraagt, en dat is twee stappen voor één zin).
+//
+// Wegklikken onthoudt de datum in localStorage en zwijgt dan een half jaar: een
+// seizoen ver, zodat wie in september opnieuw begint het nog één keer hoort.
+// Doorklikken telt ook als gezien.
+import Arrow from './Arrow.astro';
+import { PUSH_ENABLED } from '../data/push';
+import { url } from '../lib/url';
+
+interface Props {
+  /** De ene zin die zegt wat je krijgt. Per pagina anders. */
+  text: string;
+}
+
+const { text } = Astro.props;
+---
+
+{
+  PUSH_ENABLED && (
+    <aside
+      id="push-nudge"
+      hidden
+      aria-label="Pushberichten"
+      class="fixed inset-x-0 bottom-0 z-40 border-t-4 border-club-600 bg-ink-950 text-feather-50 shadow-[0_-8px_24px_rgba(0,0,0,0.18)]"
+      style="padding-bottom: env(safe-area-inset-bottom)"
+    >
+      <div class="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3 sm:gap-6">
+        <p class="min-w-0 flex-1 text-sm font-medium leading-snug sm:text-base">
+          {text}{' '}
+          <a
+            id="push-nudge-link"
+            href={url('/club/pushberichten/')}
+            class="type-label inline-flex items-center gap-1.5 whitespace-nowrap text-xs text-club-300 hover:text-white hover:underline"
+          >
+            Kies je berichten
+            <Arrow class="h-3.5 w-3.5" />
+          </a>
+        </p>
+        <button
+          id="push-nudge-close"
+          type="button"
+          class="flex h-10 w-10 shrink-0 items-center justify-center text-feather-200 transition-colors hover:text-white"
+          aria-label="Sluiten"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+            <path d="M5 5l14 14M19 5L5 19" />
+          </svg>
+        </button>
+      </div>
+    </aside>
+  )
+}
+
+<script>
+  import { permission, pushSupport } from '../lib/push-client';
+
+  const STORAGE_KEY = 'push-nudge:dismissed-at';
+  const SILENCE_MS = 180 * 24 * 60 * 60 * 1000;
+
+  const nudge = document.getElementById('push-nudge');
+
+  // localStorage kan ontbreken of gooien (privévenster, geblokkeerde sitedata).
+  // Zonder geheugen liever geen strook dan een die elke keer terugkomt.
+  const dismissedAt = (): number | null => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? Number(raw) || 0 : null;
+    } catch {
+      return 0;
+    }
+  };
+  const dismiss = () => {
+    try {
+      localStorage.setItem(STORAGE_KEY, String(Date.now()));
+    } catch {
+      // Dan komt ze bij het volgende bezoek gewoon terug.
+    }
+    if (nudge) nudge.hidden = true;
+  };
+
+  const shouldShow = async (): Promise<boolean> => {
+    if (pushSupport() !== 'ok' || permission() === 'denied') return false;
+    const since = dismissedAt();
+    if (since === 0 || (since !== null && Date.now() - since < SILENCE_MS)) return false;
+    // Wie hier voor het eerst is, heeft nog geen besturende worker: dan niet.
+    if (!navigator.serviceWorker.controller) return false;
+    const registration = await navigator.serviceWorker.getRegistration();
+    if (!registration) return false;
+    return (await registration.pushManager.getSubscription()) === null;
+  };
+
+  if (nudge) {
+    shouldShow()
+      .then((show) => {
+        if (!show) return;
+        nudge.hidden = false;
+        document.getElementById('push-nudge-close')?.addEventListener('click', dismiss);
+        document.getElementById('push-nudge-link')?.addEventListener('click', dismiss);
+      })
+      .catch(() => {
+        // Een browser die halverwege struikelt, krijgt gewoon geen strook.
+      });
+  }
+</script>
