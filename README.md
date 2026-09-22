@@ -272,7 +272,7 @@ op dit pad. Het contract:
 | Sleutels | Eén VAPID-paar per omgeving. De private helft en het `mailto:`-contact staan in de Laravel-config; de publieke helft komt als `PUBLIC_VAPID_PUBLIC_KEY` in de build (zie "Bouwen en deployen"). Een ander paar voor test en productie houdt testberichten weg van echte abonnees — en een abonnement hangt sowieso aan het origin, dus wat op het testsubdomein of op github.io geabonneerd raakt, bestaat na de switch niet meer |
 
 > **Zonder `PUBLIC_VAPID_PUBLIC_KEY` staat push uit.** `/club/pushberichten/` zegt dat
-> dan, de links ernaartoe (Club-menu, footer, `/intraclub/`, `llms.txt`) verschijnen
+> dan, de links ernaartoe (footer, `/intraclub/`, `llms.txt`) verschijnen
 > niet, en de service worker doet niets met een `push`-event. Een verkeerde sleutel
 > (niet base64url, niet 65 bytes) geeft op de pagina "De sleutel van de site klopt
 > niet" zodra iemand een vinkje zet. De badge in de statusbalk (`badge-96.png`) komt

@@ -1,7 +1,6 @@
 ---
 import { url } from '../lib/url';
 import teams from '../data/teams.json';
-import { PUSH_ENABLED } from '../data/push';
 
 // De hoofdnavigatie volgt de doelgroepen: jeugd, recreanten, intraclub,
 // competitie.
@@ -11,9 +10,8 @@ const clubItems = [
   { label: 'Twizzit tips', href: '/club/twizzit/' },
   { label: 'Aanspreekpunt Integriteit', href: '/club/aanspreekpunt-integriteit/' },
   { label: 'Gedragscode', href: '/club/gedragscode/' },
-  // Alleen mét VAPID-sleutel: zonder sleutel zegt de pagina enkel dat push nog
-  // niet aan staat, en daar leid je niemand naartoe.
-  ...(PUSH_ENABLED ? [{ label: 'Pushberichten', href: '/club/pushberichten/' }] : []),
+  // Pushberichten staat bewust niet in dit menu: het is een instelling, geen
+  // clubinfo. Je komt er via de footer en via de link op de intraclubpagina.
   { label: 'Archief', href: '/archief/' },
 ];
 
