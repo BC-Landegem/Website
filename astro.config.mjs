@@ -2,6 +2,7 @@
 import { defineConfig } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
 import { loadEnv } from 'vite';
+import trainings from './src/data/trainings.json' with { type: 'json' };
 
 // Twee bestemmingen, één broncode:
 //   GitHub Pages   https://bc-landegem.github.io/Website/   (deploy.yml, standaard)
@@ -27,6 +28,9 @@ export default defineConfig({
   // Astro zet de base niet voor de bestemming van een redirect, vandaar expliciet.
   redirects: {
     '/club/intern-reglement': `${base}/club/gedragscode/`.replace(/\/{2,}/g, '/'),
+    // Zoals op de oude site: /inschrijven gaat rechtstreeks naar het Twizzit-formulier.
+    // Een korte link om door te geven, bewust niet in het menu.
+    '/inschrijven': trainings.registrationForm,
   },
   vite: {
     plugins: [tailwindcss()],

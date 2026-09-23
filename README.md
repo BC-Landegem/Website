@@ -200,7 +200,8 @@ die niet meer.
 > `CORS_ALLOWED_ORIGINS` aan de kant van de API.
 
 **Twizzit** — het inschrijfformulier is één externe link in
-`src/data/trainings.json`. Geen integratie, geen sleutel.
+`src/data/trainings.json`. Geen integratie, geen sleutel. `/inschrijven` is een
+redirect naar datzelfde formulier (in `astro.config.mjs`), niet opgenomen in het menu.
 
 **Het contactformulier** — `src/data/contact.ts` wijst naar een endpoint in
 diezelfde Laravel-app: `https://intra.bclandegem.be/api/contact`, instelbaar via
