@@ -2,11 +2,12 @@
 /*
  * Pagina niet gevonden. Astro bouwt zelf geen 404 voor een statische site — de
  * dev-server heeft er een, maar in een build bestaat er alleen wat hier staat:
- * src/pages/404.astro wordt dist/404.html, en dát bestand pakt GitHub Pages op
- * voor elke onbekende URL onder de site. Zonder deze pagina krijg je de grijze
- * standaard-404 van GitHub, zonder navigatie terug.
+ * src/pages/404.astro wordt dist/404.html, en dát bestand toont Apache voor elke
+ * onbekende URL (ErrorDocument in public/.htaccess). Zonder deze pagina krijg je
+ * de kale standaard-404 van de server, zonder navigatie terug.
  *
- * Alle links lopen via url() en zijn dus absoluut (/Website/...). Nodig: deze
+ * Alle links lopen via url() en zijn dus absoluut (/kalender/, lokaal
+ * /Website/kalender/). Nodig: deze
  * pagina wordt geserveerd op de URL die de bezoeker intypte, hoe diep ook, en
  * relatieve links zouden vanaf /club/oud/iets/ de verkeerde kant op wijzen.
  *

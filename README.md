@@ -1,12 +1,13 @@
 # BC Landegem — clubwebsite
 
 De clubwebsite van Badmintonclub Landegem: een statische site gebouwd met
-[Astro](https://astro.build) 7 en Tailwind CSS v4. Ze wordt op twee plaatsen
-gepubliceerd: op GitHub Pages en, via FTP, op de shared hosting van bclandegem.be.
+[Astro](https://astro.build) 7 en Tailwind CSS v4, via FTP gepubliceerd op de
+shared hosting van bclandegem.be.
 
-Live: <https://bc-landegem.github.io/Website/> — de opvolger van www.bclandegem.be.
-De FTP-deploy zet dezelfde build op een testsubdomein van de hosting (noindex),
-tot de domeinswitch; zie "Bouwen en deployen".
+Live: <https://www.bclandegem.be/> — sinds september 2026 de opvolger van de
+Joomla-site op datzelfde adres. Het vroegere preview-adres
+<https://bc-landegem.github.io/Website/> verwijst alleen nog door; zie "Bouwen en
+deployen".
 
 Deze README beschrijft **hóe** de site werkt en hoe je eraan werkt. Het **waarom**
 — doelgroepen, context en de redenering achter de keuzes — staat in
@@ -48,8 +49,8 @@ mee verwijderen kan met `docker compose down --volumes`.
 > de browser. Dat zijn een dertigtal verzoeken en kost een paar seconden. Zonder
 > netwerk faalt de build; zie "Databronnen · Intraclub-API".
 
-> **Let op de base-prefix.** De site staat op GitHub Pages onder `/Website`, en
-> Astro past die prefix ook in dev toe. De dev-server draait dus op
+> **Let op de base-prefix.** Zonder instellingen bouwt Astro nog zoals voor de
+> vroegere GitHub Pages-versie, onder `/Website`, en die prefix geldt ook in dev. De dev-server draait dus op
 > <http://localhost:4321/Website/> — niet op de root. `http://localhost:4321/`
 > geeft een 404; dat is verwacht gedrag, geen defect. Blijf ook op **4321**: dat
 > is het enige lokale origin dat de intraclub-API toelaat. Wil je zien hoe de
@@ -73,6 +74,7 @@ src/
 public/         Wordt onaangeraakt gekopieerd (logo, iconen, favicons,
                 en de geredde beelden uit het Joomla-archief)
 scripts/        Onderhoudsscripts die je met de hand draait — zie hieronder
+pages-redirect/ Wat er nog op github.io staat: een doorverwijzing naar www
 .claude/        Projectconfiguratie voor Claude Code — zie "De README bijhouden"
 ```
 
@@ -196,8 +198,9 @@ die niet meer.
 > `https://bc-landegem.github.io` toe. Draai je de dev-server of preview op een
 > andere poort, dan faalt elke browsercall met `net::ERR_FAILED` en zegt de
 > pagina "De standen konden niet geladen worden" — dat lijkt op een codefout maar
-> is er geen. Bij de domeinswitch moet het nieuwe origin bij
-> `CORS_ALLOWED_ORIGINS` aan de kant van de API.
+> is er geen. Voor productie moet `https://www.bclandegem.be` bij
+> `CORS_ALLOWED_ORIGINS` aan de kant van de API; het adres zonder www heeft
+> geen eigen origin nodig, `.htaccess` stuurt het door.
 
 **Twizzit** — het inschrijfformulier is één externe link in
 `src/data/trainings.json`. Geen integratie, geen sleutel. `/inschrijven` is een
@@ -412,39 +415,35 @@ het seizoen en kijk de winnaars na voor je kopieert — zie Databronnen.
 
 ## Bouwen en deployen
 
-Een push naar `master` start twee workflows die dezelfde broncode bouwen voor
-twee bestemmingen:
+Twee workflows, waarvan er één de site publiceert:
 
-| Workflow | Bouwt voor | Publiceert via | Blijft tot |
+| Workflow | Publiceert | Via | Wanneer |
 | --- | --- | --- | --- |
-| `deploy.yml` | `https://bc-landegem.github.io/Website/` | GitHub Pages | de domeinswitch; dan weg |
-| `deploy-ftp.yml` | de root van `SITE_URL` (nu het testsubdomein) | FTPS naar de shared hosting (DirectAdmin) | wordt bij de switch productie |
+| `deploy-ftp.yml` | de site, op de root van `SITE_URL` (`https://www.bclandegem.be`) | FTP(S) naar de shared hosting (DirectAdmin) | bij elke push naar `master`, elke nacht, en met de hand |
+| `deploy.yml` | een doorverwijzing op `https://bc-landegem.github.io/Website/` | GitHub Pages | alleen met de hand; één keer na de domeinswitch is genoeg |
 
-Het verschil zit in twee omgevingsvariabelen die `astro.config.mjs` leest:
-`SITE_URL` en `BASE_PATH`. Zonder die twee (lokaal, in `deploy.yml`) bouwt Astro
-voor Pages; `deploy-ftp.yml` zet ze op het eigen domein en `/`. Alles wat van de
-base afhangt — `url()`, het manifest, de service worker, de redirect van het
-oude reglement, de origin die het contactformulier meestuurt — volgt vanzelf.
+`astro.config.mjs` leest twee omgevingsvariabelen: `SITE_URL` en `BASE_PATH`.
+`deploy-ftp.yml` zet ze op het eigen domein en `/`. Zonder die twee (lokaal, in
+de container) bouwt Astro nog zoals voor de vroegere Pages-versie, onder
+`/Website`. Alles wat van de base afhangt — `url()`, het manifest, de service
+worker, de redirect van het oude reglement, de origin die het contactformulier
+meestuurt — volgt vanzelf.
 
-**GitHub Pages** vraagt geen secrets — wel twee omgevingsvariabelen die in de
-workflow staan: `PUBLIC_INTRA_API` (hardgecodeerd) en
-`PUBLIC_TURNSTILE_SITE_KEY`, die uit de repository variable
-`TURNSTILE_SITE_KEY` komt. Die laatste is geen secret — een Turnstile-sitesleutel
-staat sowieso in de HTML — vandaar een variable en geen secret. Is ze niet gezet,
-dan bouwt het contactformulier zonder captcha en faalt er niets. Hetzelfde geldt
-voor `PUBLIC_VAPID_PUBLIC_KEY` uit de variable `VAPID_PUBLIC_KEY`: leeg betekent een
-site zonder pushberichten. Op Pages zet je die hoogstens om te testen, met een ander
-sleutelpaar dan productie — een abonnement hangt aan het origin en overleeft de
-domeinswitch niet.
+Naast de environment hieronder leest de build twee waarden die niet per omgeving
+verschillen: `PUBLIC_INTRA_API` (hardgecodeerd in de workflow) en
+`PUBLIC_TURNSTILE_SITE_KEY`, uit de repository variable `TURNSTILE_SITE_KEY`.
+Die laatste is geen secret — een Turnstile-sitesleutel staat sowieso in de HTML —
+vandaar een variable. Is ze niet gezet, dan bouwen de formulieren zonder captcha
+en faalt er niets.
 
 **De FTP-deploy** leest zijn instellingen van de environment `shared-hosting`
-(Settings → Environments), zodat test en productie alleen verschillen in wat
-daar ingevuld staat:
+(Settings → Environments). Tot de domeinswitch stond daar een testsubdomein in;
+een nieuwe testomgeving is dezelfde workflow met andere waarden:
 
 | Soort | Naam | Betekenis |
 | --- | --- | --- |
 | secret | `FTP_SERVER`, `FTP_USERNAME`, `FTP_PASSWORD` | Het FTP-account van het (sub)domein — in DirectAdmin heeft elk subdomein er een eigen |
-| variable | `SITE_URL` | **Verplicht**, bv. `https://nieuw.bclandegem.be`. Ontbreekt hij, dan stopt de workflow vóór de build in plaats van een github.io-build op het subdomein te zetten |
+| variable | `SITE_URL` | **Verplicht**: `https://www.bclandegem.be`. Ontbreekt hij, dan stopt de workflow vóór de build in plaats van een github.io-build op de server te zetten |
 | variable | `FTP_SERVER_DIR` | Webroot op de server, standaard `public_html/` (met slash) |
 | variable | `FTP_PROTOCOL` | Standaard `ftps`; alleen `ftp` als de host geen TLS kan — dan gaat het wachtwoord in klare tekst |
 | variable | `NOINDEX` | `true` zolang het een testomgeving is: de workflow voegt `X-Robots-Tag: noindex` aan `.htaccess` toe en schrijft een `robots.txt` met `Disallow: /` |
@@ -455,16 +454,29 @@ alleen gewijzigde bestanden gaan over, en wat lokaal verdween wordt op de server
 gewist. Daarvoor bewaart de action `.ftp-deploy-sync-state.json` in de doelmap —
 laat dat bestand staan, anders gaat de volgende deploy weer alles uploaden. Ze
 verwijdert alleen wat ze zelf ooit uploadde, dus bestaande bestanden in de map
-blijven ongemoeid. De sync wordt nooit halverwege afgebroken
-(`cancel-in-progress: false`): een tweede push wacht.
+blijven ongemoeid — daarom is Joomla bij de switch met de hand uit `public_html`
+gehaald: anders bleef de oude site bereikbaar achter `/index.php/…`. De sync
+wordt nooit halverwege afgebroken (`cancel-in-progress: false`): een tweede push
+wacht.
 
-`public/.htaccess` gaat mee in de build en regelt wat GitHub Pages zelf doet:
-`404.html` als foutpagina, het mimetype van het manifest, een jaar cache voor de
-gehashte bestanden onder `/_astro/` en `no-cache` voor HTML, manifest en `sw.js`.
-Op Pages is het bestand onschadelijk.
+`public/.htaccess` gaat mee in de build en regelt wat GitHub Pages vroeger zelf
+deed: `404.html` als foutpagina, het mimetype van het manifest, een jaar cache
+voor de gehashte bestanden onder `/_astro/` en `no-cache` voor HTML, manifest en
+`sw.js`. Daarnaast twee soorten doorverwijzingen: `bclandegem.be` → `www` (één
+origin, anders weigert de intraclub-API en splitsen service worker en push zich),
+en de oude menu-adressen van Joomla die geen opvolger op hetzelfde pad hebben
+(`/contact`, `/foto`, `/club/api`, …). Oude artikel-URL's niet: `/archief/`
+ordent per jaar en vijftien urlnamen komen dubbel voor, dus vindt geen regel ze
+betrouwbaar terug — die vallen op `404.html`, dat naar de zoekfunctie wijst.
+
+**De doorverwijzing op github.io** staat in `pages-redirect/`: één `404.html` die
+elk pad onder `/Website/` naar hetzelfde pad op www stuurt (de workflow kopieert
+hem ook naar `index.html`), en een `sw.js` die de service worker van de oude
+Pages-versie vervangt, zijn caches wist en zich afmeldt. Zonder die laatste bleef
+wie de site daar ooit installeerde een gecachte kopie zien.
 
 > **Vier dingen staan buiten deze repo en moeten mee bij een nieuw domein**, ook
-> bij het testsubdomein: het origin bij `CORS_ALLOWED_ORIGINS` van de
+> bij een testomgeving: het origin bij `CORS_ALLOWED_ORIGINS` van de
 > intraclub-API (anders "De standen konden niet geladen worden", en anders kan
 > ook niemand zich op pushberichten abonneren), datzelfde origin in de
 > redirect-allowlist van het contact- en meldformulier aan de Laravel-kant, het
@@ -472,10 +484,10 @@ Op Pages is het bestand onschadelijk.
 > een VAPID-sleutelpaar voor die omgeving (privaat in de Laravel-config, publiek
 > als `VAPID_PUBLIC_KEY` op de environment). Zie "Databronnen".
 
-**De domeinswitch** is met deze opzet geen code-wijziging: `SITE_URL` op
-`https://www.bclandegem.be`, de FTP-secrets op het hoofdaccount, `NOINDEX` weg
-of op `false`, en `deploy.yml` verwijderen (plus de `gh workflow run deploy.yml`
-in `media-sync.yml`). Wat er daarna in de browser nagekeken moet worden — de
+**De domeinswitch** (september 2026) was geen code-wijziging: `SITE_URL` op
+`https://www.bclandegem.be`, de FTP-secrets op het hoofdaccount, `NOINDEX` weg,
+Joomla uit `public_html`, en daarna `deploy.yml` één keer met de hand voor de
+doorverwijzing op github.io. Wat er in de browser nagekeken moet worden — de
 oude service workers van Joomla — staat in PRODUCT.md.
 
 > **De build praat met de intraclub-API.** De erelijst, de eindstanden en de
@@ -485,7 +497,7 @@ oude service workers van Joomla — staat in PRODUCT.md.
 > losse haperingen. Met de nachtelijke cron hieronder betekent dat wel dat een
 > hapering om 04:00 een rode workflow oplevert.
 
-Beide deploy-workflows draaien ook **elke nacht om 04:00 UTC**. Niet omdat er dan
+De FTP-deploy draait ook **elke nacht om 04:00 UTC**. Niet omdat er dan
 iets gepusht is, maar omdat een deel van de build aan de klok hangt en niet aan
 een commit: een seizoen wordt pas als eindstandpagina gebouwd zodra het niet meer
 loopt, en dat "niet meer" volgt uit de datum van de laatste berekende speeldag.
@@ -493,8 +505,8 @@ Een statische site heeft geen klok, alleen builds. Zonder deze cron zou de
 eindstand van een net afgesloten seizoen pas verschijnen bij de volgende push.
 
 `media-sync.yml` draait elke nacht om 03:00 UTC — in de winter 4u, in de zomer 5u Belgische tijd (en kan met de hand via Actions). Vindt
-hij nieuwe foto's, dan commit hij `src/data/media.json` en **start hij zelf beide
-deploys** — nodig, omdat een push met het standaard `GITHUB_TOKEN` geen andere
+hij nieuwe foto's, dan commit hij `src/data/media.json` en **start hij zelf de
+FTP-deploy** — nodig, omdat een push met het standaard `GITHUB_TOKEN` geen andere
 workflows triggert.
 
 ## Valkuilen

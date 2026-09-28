@@ -1,18 +1,16 @@
+# Sinds de domeinswitch (september 2026) staat de site op www.bclandegem.be en
+# publiceert deploy-ftp.yml haar. Op https://bc-landegem.github.io/Website/ staat
+# alleen nog de doorverwijzing uit pages-redirect/: elk pad gaat naar hetzelfde
+# pad op www, en sw.js ruimt de service worker op bij wie de site hier ooit
+# bezocht of installeerde. Zo loopt geen bladwijzer of geïnstalleerde app dood.
+#
+# Alleen met de hand (Actions → Deploy to GitHub Pages → Run workflow), en pas
+# als www.bclandegem.be de nieuwe site toont: anders stuurt github.io bezoekers
+# naar een lege of halve server. Eén keer is genoeg; de inhoud volgt de site
+# niet, dus hoeft deze workflow niet mee te draaien bij een push of 's nachts.
 name: Deploy to GitHub Pages
 
 on:
-  push:
-    branches: [master]
-  # Een deel van de build hangt aan de klok, niet aan een commit: seasonState()
-  # verklaart een seizoen afgelopen na acht weken zonder berekende speeldag, en
-  # pas dán krijgt het een eindstandpagina. Zonder deze cron gebeurt dat niet —
-  # een statische site heeft geen klok, alleen builds.
-  #
-  # Om 04:00 en niet om 03:00: media-sync draait dan en trapt bij een wijziging
-  # zelf deze workflow af. Twee crons op hetzelfde uur zouden elkaar afknippen
-  # via `concurrency: pages` hieronder, willekeurig en zonder dat het opvalt.
-  schedule:
-    - cron: '0 4 * * *'
   workflow_dispatch:
 
 permissions:
@@ -25,39 +23,25 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-      - name: Build with Astro
-        uses: withastro/action@v6
-        env:
-          # De erelijst, de zeventien eindstanden en de records worden hier
-          # gebouwd: de build praat dus met de intraclub-API. Valt die weg, dan
-          # faalt de deploy — en dat is de bedoeling, want een halve historiek
-          # is erger dan geen deploy. Met de nachtelijke cron hierboven betekent
-          # dat wel dat een hapering om 04:00 een rode workflow oplevert.
-          PUBLIC_INTRA_API: https://intra.bclandegem.be/api
-          # Sitesleutel van Cloudflare Turnstile voor het contactformulier. Geen
-          # secret — hij staat sowieso in de HTML — dus een repository variable.
-          # Is hij niet gezet, dan bouwt het formulier zonder widget en leunt de
-          # verdediging op honeypot, tijdslot en de rate limit van de server.
-          PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.TURNSTILE_SITE_KEY }}
-          # Publieke VAPID-sleutel voor pushberichten; ook geen secret. Leeg =
-          # push uit. Abonnementen hangen aan het origin, dus wat hier op
-          # github.io geabonneerd raakt, is na de domeinswitch waardeloos —
-          # zet deze variable op Pages dus alleen om te testen, en met een
-          # ander sleutelpaar dan productie.
-          PUBLIC_VAPID_PUBLIC_KEY: ${{ vars.VAPID_PUBLIC_KEY }}
-
   deploy:
-    needs: build
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Ook /Website/ zelf doorverwijzen
+        # Pages serveert 404.html voor elk onbekend pad, maar de startpagina
+        # heeft een index.html nodig.
+        run: cp pages-redirect/404.html pages-redirect/index.html
+
+      - name: Upload
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: pages-redirect/
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5

@@ -1,0 +1,43 @@
+<!doctype html>
+<!--
+  Wat er sinds de domeinswitch nog op https://bc-landegem.github.io/Website/ staat
+  (deploy.yml). GitHub Pages serveert dit bestand voor elk onbekend pad, en de
+  workflow kopieert het naar index.html voor /Website/ zelf. Het script neemt het
+  pad mee: /Website/kalender/ gaat naar www.bclandegem.be/kalender/. Zonder
+  JavaScript brengt de meta-refresh je naar de startpagina.
+-->
+<html lang="nl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>BC Landegem is verhuisd</title>
+    <script>
+      location.replace(
+        'https://www.bclandegem.be' +
+          (location.pathname.replace(/^\/Website(?=\/|$)/, '') || '/') +
+          location.search +
+          location.hash,
+      );
+    </script>
+    <meta http-equiv="refresh" content="0; url=https://www.bclandegem.be/" />
+    <link rel="canonical" href="https://www.bclandegem.be/" />
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        line-height: 1.5;
+        max-width: 32rem;
+        margin: 4rem auto;
+        padding: 0 16px;
+        color: #111;
+        background: #fff;
+      }
+      a {
+        color: #b52d17;
+      }
+    </style>
+  </head>
+  <body>
+    <p>De site van BC Landegem staat nu op <a href="https://www.bclandegem.be/">www.bclandegem.be</a>.</p>
+  </body>
+</html>

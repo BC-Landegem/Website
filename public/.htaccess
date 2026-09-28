@@ -4,6 +4,43 @@
 # Astro bouwt dist/404.html; Apache moet weten dat dat de foutpagina is.
 ErrorDocument 404 /404.html
 
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Eén adres voor de site. Zonder deze regel draait ze ook op bclandegem.be,
+  # een tweede origin: daar weigert de intraclub-API (CORS), en service worker,
+  # pushabonnementen en localStorage splitsen zich over twee adressen. Onder
+  # Joomla stuurde de server al door naar www, maar het is niet zeker of dat uit
+  # het paneel kwam of uit Joomla's .htaccess; staat het in het paneel, dan is
+  # deze regel dubbel en onschadelijk. Op een testsubdomein matcht hij niet.
+  # http → https regelt de server zelf (nginx staat ervoor).
+  RewriteCond %{HTTP_HOST} ^bclandegem\.be$ [NC]
+  RewriteRule ^ https://www.bclandegem.be%{REQUEST_URI} [R=301,L]
+
+  # Oude menu-adressen van de Joomla-site (menutabel uit de dump van juni 2026,
+  # plus /digitale-folder en /lessen/ die er later bij kwamen). Wat hier niet
+  # staat, bestaat nog onder hetzelfde pad (/kalender, /club/word-lid, /jeugd, …)
+  # of heeft geen opvolger en valt op 404.html, dat naar de zoekfunctie van het
+  # archief wijst. Zo ook /nieuwsbrief: die bestaat niet meer.
+  #
+  # Oude artikel-URL's zitten er bewust niet in: /archief/ ordent per jaar en
+  # vijftien urlnamen komen dubbel voor, dus vindt geen enkele regel een oud
+  # artikel betrouwbaar terug. Alleen de categorieoverzichten gaan naar /archief/.
+  #
+  # Doelen voluit met https: bij een kaal pad bouwt Apache zelf de URL, met het
+  # schema dat hij van nginx binnenkrijgt, en dat kan http zijn — een extra sprong.
+  RewriteRule ^club/?$ https://%{HTTP_HOST}/club/over-de-club/ [R=301,L]
+  RewriteRule ^club/api/?$ https://%{HTTP_HOST}/club/aanspreekpunt-integriteit/ [R=301,L]
+  RewriteRule ^contact/?$ https://%{HTTP_HOST}/club/contact/ [R=301,L]
+  RewriteRule ^foto(/.*)?$ https://%{HTTP_HOST}/media/ [R=301,L]
+  RewriteRule ^digitale-folder/?$ https://%{HTTP_HOST}/folder/bclandegem-folder-2026-27.pdf [R=301,L]
+  RewriteRule ^lessen/?$ https://%{HTTP_HOST}/recreatief/ [R=301,L]
+  RewriteRule ^jeugd/(jeugdcup|pbo-jeugdcup|training-jeugd)/?$ https://%{HTTP_HOST}/jeugd/ [R=301,L]
+  RewriteRule ^intraclub-oud/?$ https://%{HTTP_HOST}/intraclub/erelijst/ [R=301,L]
+  RewriteRule ^club/alle-artikels(/[^/]+)?/?$ https://%{HTTP_HOST}/archief/ [R=301,L]
+  RewriteRule ^competitie/competitieverslagen/?$ https://%{HTTP_HOST}/archief/ [R=301,L]
+</IfModule>
+
 <IfModule mod_mime.c>
   AddType application/manifest+json .webmanifest
 </IfModule>
