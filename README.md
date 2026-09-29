@@ -94,6 +94,7 @@ aanraken.
 | Fotoalbums | `src/data/media.ts` | `/media/` én de fotostrook op de homepage — pas na een sync, zie Databronnen |
 | Facebook-/Instagram-links | `src/data/social.ts` | De knoppen "Volg de club" in de footer — leeg = het blok verdwijnt |
 | Kalenderbronnen en -kleuren | `src/data/calendar.ts` | `/kalender/` en de events op de homepage |
+| PK Oost-Vlaanderen 2026: toernooilink, inschrijfdeadline, dagen | `src/data/championship.ts` | Het PK-blok onder de rode band en de sticker in de hero. Na `ends` (2 november) verdwijnen ze vanzelf, bij de build én in de browser, maar de code blijft staan. De teksten op het veld (dagen, disciplines) staan in `Championship.astro` |
 | App-naam, offline schil, snelkoppelingen | `src/data/pwa.ts` | Manifest en service worker (iconen genereer je apart) |
 | Contactformulier: endpoint, Turnstile-sleutel, clubadres | `src/data/contact.ts` | Het formulier op `/club/contact/` — zie Databronnen |
 | Meldformulier: endpoint, naam en adres van het Aanspreekpunt Integriteit | `src/data/contact.ts` | `/club/melden/`, de bedankpagina en de uitwijkadressen — de ontvanger zelf staat in de Laravel-config, zie Databronnen |

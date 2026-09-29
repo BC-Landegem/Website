@@ -5,6 +5,8 @@ import Dot from '../components/Dot.astro';
 import Layout from '../layouts/Layout.astro';
 import Arrow from '../components/Arrow.astro';
 import PushNudge from '../components/PushNudge.astro';
+import Championship from '../components/Championship.astro';
+import ChampionshipSticker from '../components/ChampionshipSticker.astro';
 import { url } from '../lib/url';
 import trainings from '../data/trainings.json';
 import hero from '../assets/hero.jpg';
@@ -156,6 +158,7 @@ const photoCuts = [
             <span class="block text-[clamp(1.25rem,6.4vw,1.875rem)] sm:text-4xl lg:text-5xl">voor jong en oud</span>
             <span class="block text-[clamp(2rem,10.2vw,3rem)] text-club-500 sm:text-6xl lg:text-7xl">in Nevele</span>
           </h1>
+          <ChampionshipSticker />
           <p class="mt-6 max-w-xl text-lg text-ink-700">
             Vrij spel op maandag, woensdag en zondag, jeugdtraining op zaterdag. Nieuwe spelers
             mogen drie keer gratis meespelen voor ze beslissen.
@@ -212,6 +215,9 @@ const photoCuts = [
         </div>
       </div>
     </section>
+
+    {/* Het PK in onze zaal: tijdelijk, tot het weekend voorbij is */}
+    <Championship />
 
     {/* Intra top-10: het interne klassement als meetpunt op de draad.
          Live uit de intra-API; skeletrijen reserveren de ruimte zodat de

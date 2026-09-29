@@ -1,0 +1,54 @@
+---
+// De sticker in de hero: schuin onder de herokop geplakt, springt naar het
+// PK-blok onder de rode band. Een mini-veld herhaalt het beeld van dat blok.
+// Vanaf lg hangt hij rechts, aan het eind van "in Nevele", maar ónder die regel
+// en niet ernaast: ernaast raakt hij de getekende clubnaam van het logo, op
+// 1024px zelfs vol. Erboven kan niet, dat leest als een kicker.
+// Hij leeft zo lang als het blok (zie data/championship.ts); het script van
+// Championship.astro haalt hem weg wanneer het weekend voorbij is.
+import Arrow from './Arrow.astro';
+import { championshipPhase } from '../data/championship';
+
+const visible = championshipPhase(new Date()) !== 'ended';
+---
+
+{visible && (
+  <a
+    id="pk-sticker"
+    href="#pk"
+    class="pk-sticker group mt-6 inline-block -rotate-3 transition-transform duration-300 [transition-timing-function:var(--ease-launch)] hover:-translate-y-0.5 hover:rotate-0 lg:-mt-2 lg:ml-auto lg:block lg:w-fit"
+    aria-label="Provinciaal Kampioenschap Oost-Vlaanderen op 31 oktober en 1 november, bij ons in de zaal"
+  >
+    <span class="flex items-center gap-3 bg-ink-950 py-3 pl-3 pr-4 text-feather-50" style="clip-path: polygon(0 8%, 100% 0, 100% 100%, 0 92%)">
+      <svg class="h-6 w-13 shrink-0" viewBox="0 0 1340 610" aria-hidden="true">
+        <rect width="1340" height="610" fill="var(--color-club-600)" />
+        <g fill="none" stroke="var(--color-feather-50)" stroke-width="1" vector-effect="non-scaling-stroke">
+          <rect width="1340" height="610" vector-effect="non-scaling-stroke" />
+          <path d="M 472 0 V 610 M 868 0 V 610 M 0 305 H 472 M 868 305 H 1340" vector-effect="non-scaling-stroke" />
+          <path d="M 670 -40 V 650" stroke-width="2" vector-effect="non-scaling-stroke" />
+        </g>
+      </svg>
+      <span class="leading-none">
+        <span class="type-label block text-xs text-club-300">PK Oost-Vlaanderen</span>
+        <span class="type-numeral mt-1 block text-xl">31/10 &amp; 1/11</span>
+      </span>
+      <Arrow class="h-4 w-4 rotate-90 text-club-300 transition-transform duration-300 group-hover:translate-y-0.5" />
+    </span>
+  </a>
+)}
+
+<style is:global>
+  /* Hij wordt erop geplakt: even na de hero, één keer, en enkel met beweging aan. */
+  @media (prefers-reduced-motion: no-preference) {
+    .js .pk-sticker {
+      animation: pk-stick 0.45s var(--ease-launch) 0.6s backwards;
+    }
+  }
+  @keyframes pk-stick {
+    from {
+      opacity: 0;
+      scale: 1.2;
+      rotate: -9deg;
+    }
+  }
+</style>

@@ -32,6 +32,13 @@ export const albums: MediaAlbum[] = [
     share: 'https://photos.app.goo.gl/2axZmDtYLtPkDxeg6',
   },
   {
+    slug: 'pizzaparty-eindeseizoen-2025',
+    title: 'Pizzaparty eindeseizoen',
+    date: '2025-06',
+    category: 'club',
+    share: 'https://photos.app.goo.gl/yhnFSksUZ56TmHAG9',
+  },
+  {
     slug: 'pbo-jeugdcup-2025',
     title: 'PBO Jeugdcup 2025',
     date: '2025-03',

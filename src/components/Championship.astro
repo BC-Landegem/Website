@@ -1,0 +1,307 @@
+---
+// Het PK-blok op de homepage: het Provinciaal Kampioenschap Oost-Vlaanderen,
+// dit jaar bij ons. Eén badmintonveld draagt het hele programma — het net
+// deelt het in twee helften en dus in twee dagen: zaterdag dubbel, zondag
+// enkel. Het verschil zit in de zijstrook, de 46 cm tussen de dubbel- en de
+// enkelzijlijn: zaterdag telt ze mee, zondag ligt ze uit. Daar ligt telkens
+// een shuttle, en dat is de hele grap.
+//
+// Het blok valt na het weekend stil weg (zie data/championship.ts). De vluchtdraad
+// duikt eronder door, zoals onder de rode band: het vlak is dekkend.
+import Heading from './Heading.astro';
+import ExternalIcon from './ExternalIcon.astro';
+import trainings from '../data/trainings.json';
+import { championship, championshipPhase, championshipToday } from '../data/championship';
+
+const now = new Date();
+const phase = championshipPhase(now);
+const today = championshipToday(now);
+
+// Het veld op ware grootte in cm (BWF-maten).
+const LENGTH = 1340;
+const WIDTH = 610;
+const ALLEY = 46;
+const LONG_SERVICE = 76; // lange serveerlijn dubbel, vanaf de achterlijn
+const SHORT_SERVICE = 198; // korte serveerlijn, vanaf het net
+const NET = LENGTH / 2;
+// Afstand van de shuttle tot de achterlijn: in het achterveld.
+const SHUTTLE_FROM_BACK = 250;
+
+type Orientation = 'landscape' | 'portrait';
+// Liggend (vanaf lg) loopt de lengte langs x: zaterdag links, zondag rechts.
+// Staand (smaller) gespiegeld over de diagonaal: zaterdag boven, zondag onder.
+const point = (o: Orientation, x: number, y: number) => (o === 'landscape' ? { x, y } : { x: y, y: x });
+const line = (o: Orientation, x1: number, y1: number, x2: number, y2: number) => {
+  const a = point(o, x1, y1);
+  const b = point(o, x2, y2);
+  return { x1: a.x, y1: a.y, x2: b.x, y2: b.y };
+};
+const rect = (o: Orientation, x: number, y: number, width: number, height: number) =>
+  o === 'landscape' ? { x, y, width, height } : { x: y, y: x, width: height, height: width };
+
+const courtLines = (o: Orientation) => [
+  line(o, 0, ALLEY, LENGTH, ALLEY),
+  line(o, 0, WIDTH - ALLEY, LENGTH, WIDTH - ALLEY),
+  line(o, LONG_SERVICE, 0, LONG_SERVICE, WIDTH),
+  line(o, LENGTH - LONG_SERVICE, 0, LENGTH - LONG_SERVICE, WIDTH),
+  line(o, NET - SHORT_SERVICE, 0, NET - SHORT_SERVICE, WIDTH),
+  line(o, NET + SHORT_SERVICE, 0, NET + SHORT_SERVICE, WIDTH),
+  line(o, 0, WIDTH / 2, NET - SHORT_SERVICE, WIDTH / 2),
+  line(o, NET + SHORT_SERVICE, WIDTH / 2, LENGTH, WIDTH / 2),
+];
+
+// Twee shuttles in de zijstrook, gespiegeld rond het net, de kurk naar het net.
+// Liggend in de bovenste strook, staand in de rechterstrook (naast de dagteksten).
+const shuttles = (o: Orientation) => {
+  const y = o === 'landscape' ? ALLEY / 2 : WIDTH - ALLEY / 2;
+  return [
+    { day: 'sat', ...point(o, SHUTTLE_FROM_BACK, y), angle: o === 'landscape' ? 0 : 90 },
+    { day: 'sun', ...point(o, LENGTH - SHUTTLE_FROM_BACK, y), angle: o === 'landscape' ? 180 : 270 },
+  ];
+};
+
+const days = [
+  { key: 'sat', day: 'Zaterdag', date: '31 okt', discipline: 'Dubbel en gemengd dubbel', detail: 'in poules' },
+  { key: 'sun', day: 'Zondag', date: '1 nov', discipline: 'Enkelspel', detail: 'heren en dames' },
+];
+
+// De dagteksten liggen in de serveervakken van hun helft, tussen de lange en de
+// korte serveerlijn: daar kruist geen enkele lijn de letters.
+const pct = (value: number, total: number) => `${(value / total) * 100}%`;
+const box = (key: string, row: 'top' | 'bottom') =>
+  [
+    `left: ${pct(key === 'sat' ? LONG_SERVICE : NET + SHORT_SERVICE, LENGTH)}`,
+    `top: ${pct(row === 'top' ? ALLEY : WIDTH / 2, WIDTH)}`,
+    `width: ${pct(NET - SHORT_SERVICE - LONG_SERVICE, LENGTH)}`,
+    `height: ${pct(WIDTH / 2 - ALLEY, WIDTH)}`,
+  ].join('; ');
+
+const buttonClass =
+  'type-label inline-flex items-center gap-2 rounded-full bg-club-600 px-7 py-3.5 text-sm text-white transition-colors hover:bg-club-700';
+---
+
+{phase !== 'ended' && (
+  <section id="pk" data-phase={phase} data-today={today ?? undefined} class="bg-ink-950 text-feather-50">
+    <div class="mx-auto max-w-6xl px-4 py-20 sm:py-24">
+      <div class="grid gap-y-8 lg:grid-cols-12 lg:items-end lg:gap-x-12">
+        <Heading size="large" color="white" class="lg:col-span-7">
+          <span class="block">Het PK komt</span>
+          <span class="block text-club-500">naar Nevele</span>
+        </Heading>
+        <div class="lg:col-span-5">
+          <p class="max-w-xl text-feather-200">
+            Dit jaar organiseren we samen met PBO Badminton het Provinciaal Kampioenschap
+            Oost-Vlaanderen, gewoon bij ons in {trainings.location.name}. Er zijn reeksen van
+            klassement 1 tot 12. Zelf niet spelen? Kom dan supporteren.
+          </p>
+          <div class="mt-7 flex flex-wrap items-center gap-x-6 gap-y-4">
+            <a href={championship.url} target="_blank" rel="noopener" class:list={['pk-open', buttonClass]}>
+              Schrijf je in
+              <ExternalIcon />
+            </a>
+            <a href={championship.url} target="_blank" rel="noopener" class:list={['pk-closed', buttonClass]}>
+              Loting en uitslagen
+              <ExternalIcon />
+            </a>
+            {/* Enkel met JavaScript: de build weet niet hoe laat het is wanneer je kijkt. */}
+            <p id="pk-countdown" class="pk-open type-label hidden items-center gap-2 text-xs text-club-300">
+              <span class="h-2 w-2 rounded-full bg-club-500 motion-safe:animate-pulse" aria-hidden="true"></span>
+              <span id="pk-countdown-text"></span>
+            </p>
+          </div>
+          <p class="mt-4 text-sm text-feather-200">
+            <span class="pk-open">Inschrijven kan tot en met vrijdag 16 oktober.</span>
+            <span class="pk-closed">De inschrijvingen zijn gesloten. Loting en uitslagen staan op de toernooipagina.</span>
+          </p>
+        </div>
+      </div>
+
+      <figure class="pk-court flight mt-16">
+        {/* Liggend veld vanaf lg: de dagteksten staan op het veld zelf */}
+        <div class="relative hidden aspect-[1340/610] w-full lg:block">
+          <svg class="absolute inset-0 h-full w-full overflow-visible" viewBox={`0 0 ${LENGTH} ${WIDTH}`} aria-hidden="true">
+            {/* Zaterdag telt het hele veld, zijstroken inbegrepen; zondag enkel wat tussen de enkelzijlijnen ligt */}
+            <rect data-half="sat" {...rect('landscape', 0, 0, NET, WIDTH)} fill="var(--color-club-600)" />
+            <rect data-half="sun" {...rect('landscape', NET, ALLEY, NET, WIDTH - 2 * ALLEY)} fill="var(--color-club-600)" />
+            <g stroke="var(--color-feather-50)" fill="none">
+              <rect x="0" y="0" width={LENGTH} height={WIDTH} stroke-width="3" vector-effect="non-scaling-stroke" />
+              {courtLines('landscape').map((l) => (
+                <line {...l} stroke-width="3" vector-effect="non-scaling-stroke" />
+              ))}
+              {/* Het net, met de palen net buiten het veld */}
+              <line {...line('landscape', NET, -26, NET, WIDTH + 26)} stroke-width="5" vector-effect="non-scaling-stroke" />
+            </g>
+            <circle cx={NET} cy="-26" r="9" fill="var(--color-feather-50)" />
+            <circle cx={NET} cy={WIDTH + 26} r="9" fill="var(--color-feather-50)" />
+            {shuttles('landscape').map((s) => (
+              <g data-half={s.day} transform={`translate(${s.x} ${s.y}) rotate(${s.angle})`}>
+                <g class="pk-shuttle">
+                  <path d="M -34 -16 L 16 -8 L 16 8 L -34 16 Z" fill="var(--color-feather-50)" />
+                  <path d="M -34 -6 L 16 -3 M -34 6 L 16 3" fill="none" stroke="var(--color-ink-950)" stroke-opacity="0.25" stroke-width="2.5" />
+                  <circle cx="23" cy="0" r="10" fill="var(--color-cork-400)" />
+                </g>
+              </g>
+            ))}
+          </svg>
+
+          {days.map((day) => (
+            <Fragment>
+              <div
+                data-half={day.key}
+                class:list={['absolute flex flex-col justify-center p-5 xl:p-7', day.key === 'sun' && 'items-end text-right']}
+                style={box(day.key, 'top')}
+              >
+                <p class="type-label flex items-center gap-2 text-xs text-white">
+                  {day.day}
+                  <span class="pk-today-tag hidden rounded-full bg-white px-2 py-0.5 text-[0.65rem] text-club-600">Vandaag</span>
+                </p>
+                <p class="type-numeral mt-1.5 text-5xl text-white xl:text-6xl">{day.date}</p>
+              </div>
+              <div
+                data-half={day.key}
+                class:list={['absolute flex flex-col justify-center p-5 xl:p-7', day.key === 'sun' && 'items-end text-right']}
+                style={box(day.key, 'bottom')}
+              >
+                <p class="text-lg font-bold leading-snug text-white xl:text-xl">{day.discipline}</p>
+                <p class="text-sm text-white">{day.detail}</p>
+              </div>
+            </Fragment>
+          ))}
+        </div>
+
+        {/* Staand veld onder lg, met elke dag naast zijn helft */}
+        <div class="grid grid-cols-[auto_1fr] grid-rows-2 gap-x-6 sm:gap-x-10 lg:hidden">
+          <svg class="row-span-2 w-36 overflow-visible sm:w-44" viewBox={`0 0 ${WIDTH} ${LENGTH}`} aria-hidden="true">
+            <rect data-half="sat" {...rect('portrait', 0, 0, NET, WIDTH)} fill="var(--color-club-600)" />
+            <rect data-half="sun" {...rect('portrait', NET, ALLEY, NET, WIDTH - 2 * ALLEY)} fill="var(--color-club-600)" />
+            <g stroke="var(--color-feather-50)" fill="none">
+              <rect x="0" y="0" width={WIDTH} height={LENGTH} stroke-width="1.5" vector-effect="non-scaling-stroke" />
+              {courtLines('portrait').map((l) => (
+                <line {...l} stroke-width="1.5" vector-effect="non-scaling-stroke" />
+              ))}
+              <line {...line('portrait', NET, -40, NET, WIDTH + 40)} stroke-width="3" vector-effect="non-scaling-stroke" />
+            </g>
+            <circle cx="-40" cy={NET} r="16" fill="var(--color-feather-50)" />
+            <circle cx={WIDTH + 40} cy={NET} r="16" fill="var(--color-feather-50)" />
+            {shuttles('portrait').map((s) => (
+              <g data-half={s.day} transform={`translate(${s.x} ${s.y}) rotate(${s.angle})`}>
+                <g class="pk-shuttle">
+                  <path d="M -34 -16 L 16 -8 L 16 8 L -34 16 Z" fill="var(--color-feather-50)" />
+                  <circle cx="23" cy="0" r="10" fill="var(--color-cork-400)" />
+                </g>
+              </g>
+            ))}
+          </svg>
+          {days.map((day) => (
+            <div data-half={day.key} class="self-center py-4">
+              <p class="type-label flex items-center gap-2 text-xs text-club-300">
+                {day.day}
+                <span class="pk-today-tag hidden rounded-full bg-white px-2 py-0.5 text-[0.65rem] text-club-600">Vandaag</span>
+              </p>
+              <p class="type-numeral mt-1 text-4xl text-white">{day.date}</p>
+              <p class="mt-2 font-bold leading-snug">{day.discipline}</p>
+              <p class="text-sm text-feather-200">{day.detail}</p>
+            </div>
+          ))}
+        </div>
+
+        <figcaption class="mt-10 flex flex-wrap items-baseline gap-x-4 gap-y-1 text-sm text-feather-200">
+          <span>
+            <strong class="font-bold text-feather-50">{trainings.location.name}</strong>, {trainings.location.address},
+            {trainings.location.municipality}
+          </span>
+          <a
+            href={trainings.location.map}
+            target="_blank"
+            rel="noopener"
+            class="type-label inline-flex items-center gap-1.5 text-xs text-club-300 hover:underline"
+          >
+            Route
+            <ExternalIcon />
+          </a>
+          <span class="sr-only">Op het veld: zaterdag telt de zijstrook mee voor het dubbelspel, zondag niet.</span>
+        </figcaption>
+      </figure>
+    </div>
+  </section>
+)}
+
+<style is:global>
+  /* Wat de fase zegt: inschrijven tot de deadline, daarna loting en uitslagen.
+     De build zet de fase van toen, het script hieronder die van nu. */
+  #pk:not([data-phase='open']) .pk-open,
+  #pk:not([data-phase='closed']) .pk-closed {
+    display: none;
+  }
+
+  /* Eén dag in beeld: tijdens het weekend de helft van vandaag, anders de helft
+     waar je naar wijst. Het veld van de andere dag zakt weg, zijn tekst maar
+     half: wie zaterdag kijkt, wil zondag nog kunnen lezen (0,7 houdt ook het
+     club-300-label boven 4,5:1). */
+  #pk [data-half] {
+    transition: opacity 0.3s var(--ease-launch);
+  }
+  #pk[data-today='sat'] [data-half='sun'],
+  #pk[data-today='sun'] [data-half='sat'],
+  #pk:not([data-today]) .pk-court:has([data-half='sat']:hover) [data-half='sun'],
+  #pk:not([data-today]) .pk-court:has([data-half='sun']:hover) [data-half='sat'] {
+    opacity: 0.7;
+  }
+  #pk[data-today='sat'] svg [data-half='sun'],
+  #pk[data-today='sun'] svg [data-half='sat'],
+  #pk:not([data-today]) .pk-court:has([data-half='sat']:hover) svg [data-half='sun'],
+  #pk:not([data-today]) .pk-court:has([data-half='sun']:hover) svg [data-half='sat'] {
+    opacity: 0.3;
+  }
+  #pk[data-today='sat'] [data-half='sat'] .pk-today-tag,
+  #pk[data-today='sun'] [data-half='sun'] .pk-today-tag {
+    display: inline-block;
+  }
+
+  /* De shuttles vallen op het veld zodra het geland is. Zelfde dubbele poort
+     als .flight. */
+  #pk .pk-shuttle {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .js #pk .pk-shuttle {
+      opacity: 0;
+      transform: translateY(-60px) rotate(-35deg);
+    }
+    .js #pk .landed .pk-shuttle {
+      opacity: 1;
+      transform: none;
+      transition:
+        opacity 0.2s var(--ease-launch) 0.35s,
+        transform 0.5s var(--ease-drop) 0.35s;
+    }
+  }
+</style>
+
+<script>
+  import { championshipPhase, championshipToday, daysUntilClose } from '../data/championship';
+
+  // De build zette de fase van toen; de browser weet hoe laat het nu is. Na het
+  // weekend verdwijnen blok en sticker, ook uit een oude (of offline) kopie.
+  const now = new Date();
+  const section = document.getElementById('pk');
+  const phase = championshipPhase(now);
+  if (section && phase === 'ended') {
+    section.remove();
+    document.getElementById('pk-sticker')?.remove();
+  } else if (section) {
+    section.dataset.phase = phase;
+    const today = championshipToday(now);
+    if (today) section.dataset.today = today;
+    else delete section.dataset.today;
+
+    const countdown = document.getElementById('pk-countdown');
+    const text = document.getElementById('pk-countdown-text');
+    if (phase === 'open' && countdown && text) {
+      const days = daysUntilClose(now);
+      text.textContent = days > 1 ? `Nog ${days} dagen` : days === 1 ? 'Nog tot morgen' : 'Vandaag is de laatste dag';
+      countdown.classList.replace('hidden', 'flex');
+    }
+  }
+</script>
