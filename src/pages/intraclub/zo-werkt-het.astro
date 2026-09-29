@@ -215,7 +215,7 @@ const arrowPath = 'M4 12h16m0 0l-6-6m6 6l-6 6';
             </label>
             <select
               id="player-select"
-              class="mt-2 w-full border-2 border-ink-950/20 bg-white px-3 py-2.5 text-sm text-ink-950 transition-colors hover:border-club-600 focus:border-club-500"
+              class="mt-2 w-full border-2 border-ink-950/20 bg-white px-3 py-2.5 text-sm text-ink-950 transition-colors not-focus-visible:hover:border-club-600"
             >
               {byStrength.map((player) => (
                 <option value={player.id} selected={player.id === start.id}>

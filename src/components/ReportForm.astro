@@ -32,9 +32,10 @@ const firstName = INTEGRITY_NAME.split(' ')[0];
 // verhaal kwijt is; de maxlength op het tekstvak is daarom gelijk aan de
 // serverlimiet, zodat een validatiefout op lengte niet kán voorkomen.
 
-// Volledige klassennamen, want Tailwind leest de broncode statisch.
+// Volledige klassennamen, want Tailwind leest de broncode statisch. Waarom de
+// hover wijkt voor de focusring: zie ContactForm.astro.
 const field =
-  'mt-2 w-full border-2 border-ink-950/20 bg-white px-3 py-2.5 text-sm text-ink-950 transition-colors hover:border-club-600';
+  'mt-2 w-full border-2 border-ink-950/20 bg-white px-3 py-2.5 text-sm text-ink-950 transition-colors not-focus-visible:hover:border-club-600';
 const label = 'type-label block text-xs text-ink-500';
 ---
 
