@@ -69,15 +69,16 @@ const isExact = (href: string) => currentPath.replace(/\/$/, '') === url(href).r
 
         {/* Competitie met ploegen-dropdown: spelers springen zo rechtstreeks naar hun ploeg */}
         <li class="menu">
-          <a href={url('/competitie/')} class:list={['navlink', isActive('/competitie/') && 'active']}>
+          <a href={url('/competitie/')} class:list={['navlink', 'mobile-link', isActive('/competitie/') && 'active']}>Competitie</a>
+          <button type="button" class:list={['navlink', 'dropdown-toggle', isActive('/competitie/') && 'active']} aria-expanded="false" aria-controls="competitie-submenu">
             Competitie
             <svg class="chevron h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
             </svg>
-          </a>
+          </button>
 
-          {/* Desktop: hoverpaneel met de ploegen per reeks */}
-          <div class="panel">
+          {/* Brede schermen: dropdown met de ploegen per reeks */}
+          <div id="competitie-submenu" class="panel">
             <div class="flex gap-8 px-5 py-4">
               {divisions.map((division) => (
                 <div>
@@ -128,14 +129,15 @@ const isExact = (href: string) => currentPath.replace(/\/$/, '') === url(href).r
           item.children ? (
             /* Zelfde patroon als Club: een submenu in plaats van een extra item in de balk */
             <li class="menu">
-              <a href={url(item.href)} class:list={['navlink', isActive(item.href) && 'active']}>
+              <a href={url(item.href)} class:list={['navlink', 'mobile-link', isActive(item.href) && 'active']}>{item.label}</a>
+              <button type="button" class:list={['navlink', 'dropdown-toggle', isActive(item.href) && 'active']} aria-expanded="false" aria-controls={`${item.label.toLowerCase()}-submenu`}>
                 {item.label}
                 <svg class="chevron h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                 </svg>
-              </a>
+              </button>
               <span class="subnav-heading type-label px-3 pt-2 text-xs text-ink-500">{item.label}</span>
-              <ul class="subnav">
+              <ul id={`${item.label.toLowerCase()}-submenu`} class="subnav">
                 {item.children.map((child) => (
                   <li>
                     <a
@@ -162,14 +164,15 @@ const isExact = (href: string) => currentPath.replace(/\/$/, '') === url(href).r
 
         {/* Club met submenu */}
         <li class="menu">
-          <a href={url('/club/over-de-club/')} class:list={['navlink', isActive('/club/') && 'active']}>
+          <a href={url('/club/over-de-club/')} class:list={['navlink', 'mobile-link', isActive('/club/') && 'active']}>Club</a>
+          <button type="button" class:list={['navlink', 'dropdown-toggle', isActive('/club/') && 'active']} aria-expanded="false" aria-controls="club-submenu">
             Club
             <svg class="chevron h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
             </svg>
-          </a>
+          </button>
           <span class="subnav-heading type-label px-3 pt-2 text-xs text-ink-500">Club</span>
-          <ul class="subnav">
+          <ul id="club-submenu" class="subnav">
             {clubItems.map((item) => (
               <li>
                 <a href={url(item.href)} class:list={['subnavlink', isActive(item.href) && 'active']}>
@@ -192,6 +195,57 @@ const isExact = (href: string) => currentPath.replace(/\/$/, '') === url(href).r
     </nav>
   </div>
 </header>
+
+<script>
+  const nav = document.querySelector<HTMLElement>('header .nav');
+  if (nav) {
+    const desktop = window.matchMedia('(width >= 64rem)');
+    const toggles = Array.from(nav.querySelectorAll<HTMLButtonElement>('.dropdown-toggle'));
+
+    const closeMenus = () => {
+      toggles.forEach((toggle) => toggle.setAttribute('aria-expanded', 'false'));
+    };
+    const openMenu = (toggle: HTMLButtonElement) => {
+      closeMenus();
+      toggle.setAttribute('aria-expanded', 'true');
+    };
+
+    toggles.forEach((toggle) => {
+      const menu = toggle.closest<HTMLElement>('.menu')!;
+      toggle.addEventListener('click', () => {
+        const wasOpen = toggle.getAttribute('aria-expanded') === 'true';
+        if (wasOpen) closeMenus();
+        else openMenu(toggle);
+      });
+      menu.addEventListener('pointerenter', (event) => {
+        if (desktop.matches && event.pointerType === 'mouse') openMenu(toggle);
+      });
+      menu.addEventListener('pointerleave', (event) => {
+        if (event.pointerType === 'mouse') toggle.setAttribute('aria-expanded', 'false');
+      });
+      menu.addEventListener('focusout', (event) => {
+        if (!(event.relatedTarget instanceof Node) || !menu.contains(event.relatedTarget)) {
+          toggle.setAttribute('aria-expanded', 'false');
+        }
+      });
+    });
+
+    document.addEventListener('pointerdown', (event) => {
+      if (!(event.target instanceof Element) || !event.target.closest('header .menu')) closeMenus();
+    });
+    nav.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape') return;
+      const openToggle = toggles.find((toggle) => toggle.getAttribute('aria-expanded') === 'true');
+      if (openToggle) {
+        closeMenus();
+        openToggle.focus();
+        event.preventDefault();
+      }
+    });
+    desktop.addEventListener('change', closeMenus);
+    nav.classList.add('dropdowns-ready');
+  }
+</script>
 
 <style>
   /* De navigatie is het enige stuk van de site waar mobiel en desktop écht twee
@@ -269,6 +323,12 @@ const isExact = (href: string) => currentPath.replace(/\/$/, '') === url(href).r
     color: var(--color-club-600);
   }
 
+  .dropdown-toggle {
+    display: none;
+    cursor: pointer;
+    text-align: left;
+  }
+
   .subnav-heading {
     display: block;
   }
@@ -288,8 +348,8 @@ const isExact = (href: string) => currentPath.replace(/\/$/, '') === url(href).r
     color: var(--color-club-600);
   }
 
-  /* Het ploegenpaneel is een hover-affordance; een telefoon heeft geen hover,
-     daar staan de ploegen als pillen onder de link. */
+  /* Op smalle schermen staan de ploegen als pillen onder de link;
+     op brede schermen opent de knop het paneel, ook met aanraking. */
   .panel,
   .chevron {
     display: none;
@@ -316,6 +376,7 @@ const isExact = (href: string) => currentPath.replace(/\/$/, '') === url(href).r
 
   @media (width >= 64rem) {
     .hamburger,
+    .mobile-link,
     .subnav-heading,
     .team-pills {
       display: none;
@@ -337,7 +398,7 @@ const isExact = (href: string) => currentPath.replace(/\/$/, '') === url(href).r
       padding: 0;
     }
 
-    .menu > .navlink {
+    .menu > .dropdown-toggle {
       display: flex;
       align-items: center;
       gap: 0.25rem;
@@ -372,10 +433,10 @@ const isExact = (href: string) => currentPath.replace(/\/$/, '') === url(href).r
       padding-block: 0.25rem;
     }
 
-    .menu:hover > .panel,
-    .menu:focus-within > .panel,
-    .menu:hover > .subnav,
-    .menu:focus-within > .subnav {
+    .dropdown-toggle[aria-expanded='true'] ~ .panel,
+    .dropdown-toggle[aria-expanded='true'] ~ .subnav,
+    .nav:not(.dropdowns-ready) .menu:focus-within > .panel,
+    .nav:not(.dropdowns-ready) .menu:focus-within > .subnav {
       visibility: visible;
       opacity: 1;
     }
@@ -387,6 +448,14 @@ const isExact = (href: string) => currentPath.replace(/\/$/, '') === url(href).r
     .join {
       margin-top: 0;
       margin-left: 0.75rem;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .nav:not(.dropdowns-ready) .menu:hover > .panel,
+      .nav:not(.dropdowns-ready) .menu:hover > .subnav {
+        visibility: visible;
+        opacity: 1;
+      }
     }
   }
 </style>

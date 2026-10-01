@@ -195,7 +195,7 @@ Alle knoppen zijn `.type-label`-pillen; ze veranderen bij hover alleen van kleur
 - **Stille regel (1987):** één railpunt zonder lijst — bol, cijfer, één paragraaf, één baan-link. Voor enkelvoudige feiten op de draad.
 
 ### Navigation
-- **Header:** sticky, feather-50 op 95% met backdrop-blur, hairline onderrand. Logo (monochroom zwart SVG) + clubnaam in type-label. Links: text-sm font-semibold, hover naar club-600; actief: `border-b-2 border-club-500` + club-600-tekst. "Word lid!" staat als primaire pil rechts in de nav. Mobiel én tablet (onder lg): checkbox-hamburger (CSS-only) met uitklappaneel; submenu Club op desktop als hover/focus-within-dropdown op feather-50.
+- **Header:** sticky, feather-50 op 95% met backdrop-blur, hairline onderrand. Logo (monochroom zwart SVG) + clubnaam in type-label. Links: text-sm font-semibold, hover naar club-600; actief: `border-b-2 border-club-500` + club-600-tekst. "Word lid!" staat als primaire pil rechts in de nav. Onder lg: checkbox-hamburger (CSS-only) met uitklappaneel en zichtbare submenulinks. Vanaf lg: Competitie, Intraclub en Club zijn dropdownknoppen op feather-50 — aanraking, klik en Enter/Spatie klappen ze open of dicht, muishover opent ze ook. Eén dropdown tegelijk; buiten tikken of Escape sluit hem. De bestemmingspagina staat in het submenu. `aria-expanded` volgt de open toestand; zonder JavaScript blijft hover/focus-within als vangnet beschikbaar.
 - **Footer:** ink-950 met feather-200-tekst; sponsorlogo's op feather-50-tegels (hover: ring-2 club-500); kolomkopjes in type-label wit; links hoveren naar club-300.
 
 ### Iconen
