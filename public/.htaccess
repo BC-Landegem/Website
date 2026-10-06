@@ -41,6 +41,10 @@ ErrorDocument 404 /404.html
   RewriteRule ^competitie/competitieverslagen/?$ https://%{HTTP_HOST}/archief/ [R=301,L]
 </IfModule>
 
+# Alles wat Astro bouwt is UTF-8. HTML zegt dat zelf met <meta charset>, maar een
+# .txt (llms.txt) kan dat niet, en zonder charset in de header raadt de lezer.
+AddDefaultCharset utf-8
+
 <IfModule mod_mime.c>
   AddType application/manifest+json .webmanifest
 </IfModule>

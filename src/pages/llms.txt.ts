@@ -1,8 +1,7 @@
 // llms.txt: een korte, gestructureerde wegwijzer voor taalmodellen die de site
 // lezen (https://llmstxt.org). Gegenereerd in plaats van een vast bestand in
 // public/, om dezelfde reden als het manifest: de links moeten absoluut zijn én
-// de base path volgen. Die staat nu op /Website (GitHub Pages) en wordt bij de
-// domeinswitch naar bclandegem.be '/' — dan klopt dit bestand vanzelf nog.
+// de base path volgen: '/' op www.bclandegem.be, /Website op github.io.
 //
 // Bewust kort: alleen de pagina's die een vraag over de club beantwoorden, met
 // per link genoeg context om te weten wanneer je ze nodig hebt. De detailpagina's
@@ -19,7 +18,7 @@ const SECTIONS: { heading: string; links: Link[] }[] = [
     heading: 'Meespelen',
     links: [
       ['/club/word-lid/', 'Word lid', 'Alle speelmomenten, wat je meebrengt, het lidgeld en hoe je inschrijft. Nieuwe spelers mogen drie keer gratis meespelen.'],
-      ['/jeugd/', 'Jeugd', 'Jeugdwerking vanaf 8 jaar: vrij spelen op woensdagavond en training op zaterdag in twee groepen (9u30 en 11u). Geen selectie.'],
+      ['/jeugd/', 'Jeugd', 'Jeugdwerking vanaf 8 jaar: vrij spelen op woensdagavond, zonder selectie en zonder vooraf in te schrijven. Wie er klaar voor is, krijgt van de trainers de vraag om ook op zaterdag te trainen, in een van twee groepen (9u30 en 11u).'],
       ['/recreatief/', 'Recreatief', 'Badminton voor volwassenen: vrij spel op maandag, woensdag en zondag, intraclub en een lessenreeks van vijf avonden.'],
       ['/kalender/', 'Kalender', 'Trainingen, vrij spel, competitiematchen, intraclub en clubevents.'],
       ['/club/twizzit/', 'Tips voor Twizzit', 'Aanmelden bij Twizzit, je planning en aanwezigheid opvolgen, meldingen instellen en wisselen tussen gezinsleden.'],
@@ -67,7 +66,7 @@ export const GET: APIRoute = ({ site }) => {
     '',
     '> Badmintonclub Landegem (BC Landegem), opgericht in 1987 en spelend in Sporthal Oostbroek in Nevele (Deinze, Oost-Vlaanderen): recreatief en competitief badminton voor jong en oud, met jeugdwerking, recreatieve speelavonden, een eigen intraclubcompetitie en competitieploegen.',
     '',
-    'De site is volledig Nederlandstalig (nl-BE). Er zijn vijf vaste speelmomenten per week (maandag, woensdag, zaterdag en zondag); proefbeurten zijn altijd welkom en nieuwe spelers mogen drie keer gratis meespelen. Inschrijven gebeurt via een extern Twizzit-formulier.',
+    `De site is volledig Nederlandstalig (nl-BE). Er zijn vijf vaste speelmomenten per week (maandag, woensdag, zaterdag en zondag); proefbeurten zijn altijd welkom en nieuwe spelers mogen drie keer gratis meespelen. Inschrijven gebeurt via een extern Twizzit-formulier; ${absolute('/inschrijven/')} is de vaste korte link ernaartoe.`,
     '',
     ...SECTIONS.flatMap(({ heading, links }) => [
       `## ${heading}`,
