@@ -61,7 +61,8 @@ const shuttles = (o: Orientation) => {
 };
 
 // Zaterdag staat er expliciet bij wat in de voormiddag valt en wat in de namiddag.
-const days = [
+type Session = { when?: string; discipline: string };
+const days: { key: string; day: string; date: string; sessions: Session[]; detail: string }[] = [
   {
     key: 'sat',
     day: 'Zaterdag',
@@ -184,9 +185,11 @@ const buttonClass =
           ))}
         </div>
 
-        {/* Staand veld onder lg, met elke dag naast zijn helft */}
+        {/* Staand veld onder lg, met elke dag naast zijn helft. Is zaterdag hoger dan
+            een helft, dan groeien beide rijen mee; gecentreerd blijft het net op de
+            grens tussen de twee dagen. */}
         <div class="grid grid-cols-[auto_1fr] grid-rows-2 gap-x-6 sm:gap-x-10 lg:hidden">
-          <svg class="row-span-2 w-36 overflow-visible sm:w-44" viewBox={`0 0 ${WIDTH} ${LENGTH}`} aria-hidden="true">
+          <svg class="row-span-2 w-36 self-center overflow-visible sm:w-44" viewBox={`0 0 ${WIDTH} ${LENGTH}`} aria-hidden="true">
             <rect data-half="sat" {...rect('portrait', 0, 0, NET, WIDTH)} fill="var(--color-club-600)" />
             <rect data-half="sun" {...rect('portrait', NET, ALLEY, NET, WIDTH - 2 * ALLEY)} fill="var(--color-club-600)" />
             <g stroke="var(--color-feather-50)" fill="none">
