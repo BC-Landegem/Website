@@ -6,7 +6,9 @@
 //
 // De feiten komen van de toernooipagina (nagekeken 29 september 2026):
 // inschrijven tot vr 16 okt 23u59, reeksen Open 1 tot 12, dubbel en gemengd
-// dubbel in poules op zaterdag, enkelspel (HE en DE) op zondag.
+// dubbel in poules op zaterdag, enkelspel (HE en DE) op zondag. Op 6 oktober
+// kwam erbij dat het dubbel zaterdag in de voormiddag valt en het gemengd in de
+// namiddag.
 export const championship = {
   url: 'https://badvla.tournamentsoftware.com/tournament/4b8952db-0974-4e48-b6aa-cfef53a5308b',
   registrationCloses: '2026-10-16T23:59:00+02:00',

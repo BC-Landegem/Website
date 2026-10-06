@@ -60,9 +60,19 @@ const shuttles = (o: Orientation) => {
   ];
 };
 
+// Zaterdag staat er expliciet bij wat in de voormiddag valt en wat in de namiddag.
 const days = [
-  { key: 'sat', day: 'Zaterdag', date: '31 okt', discipline: 'Dubbel en gemengd dubbel', detail: 'in poules' },
-  { key: 'sun', day: 'Zondag', date: '1 nov', discipline: 'Enkelspel', detail: 'heren en dames' },
+  {
+    key: 'sat',
+    day: 'Zaterdag',
+    date: '31 okt',
+    sessions: [
+      { when: 'Voormiddag', discipline: 'Dubbel' },
+      { when: 'Namiddag', discipline: 'Gemengd dubbel' },
+    ],
+    detail: 'in poules',
+  },
+  { key: 'sun', day: 'Zondag', date: '1 nov', sessions: [{ discipline: 'Enkelspel' }], detail: 'heren en dames' },
 ];
 
 // De dagteksten liggen in de serveervakken van hun helft, tussen de lange en de
@@ -162,7 +172,12 @@ const buttonClass =
                 class:list={['absolute flex flex-col justify-center p-5 xl:p-7', day.key === 'sun' && 'items-end text-right']}
                 style={box(day.key, 'bottom')}
               >
-                <p class="text-lg font-bold leading-snug text-white xl:text-xl">{day.discipline}</p>
+                {day.sessions.map((session, i) => (
+                  <div class:list={[i > 0 && 'mt-3']}>
+                    {session.when && <p class="type-label text-xs text-white">{session.when}</p>}
+                    <p class="text-lg font-bold leading-snug text-white xl:text-xl">{session.discipline}</p>
+                  </div>
+                ))}
                 <p class="text-sm text-white">{day.detail}</p>
               </div>
             </Fragment>
@@ -199,7 +214,12 @@ const buttonClass =
                 <span class="pk-today-tag hidden rounded-full bg-white px-2 py-0.5 text-[0.65rem] text-club-600">Vandaag</span>
               </p>
               <p class="type-numeral mt-1 text-4xl text-white">{day.date}</p>
-              <p class="mt-2 font-bold leading-snug">{day.discipline}</p>
+              {day.sessions.map((session) => (
+                <div class="mt-2">
+                  {session.when && <p class="type-label text-xs text-feather-200">{session.when}</p>}
+                  <p class="font-bold leading-snug">{session.discipline}</p>
+                </div>
+              ))}
               <p class="text-sm text-feather-200">{day.detail}</p>
             </div>
           ))}
