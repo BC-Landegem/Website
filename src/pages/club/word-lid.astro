@@ -239,8 +239,12 @@ const offerings = [
       </p>
 
       <p class="mt-8">
+        {/* Een pdf telt GoatCounter niet als bezoek; de klik erop wel. */}
         <a
           href={url('/folder/bclandegem-folder-2026-27.pdf')}
+          data-goatcounter-click="clubfolder"
+          data-goatcounter-title="Clubfolder gedownload"
+          data-goatcounter-referrer="word-lid"
           class="type-label inline-flex items-center gap-2 text-xs text-club-700 transition-colors hover:text-club-800 hover:underline"
         >
           <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">

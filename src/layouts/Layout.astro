@@ -82,6 +82,21 @@ const swRegistration = registrationTemplate
     {/* Intern kleurlab: doet niets zonder ?kleurlab in de URL. */}
     <ColorLab />
     {import.meta.env.PROD && <script is:inline set:html={swRegistration} />}
+    {import.meta.env.PROD && (
+      <>
+        <script is:inline define:vars={{ pageTitle }}>
+          window.goatcounter = { path: (p) => p.split('?')[0], title: () => pageTitle };
+        </script>
+        <script
+          is:inline
+          data-goatcounter="https://bclandegem.goatcounter.com/count"
+          async
+          src="https://gc.zgo.at/count.v5.js"
+          crossorigin="anonymous"
+          integrity="sha384-atnOLvQb9t+jTSipvd75X2yginT4PjVbqDdlJAmxMm+wYElFmeR6EmLP5bYeoRVQ"
+        ></script>
+      </>
+    )}
   </head>
   <body class="flex min-h-screen flex-col bg-feather-50 text-ink-950 antialiased">
     {/*
