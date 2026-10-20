@@ -25,7 +25,8 @@
   --color-cork-400: #cf9a5f;
   --color-cork-600: #a97438;
 
-  --font-sans: "Archivo", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+  /* Archivo met zijn fallbacks; de variabele komt van <Font> in Layout.astro. */
+  --font-sans: var(--font-archivo);
 
   /* Vluchtfysica: lancering (explosief uit, dan hangen) en drop (val) */
   --ease-launch: cubic-bezier(0.16, 1, 0.3, 1);

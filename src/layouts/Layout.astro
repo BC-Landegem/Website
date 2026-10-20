@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import { Font } from 'astro:assets';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import ColorLab from '../components/ColorLab.astro';
@@ -61,8 +62,10 @@ const swRegistration = registrationTemplate
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content={APP_SHORT_NAME} />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    {/* Archivo staat op ons eigen domein (zie fonts in astro.config.mjs). Alleen
+         de latin-subset wordt vooraf geladen: die staat op elke pagina, latin-ext
+         zelden. */}
+    <Font cssVariable="--font-archivo" preload={[{ subset: 'latin' }]} />
     {/* Kalenderdata (hero-chip, events, kalenderpagina) komt via fetch van de
          Google Calendar API; preconnect scheelt een handshake. */}
     <link rel="preconnect" href="https://www.googleapis.com" crossorigin />
@@ -73,10 +76,6 @@ const swRegistration = registrationTemplate
          preconnect de verkeerde verbinding op. Blijft ook na de domeinswitch
          nodig: intra. is een ander origin dan www. */}
     <link rel="preconnect" href="https://intra.bclandegem.be" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&display=swap"
-      rel="stylesheet"
-    />
     <meta name="generator" content={Astro.generator} />
     <script is:inline>document.documentElement.classList.add('js');</script>
     {/* Intern kleurlab: doet niets zonder ?kleurlab in de URL. */}
@@ -120,9 +119,9 @@ const swRegistration = registrationTemplate
       carrying its provenance.
     */}
     <Header />
-    <div class="flex-1">
+    <main class="flex-1">
       <slot />
-    </div>
+    </main>
     <Footer />
   </body>
 </html>

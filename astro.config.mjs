@@ -1,5 +1,5 @@
 // @ts-check
-import { defineConfig } from 'astro/config';
+import { defineConfig, fontProviders } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
 import { loadEnv } from 'vite';
 import trainings from './src/data/trainings.json' with { type: 'json' };
@@ -32,6 +32,32 @@ export default defineConfig({
     // Een korte link om door te geven, bewust niet in het menu.
     '/inschrijven': trainings.registrationForm,
   },
+  // Archivo komt van Google, maar bij de build: Astro haalt de bestanden op en
+  // zet ze onder /_astro/fonts/. Rechtstreeks van fonts.googleapis.com was de
+  // stylesheet render-blocking op een vreemd origin (Lighthouse: ~750 ms), met
+  // daarachter nog een sprong naar fonts.gstatic.com voor het bestand zelf — en
+  // elk bezoek gaf het IP-adres van de bezoeker aan Google. Eén variabel bestand
+  // draagt de drie typestemmen; de breedte-as moet er expliciet bij, anders
+  // levert Google alleen wdth 100 en vallen display, baan en cijfer samen.
+  fonts: [
+    {
+      name: 'Archivo',
+      cssVariable: '--font-archivo',
+      provider: fontProviders.google(),
+      weights: ['300 900'],
+      styles: ['normal'],
+      // latin-ext voor spelersnamen buiten het Nederlandse alfabet; de browser
+      // haalt dat bestand pas op wanneer zo'n teken echt op de pagina staat.
+      subsets: ['latin', 'latin-ext'],
+      fallbacks: ['ui-sans-serif', 'system-ui', 'Segoe UI', 'sans-serif'],
+      // Astro rekent anders een Arial met size-adjust uit, maar meet dit
+      // variabele bestand verkeerd: 131%, en een zin die in Archivo 704px breed
+      // is, werd in die fallback 935px (kaal Arial: 715px). Ook vette tekst
+      // kwam er mager uit. Zonder voelt het wisselen rustiger.
+      optimizedFallbacks: false,
+      options: { experimental: { variableAxis: { wdth: [['62', '125']] } } },
+    },
+  ],
   vite: {
     plugins: [tailwindcss()],
   },

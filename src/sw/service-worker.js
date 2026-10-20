@@ -55,7 +55,6 @@ const DATA_TIMEOUT = 4000;
 const DATA_MAX = 32;
 
 const ASSET_EXTENSIONS = /\.(?:css|js|mjs|woff2?|png|jpe?g|webp|avif|gif|svg|ico)$/;
-const FONT_HOSTS = ['fonts.googleapis.com', 'fonts.gstatic.com'];
 // Verwijzingen naar gehashte bundels. De HTML noemt ze met hun volledige pad,
 // een module verwijst naar zijn chunks met een relatieve import
 // (`from"./kalender.CRV8d0q3.js"`). Alles ligt plat in _astro/, dus levert de
@@ -173,7 +172,6 @@ function isData(target) {
 }
 
 function isStatic(target) {
-  if (FONT_HOSTS.includes(target.hostname)) return true;
   if (target.origin !== self.location.origin) return false;
   return target.pathname.startsWith(`${BASE}_astro/`) || ASSET_EXTENSIONS.test(target.pathname);
 }
@@ -268,17 +266,11 @@ async function limitData(cache) {
 }
 
 /**
- * Cache eerst, voor de gehashte assets en de Google Fonts.
+ * Cache eerst, voor de gehashte assets (Archivo incluis: die staat sinds de
+ * build hem ophaalt onder _astro/fonts/) en de vaste bestanden uit public/.
  *
- * Die fonts-stylesheet komt binnen als no-cors verzoek (de <link> draagt geen
- * crossorigin), dus is de respons opaque: status 0 en ok false. Filteren op
- * `ok` betekende dus dat hij nooit in de cache belandde en de app offline
- * zonder Archivo stond, ondanks fonts.googleapis.com in FONT_HOSTS. Opaque mag
- * er daarom door. De prijs: een 404 van zo'n host valt niet van een geldige
- * respons te onderscheiden en zou blijven plakken tot de volgende deploy. Voor
- * twee vaste Google-URL's is dat een betere ruil dan een crossorigin op de
- * <link>, want dan hangt het laden van de stylesheet zélf van een CORS-header
- * af. Same-origin responsen worden nooit opaque, dus daar verandert niets.
+ * Alles hier is same-origin, dus nooit opaque: `ok` volstaat om een 404 uit de
+ * cache te houden. Dat was anders toen de fonts nog van Google kwamen.
  */
 async function cacheFirst(event, request) {
   const cache = await caches.open(ASSET_CACHE);
@@ -286,7 +278,7 @@ async function cacheFirst(event, request) {
   if (cached) return cached;
 
   const response = await fetch(request);
-  if (response.ok || response.type === 'opaque') {
+  if (response.ok) {
     event.waitUntil(cache.put(request, response.clone()));
   }
   return response;

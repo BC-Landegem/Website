@@ -46,7 +46,9 @@ mee verwijderen kan met `docker compose down --volumes`.
 
 > **De build haalt data op.** De intraclub-historiek (erelijst, zeventien
 > eindstanden, records) wordt bij het bouwen uit de API gehaald in plaats van in
-> de browser. Dat zijn een dertigtal verzoeken en kost een paar seconden. Zonder
+> de browser. Dat zijn een dertigtal verzoeken en kost een paar seconden. Ook
+> Archivo komt bij de build binnen: Astro haalt het lettertype bij Google en zet
+> het onder `/_astro/fonts/`, zodat de bezoeker zelf nooit met Google praat. Zonder
 > netwerk faalt de build; zie "Databronnen · Intraclub-API".
 
 > **Let op de base-prefix.** Zonder instellingen bouwt Astro nog zoals voor de
@@ -99,7 +101,8 @@ aanraken.
 | Contactformulier: endpoint, Turnstile-sleutel, clubadres | `src/data/contact.ts` | Het formulier op `/club/contact/` — zie Databronnen |
 | Meldformulier: endpoint, naam en adres van het Aanspreekpunt Integriteit | `src/data/contact.ts` | `/club/melden/`, de bedankpagina en de uitwijkadressen — de ontvanger zelf staat in de Laravel-config, zie Databronnen |
 | Pushberichten: onderwerpen, endpoint | `src/data/push.ts` | `/club/pushberichten/` en de service worker — de sleutel komt uit de build-omgeving (`PUBLIC_VAPID_PUBLIC_KEY`), zie Databronnen |
-| Kleuren en typografie | `src/styles/global.css` (`@theme`) | De hele site — voor het clubrood eerst het kleurlab, zie hieronder |
+| Kleuren en typestemmen | `src/styles/global.css` (`@theme`) | De hele site — voor het clubrood eerst het kleurlab, zie hieronder |
+| Het lettertype zelf: assen, gewichten, subsets | `fonts` in `astro.config.mjs` | Wat de build bij Google ophaalt; `--font-sans` in `global.css` volgt via `--font-archivo` — zie Valkuilen |
 | Losse tekst | De `.astro`-pagina zelf | Alleen die pagina |
 
 ## Databronnen
@@ -538,6 +541,12 @@ workflows triggert.
   ophalen" — dan zijn ze weg. Hetzelfde geldt voor
   `src/data/archive-images.json`: dat is uitvoer van het script en bewerk je niet
   met de hand, maar het bijhouden ervan is wél hoe je weet wat er ontbreekt.
+- **Archivo verliest zijn breedtes zonder foutmelding.** De drie typestemmen
+  verschillen alleen in de `wdth`-as. Laat je in `fonts` (`astro.config.mjs`) de
+  regel met `variableAxis` vallen, dan levert Google enkel breedte 100 en zien
+  display, labels en cijfers er even smal uit — de build slaagt gewoon. Zet daar
+  ook `optimizedFallbacks` niet aan: Astro meet dit variabele bestand verkeerd en
+  maakt een noodlettertype dat een derde te breed is.
 - **Service workers houden vast.** Test je de PWA lokaal, ruim dan af en toe je
   registratie op in DevTools → Application; anders debug je een oude cache.
 - **De intraclub-pagina's hangen aan poort 4321.** De API laat alleen dat origin
