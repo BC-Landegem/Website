@@ -25,6 +25,13 @@ export interface MediaAlbum {
 
 export const albums: MediaAlbum[] = [
   {
+    slug: 'weekend-2026',
+    title: 'Weekend 2026',
+    date: '2026-10',
+    category: 'club',
+    share: 'https://photos.app.goo.gl/pZLP4chsnLLd8gwz7',
+  },
+  {
     slug: 'pbo-jeugdcup-2026',
     title: 'PBO Jeugdcup 2026',
     date: '2026-03',
